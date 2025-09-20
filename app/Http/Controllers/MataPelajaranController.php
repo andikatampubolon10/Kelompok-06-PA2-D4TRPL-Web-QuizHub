@@ -9,13 +9,28 @@ use Illuminate\Http\Request;
 
 class MataPelajaranController extends Controller
 {
-    public function index()
-    {
-        $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
-        $kurikulums = kurikulum::all();
-        $user = auth()->user();
-        return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'user', 'kurikulums'));
-    }
+    public function index(Request $request)
+        {
+            $user = auth()->user();
+
+            $operator = Operator::where('id_user', $user->id)->first();
+
+            $kurikulums = Kurikulum::where('id_operator', $operator->id_operator)->get();
+
+            if ($request->has('kurikulum') && $request->kurikulum != '') {
+                $mataPelajarans = mata_pelajaran::where('id_kurikulum', $request->kurikulum)
+                    ->with(['operator', 'kurikulum'])
+                    ->get();
+            } else {
+                $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
+            }
+
+            $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
+                ->with(['operator', 'kurikulum']) // You can also load relationships if needed
+                ->get();
+
+            return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'kurikulums', 'user'));
+        }
 
     public function create()
     {

@@ -32,7 +32,7 @@ class UjianController extends Controller
 
         $id_kursus = $request->query('id_kursus');
 
-        $courses = kursus::with('guru')->get(); // Ambil semua kursus
+        $courses = Kursus::with('guru')->get(); // Ambil semua kursus
 
         $course = $courses->where('id_kursus', $id_kursus)->first();
 
@@ -48,7 +48,7 @@ class UjianController extends Controller
             return redirect()->back()->withErrors(['error' => 'Kursus yang dipilih tidak valid.']);
         }
 
-        $ujians = ujian::where('id_kursus', $kursus->id_kursus)
+        $ujians = Ujian::where('id_kursus', $kursus->id_kursus)
             ->orderBy('tanggal_ujian', 'DESC')
             ->get();
 
@@ -93,6 +93,11 @@ class UjianController extends Controller
             'waktu_mulai' => 'required|date|after:now',
             'waktu_selesai' => 'required|date|after:waktu_mulai',
         ]);
+        $request->merge([
+    'acak' => $request->input('acak', 'Aktif'), // Default 'Aktif' jika tidak diberikan
+    'grade' => $request->input('grade', 100),   // Default 100 jika tidak diberikan
+    'status_jawaban' => $request->input('status_jawaban', 'Aktif'), // Default 'Aktif' jika tidak diberikan
+]);
 
         try {
             Log::info('Validated data:', $validated);

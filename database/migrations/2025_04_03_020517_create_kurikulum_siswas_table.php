@@ -18,8 +18,7 @@ return new class extends Migration
             $table->foreign('id_kurikulum')->references('id_kurikulum')->on('kurikulum')->onDelete('cascade');
             $table->foreign('id_siswa')->references('id_siswa')->on('siswa')->onDelete('cascade');
             $table->timestamps();
-        });
-    }
+        });    }
 
     /**
      * Reverse the migrations.

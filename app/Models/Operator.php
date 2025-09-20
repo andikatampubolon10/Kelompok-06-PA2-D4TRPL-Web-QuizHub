@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Operator extends Model
 {
-   
-    protected $table = 'operator'; 
+
+    protected $table = 'operator';
 
     protected $primaryKey = 'id_operator';
 
@@ -25,23 +25,40 @@ class Operator extends Model
         return $this->belongsTo(User::class, 'id_user');
     }
 
-    public function kurikulum(){
+    public function kurikulum()
+    {
         return $this->hasMany(kurikulum::class);
     }
 
-    public function guru(){
-        return $this->hasMany(guru::class);
+    public function guru()
+    {
+return $this->hasMany(Guru::class, 'id_operator');
     }
 
-    public function kelas(){
+    public function kelas()
+    {
         return $this->hasMany(kelas::class);
     }
 
-    public function mata_pelajaran(){
+    public function mata_pelajaran()
+    {
         return $this->hasMany(mata_pelajaran::class);
     }
 
-    public function siswa(){
+    public function siswa()
+    {
         return $this->hasMany(siswa::class);
     }
+
+    public function kursus()
+    {
+        return $this->hasMany(kursus::class, 'id_kursus', 'id_kursus');
+    }
+
+    public function tahun_ajaran()
+    {
+        return $this->hasMany(TahunAjaran::class);
+    }
+    public $timestamps=true;
+
 }

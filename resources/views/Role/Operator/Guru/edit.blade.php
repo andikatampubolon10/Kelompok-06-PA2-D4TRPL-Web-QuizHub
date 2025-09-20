@@ -1,389 +1,296 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.operator-layout')
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator | Guru</title>
+@section('title', 'Edit Guru')
+@section('page-title', 'Edit Data Guru')
+@section('page-description', 'Ubah informasi data guru yang sudah terdaftar')
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        /* General Styles */
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
+@section('content')
+    <div class="space-y-6">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center space-x-2 text-sm text-gray-600 bg-white p-4 rounded-lg shadow-sm">
+            <a href="{{ route('Operator.Guru.index') }}" class="flex items-center hover:text-teal-600 transition-colors">
+                <i class="fas fa-chalkboard-teacher mr-1"></i>
+                Daftar Guru
+            </a>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+            <span class="text-gray-800 font-medium">Edit Guru</span>
+        </nav>
 
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom,#00796b, #00bfae, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-       
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #00796b;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button Styles */
-        .btn-add-top-right {
-                position: absolute;
-                top: 100px;
-            right: 30px;
-            background-color: #00bfae;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            border: none;
-            transition: background-color 0.3s ease;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-add-top-right:hover {
-            background-color: #00796b;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        table th,
-        table td {
-            padding: 18px 25px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #14A098;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        table tr:hover {
-            background-color: #f1f1f1;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-
-        table td {
-            vertical-align: middle;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                top: 0;
-                left: 0;
-                height: auto;
-                border-radius: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 70px 20px 20px;
-            }
-
-            .btn-add-top-right {
-                width: 100%;
-                padding: 15px 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header">
-        <h1 class="text-2xl font-bold text-white">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10">
-        </h1>
-        
-        <div class="relative dropdown">
-            <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-                <div class="flex flex-col items-center">
-                    <span class="text-white">Welcome, Operator</span>
-                    <span class="text-white font-semibold">{{ $user->name }}</span>
+        <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-tie text-2xl text-teal-600"></i>
                 </div>
-                <i class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
-            </div>
-            <div id="dropdown-menu" class="dropdown-menu">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left">Logout</button>
-                </form>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-gray-800">{{ $guru->nama_guru }}</h3>
+                    <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                        <span class="flex items-center">
+                            <i class="fas fa-id-card mr-1"></i>
+                            NIP: {{ $guru->nip }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-envelope mr-1"></i>
+                            {{ $guru->user->email }}
+                        </span>
+                        <span class="flex items-center">
+                            @if (strtolower($guru->status) === 'aktif')
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Tidak Aktif
+                                </span>
+                            @endif
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <ul>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kurikulum.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-calendar-alt text-white mr-2"></i> Kurikulum
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-book text-white mr-2"></i> Mata Pelajaran
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kelas.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-home text-white mr-2"></i> Kelas
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Guru.index') }}" class="flex items-center text-black p-2 rounded-lg shadow hover:bg-blue-500">
-                        <i class="fas fa-chalkboard-teacher text-black mr-2"></i> Daftar Guru
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Siswa.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-user-graduate text-white mr-2"></i> Daftar Siswa
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- Form Edit -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-edit text-teal-600 mr-2"></i>
+                    Form Edit Data Guru
+                </h2>
+            </div>
 
-        <!-- Main Content -->
-        <main class="main-content" role="main">
-            <div class="bg-white p-6 rounded-lg shadow-md h-full w-full">
-                <form action="{{ route('Operator.Guru.update', $guru->id_guru) }}" method="POST" class="space-y-6" novalidate>
-                    @csrf
-                    @method('PATCH')
-                    <div class="mb-4">
-                        <label class="block font-bold mb-2">NIP</label>
-                        <input type="number" value="{{ old('nip', $guru->nip) }}" maxlength="20" pattern="\d{20}" name="nip"
-                            class="block w-full p-2 border border-gray-300 rounded-md">
+            <form action="{{ route('Operator.Guru.update', $guru->id_guru) }}" method="POST" class="p-6 space-y-6"
+                id="editGuruForm">
+                @csrf
+                @method('PATCH')
+
+                <!-- Help Section -->
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-400 mt-1 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-blue-800 mb-1">Tips Pengisian Form</h3>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• NIP harus unik dan tidak boleh sama dengan guru lain</li>
+                                <li>• Email akan digunakan untuk login ke sistem</li>
+                                <li>• Password hanya diisi jika ingin mengubah password lama</li>
+                                <li>• Status "Tidak Aktif" akan menonaktifkan akses login guru</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- NIP -->
+                    <div class="space-y-2">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-id-card text-teal-600 mr-2"></i>
+                            NIP <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" name="nip" value="{{ old('nip', $guru->nip) }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('nip') border-red-500 @enderror"
+                            placeholder="Masukkan NIP guru" maxlength="20">
                         @error('nip')
-                            <span class="alert-danger">
-                                {{ $message }}
-                            </span>
+                            <div class="flex items-center mt-1 text-red-600">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                <span class="text-sm">{{ $message }}</span>
+                            </div>
                         @enderror
                     </div>
-                    <div class="mb-4">
-                        <label class="block font-bold mb-2">Nama Guru</label>
-                        <input type="text" name="name" value="{{ old('nama_guru', $guru->nama_guru) }}"
-                            class="block w-full p-2 border border-gray-300 rounded-md">
+
+                    <!-- Nama Guru -->
+                    <div class="space-y-2">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-user text-teal-600 mr-2"></i>
+                            Nama Guru <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" name="name" value="{{ old('name', $guru->nama_guru) }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('name') border-red-500 @enderror"
+                            placeholder="Masukkan nama lengkap guru">
                         @error('name')
-                            <span class="text-red-500 text-sm">
-                                {{ $message }}
-                            </span>
+                            <div class="flex items-center mt-1 text-red-600">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                <span class="text-sm">{{ $message }}</span>
+                            </div>
                         @enderror
                     </div>
-                    <div class="mb-4">
-                        <label class="block font-bold mb-2">Email</label>
+
+                    <!-- Email -->
+                    <div class="space-y-2">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-envelope text-teal-600 mr-2"></i>
+                            Email <span class="text-red-500 ml-1">*</span>
+                        </label>
                         <input type="email" name="email" value="{{ old('email', $guru->user->email) }}"
-                            class="block w-full p-2 border border-gray-300 rounded-md">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('email') border-red-500 @enderror"
+                            placeholder="Masukkan alamat email">
                         @error('email')
-                            <span class="text-red-500 text-sm">
-                                {{ $message }}
-                            </span>
+                            <div class="flex items-center mt-1 text-red-600">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                <span class="text-sm">{{ $message }}</span>
+                            </div>
                         @enderror
                     </div>
-                    <div class="form-group">
-                        <label for="status">Status Aktif<span class="text-red-500">*</span></label>
-                        <select id="status" name="status">
-                            <option value="Aktif"
-                                {{ old('status', $guru->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="Tidak Aktif"
-                                {{ old('status', $guru->status) == 'Tidak Aktif' ? 'selected' : '' }}>Tidak
-                                Aktif</option>
-                        </select>
+
+                    <!-- Status -->
+                    <div class="space-y-2">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <i class="fas fa-toggle-on text-teal-600 mr-2"></i>
+                            Status Akun <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <div class="relative">
+                            <select name="status"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors appearance-none bg-white @error('status') border-red-500 @enderror">
+                                <option value="Aktif" {{ old('status', $guru->status) == 'Aktif' ? 'selected' : '' }}>
+                                    ✅ Aktif
+                                </option>
+                                <option value="Tidak Aktif"
+                                    {{ old('status', $guru->status) == 'Tidak Aktif' ? 'selected' : '' }}>
+                                    ❌ Tidak Aktif
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
                         @error('status')
-                            <span class="alert-danger">{{ $message }}</span>
+                            <div class="flex items-center mt-1 text-red-600">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                <span class="text-sm">{{ $message }}</span>
+                            </div>
                         @enderror
                     </div>
-                    <!-- Password Field -->
-<div class="mb-4">
-    <label class="block font-bold mb-2">Password</label>
-    <input type="password" name="password"
-        class="block w-full p-2 border border-gray-300 rounded-md">
-    @error('password')
-        <span class="text-red-500 text-sm">{{ $message }}</span>
-    @enderror
-</div>
+                </div>
 
-<!-- Confirm Password Field -->
-<div class="mb-4">
-    <label class="block text-gray-700 font-bold mb-2">Konfirmasi Password<span class="text-red-500">*</span></label>
-    <input type="password" name="password_confirmation"
-        class="w-full border border-gray-300 p-2 rounded-md">
-    @error('password_confirmation')
-        <span class="text-red-500 text-sm">{{ $message }}</span>
-    @enderror
-</div>
+                <!-- Password Section -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-md font-medium text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-key text-teal-600 mr-2"></i>
+                        Ubah Password (Opsional)
+                    </h3>
 
-                    <div class="flex justify-end mt-4">
-                        <button type="submit"
-                            class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                            <span>Simpan</span>
-                            <i class="fas fa-check ml-2"></i>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Password -->
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm font-medium text-gray-700">
+                                <i class="fas fa-lock text-teal-600 mr-2"></i>
+                                Password Baru
+                            </label>
+                            <div class="relative">
+                                <input type="password" name="password" id="password"
+                                    class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('password') border-red-500 @enderror"
+                                    placeholder="Kosongkan jika tidak ingin mengubah">
+                                <button type="button" onclick="togglePassword('password')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-eye" id="password-icon"></i>
+                                </button>
+                            </div>
+                            @error('password')
+                                <div class="flex items-center mt-1 text-red-600">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    <span class="text-sm">{{ $message }}</span>
+                                </div>
+                            @enderror
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm font-medium text-gray-700">
+                                <i class="fas fa-lock text-teal-600 mr-2"></i>
+                                Konfirmasi Password
+                            </label>
+                            <div class="relative">
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                    class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('password_confirmation') border-red-500 @enderror"
+                                    placeholder="Konfirmasi password baru">
+                                <button type="button" onclick="togglePassword('password_confirmation')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-eye" id="password_confirmation-icon"></i>
+                                </button>
+                            </div>
+                            @error('password_confirmation')
+                                <div class="flex items-center mt-1 text-red-600">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    <span class="text-sm">{{ $message }}</span>
+                                </div>
+                            @enderror
+                        </div>
                     </div>
-                </form>                    
-            </div>
-        </main>
+                </div>
+
+                <!-- Action Buttons -->
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-200 space-y-3 sm:space-y-0">
+                    <a href="{{ route('Operator.Guru.index') }}"
+                        class="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+                    <button type="submit"
+                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Kursus
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        function toggleDropdown() {
-            const dropdown = document.getElementById("dropdown-menu");
-            dropdown.classList.toggle("show");
-        }
-    </script>
-</body>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '-icon');
 
-</html>
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Form submission with loading state
+        document.getElementById('editGuruForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.textContent = 'Menyimpan...';
+            submitSpinner.classList.remove('hidden');
+
+            // Validate status change
+            const currentStatus = '{{ $guru->status }}';
+            const newStatus = document.querySelector('select[name="status"]').value;
+
+            if (currentStatus === 'Aktif' && newStatus === 'Tidak Aktif') {
+                if (!confirm('Anda yakin ingin menonaktifkan guru ini? Guru tidak akan bisa login ke sistem.')) {
+                    e.preventDefault();
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Simpan Perubahan';
+                    submitSpinner.classList.add('hidden');
+                    return false;
+                }
+            }
+        });
+
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
+@endsection

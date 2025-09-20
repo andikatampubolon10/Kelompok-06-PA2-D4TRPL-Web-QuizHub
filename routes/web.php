@@ -17,6 +17,7 @@ use App\Http\Controllers\LatihanSoalSoalController;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\SoalController;
+use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\UjianController;
 use App\Http\Controllers\GuruController;
@@ -27,8 +28,11 @@ use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\MateriController;
 use App\Http\Controllers\persentaseController;
 use App\Http\Controllers\ListSiswaController;
+use App\Http\Controllers\TahunAjaranController;
+use App\Models\mata_pelajaran;
+use App\Models\Guru;
 use App\Http\Middleware\CheckOperatorStatus;
-
+use App\Models\TahunAjaran;
 
 Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login.store');
@@ -54,6 +58,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('Guru')->name('Guru.')->middleware('role:Guru')->group(function () {
+        Route::get('/Guru/Course/{id_guru}', [CourseController::class, 'index'])->name('Guru.Course.index');
         Route::resource('/Course', CourseController::class);
         Route::resource('/Siswa', SiswaController::class);
         Route::resource('/Latihan', LatihanSoalController::class);
@@ -80,9 +85,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/reset-recalculate-nilai/{id_kursus}', [ListSiswaController::class, 'resetAndRecalculateNilai']);
     });
 
-    // Route untuk Operator
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
         Route::resource('/Guru', GuruController::class);
+        Route::get('/Course/beranda', [CourseController::class, 'beranda'])->name('Course.beranda');
+        Route::resource('/Course', CourseController::class);
+        Route::resource('semester', SemesterController::class);
         Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload');
         Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import');
 
@@ -90,6 +97,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/Siswa/upload', [SiswaController::class, 'upload'])->name('Siswa.upload');
         Route::post('/Siswa/import', [SiswaController::class, 'import'])->name('Siswa.import');
 
+        // Gunakan resource untuk TahunAjaran, create sudah otomatis ada
+        Route::resource('/TahunAjaran', TahunAjaranController::class);
+
+        // Route untuk Kelas dan Kurikulum
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
@@ -110,7 +121,23 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/clear-cache', function () {
+    Artisan::call('optimize:clear');
+    return 'Cache cleared!';
+});
+
+
 // Route untuk logout
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+Route::get('/get-guru/{mata_pelajaran}', function ($mata_pelajaran) {
+    // Menemukan mata pelajaran berdasarkan ID
+    $mataPelajaran = mata_pelajaran::find($mata_pelajaran);
+
+    // Mendapatkan guru yang mengajar mata pelajaran tersebut
+    $gurus = $mataPelajaran ? $mataPelajaran->gurus : [];
+
+    // Mengembalikan data guru dalam format JSON
+    return response()->json(['gurus' => $gurus]);
+});
 require __DIR__ . '/auth.php';

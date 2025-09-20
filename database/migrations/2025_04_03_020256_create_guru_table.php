@@ -29,8 +29,9 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        Schema::dropIfExists('gurus');
-    }
+   public function down(): void
+{
+    Schema::dropIfExists('guru');  // Perbaiki nama tabel menjadi 'guru'
+}
+
 };

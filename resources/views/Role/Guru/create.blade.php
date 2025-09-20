@@ -267,13 +267,43 @@
                 padding: 15px 0;
             }
         }
+         /* Breadcrumb Styling */
+        .breadcrumb {
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .breadcrumb-item a {
+            color: #00bfae;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #004d40;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: #00796b;
+        }
+
+        .alert-danger {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
 <body>
     <!-- Header -->
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid" style="max-height: 55px;">
+        <img src="{{ asset('images/logo2.png') }}" alt="Logo" class="img-fluid" style="max-height: 55px;">
 
         <div class="relative dropdown">
             <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
@@ -314,16 +344,33 @@
         </div>
 
         <div class="main-content">
-            <div class="bg-white p-6 rounded-lg shadow-md h-full w-full">
-                <nav class="text-gray-600 text-lg mb-4" aria-label="Breadcrumb">
+         
+                {{-- <nav class="text-gray-600 text-lg mb-4" aria-label="Breadcrumb">
                     <ol class="list-reset flex">
                         <li><a href="{{ route('Guru.Course.index') }}" class="text-blue-600 hover:underline">Course</a>
                         </li>
                         <li><span class="mx-2">/</span></li>
-                        <li><a href=""
-                                class="text-blue-600 hover:underline">Buat Kursus</a></li>
+                        <li><a href=""class="text-blue-600 hover:underline">Buat Kursus</a></li>
                     </ol>
-                </nav>
+                </nav> --}}
+                               <!-- Breadcrumb -->
+            {{-- <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                       <li><a href="{{ route('Guru.Course.index') }}" class="text-blue-600 hover:underline">Course</a>
+                        </li>
+                        <li><span class="mx-2">/</span></li>
+                        <li><a href=""class="text-blue-600 hover:underline">Buat Kursus</a></li>
+                </ol>
+            </nav> --}}
+                       <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('Guru.Course.index') }}">Kursus</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Tambah Kursus</li>
+                </ol>
+            </nav>
+               <div class="bg-white p-6 rounded-lg shadow-md h-full w-full">
+
                 <form action="{{ route('Guru.Course.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 

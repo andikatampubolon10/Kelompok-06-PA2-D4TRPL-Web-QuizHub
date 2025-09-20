@@ -14,11 +14,12 @@ class kurikulum extends Model
     protected $fillable = [
         'id_kurikulum',
         'nama_kurikulum',
+        'status',
         'id_operator',
     ];
 
     public function operator(){
-        return $this->belongsTo(operator::class, 'id_operator');
+        return $this->belongsTo(Operator::class, 'id_operator');
     }
 
     public function kurikulum_siswa(){
@@ -27,5 +28,5 @@ class kurikulum extends Model
 
     public function mata_pelajaran(){
         return $this->hasMany(mata_pelajaran::class);
-    }
+}
 }

@@ -1,356 +1,141 @@
-<html lang="id">
+@extends('layouts.admin-layout')
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <title>
-        QUIZHUB - Admin
-    </title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
+@section('title', 'Tambah Akun')
 
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom, #00796b, #00bfae, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #00796b;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Form Container */
-        .form-container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            max-width: auto;
-            margin: 0 auto;
-        }
-
-        /* Form Elements */
-        .form-container label {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            display: inline-block;
-        }
-
-        .form-container input[type="text"],
-        .form-container input[type="email"],
-        .form-container input[type="password"],
-        .form-container input[type="number"] {
-            width: 100%;
-            padding: 12px 18px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #333;
-            background-color: #f9f9f9;
-            margin-bottom: 20px;
-            transition: border 0.3s ease;
-        }
-
-        .form-container input[type="text"]:focus,
-        .form-container input[type="email"]:focus,
-        .form-container input[type="password"]:focus,
-        .form-container input[type="number"]:focus {
-            border-color: #00bfae;
-            outline: none;
-        }
-
-        .form-container button[type="submit"]:hover {
-            background-color: #00796b;
-        }
-
-        /* Breadcrumb Styling */
-        .breadcrumb {
-            background-color: #ffffff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .breadcrumb-item a {
-            color: #00bfae;
-            text-decoration: none;
-        }
-
-        .breadcrumb-item a:hover {
-            color: #004d40;
-            text-decoration: underline;
-        }
-
-        .breadcrumb-item.active {
-            color: #00796b;
-        }
-
-        .alert-danger {
-            color: #e74c3c;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-
-
-<!-- Header -->
-<div class="header">
-    <h1 class="text-2xl font-bold text-white">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10">
-    </h1>
-
-    <div class="relative dropdown">
-        <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-            <div class="flex flex-col items-center">
-                <span class="text-white">Admin</span>
-
+@section('content')
+    <!-- Additional Info Section -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+        <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
             </div>
-            <img alt="Profile picture" class="rounded-full ml-4" height="50"
-                src="https://storage.googleapis.com/a1aa/image/sG3g-w8cayIo0nXWyycQx8dmzPb0_0-Zc6iv6Fls36s.jpg"
-                width="50">
-        </div>
-        <div id="dropdown-menu" class="dropdown-menu">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left">Logout</button>
-            </form>
+            <div>
+                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Bisnis</h4>
+                <ul class="text-xs text-blue-700 space-y-1">
+                    <li>• Masukkan Nama Sekolah</li>
+                    <li>• Masukkan Jumlah Pendapatan</li>
+                    <li>• Masukkan Surat Perjanjian dalam bentuk PDF/Word</li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
+    <!-- Form Container -->
+    <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
 
+        <form id="form-bisnis" action="{{ route('Admin.Bisnis.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
+            <!-- Nama Sekolah Field -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Nama Sekolah<span class="text-red-500">*</span></label>
+                <input type="text" name="nama_sekolah" class="w-full border border-gray-400 p-2 rounded-lg" >
+                @error('nama_sekolah')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
 
-<div class="flex flex-col md:flex-row">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <ul>
-            <li class="mb-4">
-                <a href="{{ route('Admin.Akun.index') }}"
-                    class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                    <i class="fas fa-calendar-alt text-white mr-2"></i> Operator
-                </a>
-            </li>
-            <li class="mb-4">
-                <a href="{{ route('Admin.Bisnis.index') }}"
-                    class="flex items-center text-black shadow p-2 rounded-lg hover:bg-blue-500">
-                    <i class="fas fa-book text-black mr-2"></i> Bisnis
-                </a>
-            </li>
-        </ul>
-    </div>
+            <!-- Jumlah Pendapatan Field -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Jumlah Pendapatan<span class="text-red-500">*</span></label>
+                <input type="number" name="jumlah_pendapatan" class="w-full border border-gray-400 p-2 rounded-lg">
+                @error('jumlah_pendapatan')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('Admin.Bisnis.index') }}">Akun</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Tambah Akun</li>
-            </ol>
-        </nav>
-        <div class="form-container">
-            <h2 class="text-xl font-bold mb-4 text-blue-600">Tambah Bisnis</h2>
-            <form action="{{ route('Admin.Bisnis.store') }}" method="POST" enctype="multipart/form-data"
-                class="space-y-6">
-                @csrf
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Nama Sekolah<span
-                            class="text-red-500">*</span></label>
-                    <input type="text" name="nama_sekolah" class="w-full border border-gray-400 p-2 rounded-lg">
-                    @error('nama_sekolah')
-                        <span class="alert-danger">{{ $message }}</span>
-                    @enderror
+            <!-- Perjanjian Field -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Perjanjian (PDF/Word) <span class="text-red-500">*</span></label>
+                <input type="file" name="perjanjian" class="w-full border border-gray-400 p-2 rounded-lg" accept=".pdf,.doc,.docx">
+                @error('perjanjian')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Semua field yang bertanda (*) wajib diisi</span>
                 </div>
 
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Jumlah Pendapatan<span
-                            class="text-red-500">*</span></label>
-                    <input type="text" name="jumlah_pendapatan" class="w-full border border-gray-400 p-2 rounded-lg">
-                    @error('jumlah_pendapatan')
-                        <span class="alert-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <a href="{{ route('Admin.Bisnis.index') }}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
 
-                <!-- Perjanjian file upload -->
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Perjanjian (PDF/Word) <span
-                            class="text-red-500">*</span></label>
-                    <input type="file" name="perjanjian" class="w-full border border-gray-400 p-2 rounded-lg">
-                    @error('perjanjian')
-                        <span class="alert-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit"
-                        class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                        <span>Simpan</span>
-                        <i class="fas fa-check ml-2"></i>
+                    <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
-</div>
 
+    <!-- Success/Error Messages -->
+    @if (session('success'))
+        <div id="successAlert" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
+            <i class="fas fa-check-circle text-xl"></i>
+            <div>
+                <p class="font-semibold">Berhasil!</p>
+                <p class="text-sm">{{ session('success') }}</p>
+            </div>
+            <button onclick="closeAlert('successAlert')" class="ml-4 text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div id="errorAlert" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
+            <i class="fas fa-exclamation-circle text-xl"></i>
+            <div>
+                <p class="font-semibold">Error!</p>
+                <p class="text-sm">{{ session('error') }}</p>
+            </div>
+            <button onclick="closeAlert('errorAlert')" class="ml-4 text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    <script>
+        function closeAlert(alertId) {
+            document.getElementById(alertId).style.display = 'none';
+        }
+
+        // Auto close alerts after 5 seconds
+        setTimeout(() => {
+            const successAlert = document.getElementById('successAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            if (successAlert) successAlert.style.display = 'none';
+            if (errorAlert) errorAlert.style.display = 'none';
+        }, 5000);
+    </script>
+    
+    @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Function to toggle dropdown visibility
-    function toggleDropdown() {
-        const dropdown = document.getElementById("dropdown-menu");
-        dropdown.classList.toggle("show");
-    }
-</script>
-</body>
+    document.querySelector('#form-bisnis').addEventListener('submit', function (e) {
+        const namaSekolah = document.querySelector('input[name="nama_sekolah"]').value.trim();
+        const jumlahPendapatan = document.querySelector('input[name="jumlah_pendapatan"]').value.trim();
+        const perjanjian = document.querySelector('input[name="perjanjian"]').value;
 
-</html>
+        if (!namaSekolah || !jumlahPendapatan || !perjanjian) {
+            e.preventDefault(); // Mencegah form terkirim
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Form Tidak Lengkap!',
+                text: 'Semua field yang bertanda * wajib diisi.',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    });
+</script>
+@endsection
+
+@endsection

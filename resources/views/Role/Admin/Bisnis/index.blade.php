@@ -1,347 +1,123 @@
-<html lang="id">
+@extends('layouts.admin-layout')
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <title>
-        QUIZHUB - Admin
-    </title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
+@section('page-title', 'Admin')
+@section('page-description', 'Kelola Bisnis')
 
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom, #00796b, #00bfae, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #00796b;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-    </style>
-</head>
-
-
-<!-- Header -->
-<div class="header">
-    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid" style="max-height: 55px;">
-
-    <div class="relative dropdown">
-        <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-            <div class="flex flex-col items-center">
-                <span class="text-white">Admin</span>
-
+@section('content')
+    <div class="space-y-6">
+      <!-- Main Content Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Daftar Bisnis</h3>
+                        <p class="text-sm text-gray-600 mt-1">Kelola dan atur Bisnis</p>
+                    </div>
+                    <a href="{{ route('Admin.Bisnis.create') }}"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>
+                        Tambah Bisnis
+                    </a>
+                </div>
             </div>
-            <i
-                class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
-        </div>
-        <div id="dropdown-menu" class="dropdown-menu">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-danger w-100">Logout</button>
-            </form>
-        </div>
-    </div>
-</div>
 
 
-
-
-<div class="flex flex-col md:flex-row">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <ul>
-            <li class="mb-4">
-                <a href="{{ route('Admin.Akun.index') }}"
-                    class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                    <i class="fas fa-calendar-alt text-white mr-2"></i> Operator
-                </a>
-            </li>
-            <li class="mb-4">
-                <a href="{{ route('Admin.Bisnis.index') }}"
-                    class="flex items-center text-black shadow p-2 rounded-lg hover:bg-blue-500">
-                    <i class="fas fa-book text-black mr-2"></i> Bisnis
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-
-    <div class="main-content">
-
-        <div class="flex justify-end mb-4">
-            <a href="{{ route('Admin.Bisnis.create') }}"
-                class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                <i class="fas fa-plus mr-2"></i> Tambahkan
-            </a>
-        </div>
-        <h2 class="text-xl font-bold mb-4 text-blue-600">Informasi Bisnis</h2>
+           <!-- Content -->
+            <div class="p-6">
         @foreach ($bisnises as $bisnis)
             <section
-                class="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                class="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-6 mb-6">
                 <div class="flex flex-col space-y-2 max-w-xl">
-                    <h2 class="text-2xl font-bold text-teal-700">
+                    <h3 class="text-2xl font-bold text-teal-700">
                         {{ $bisnis['nama_sekolah'] }}
-                    </h2>
+                    </h3>
                     <p class="text-gray-700 text-base">
-                        Jumlah Pendapatan:
+                        Jumlah Pendapatan: 
                         <span class="font-semibold text-black">
                             {{ $bisnis->jumlah_pendapatan }}
                         </span>
                     </p>
-
-
                 </div>
-                <div class="flex space-x-6">
-                    <form action="{{ route('Admin.Bisnis.destroy', $bisnis->id_bisnis) }}" class="flex items-center"
-                        method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');">
+                <div class="flex space-x-4">
+                    <!-- Delete button -->
+                    <form action="{{ route('Admin.Bisnis.destroy', $bisnis->id_bisnis) }}" method="POST" class="form-hapus">
                         @csrf
                         @method('DELETE')
-                        <button
-                            class="flex items-center space-x-2 text-red-600 hover:text-red-500 font-semibold transition-transform duration-300 transform hover:scale-110"
-                            type="submit">
-                            <i class="fas fa-trash-alt text-lg">
-                            </i>
-                            <span>
-                                Hapus
-                            </span>
+                        <button type="submit"
+                            class="flex items-center space-x-2 text-red-600 hover:text-red-500 font-semibold transition-transform duration-300 transform hover:scale-110">
+                            <i class="fas fa-trash-alt text-lg"></i>
+                            <span>Hapus</span>
                         </button>
                     </form>
-                    <form action="{{ route('Admin.Bisnis.edit', $bisnis->id_bisnis) }}" class="flex items-center"
-                        method="GET">
-                        <button class="text-blue-500 flex items-center hover:text-blue-400">
-                            <i class="fas fa-edit text-lg">
-                            </i>
-                            <span>
-                                Edit
-                            </span>
+
+                    <!-- Edit button -->
+                    <form action="{{ route('Admin.Bisnis.edit', $bisnis->id_bisnis) }}" method="GET">
+                        <button type="submit"
+                            class="text-blue-600 flex items-center hover:text-blue-500 font-semibold transition-transform duration-300 transform hover:scale-110">
+                            <i class="fas fa-edit text-lg"></i>
+                            <span>Edit</span>
                         </button>
                     </form>
                 </div>
             </section>
-        @endforeach
-        </main>
-    </div>
-     <!-- Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="successModalLabel">Berhasil Menambahkan Data</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @if (session('success'))
-                        {{ session('success') }}
-                    @endif
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                </div>
+           @endforeach
+          
             </div>
         </div>
     </div>
 
-    <!-- JavaScript to show modal if success message exists and auto-close after 3 seconds -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Success Modal -->
+    @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Menampilkan modal otomatis jika session success ada
-        @if (session('success'))
-            var myModal = new bootstrap.Modal(document.getElementById('successModal'));
-            myModal.show();
+        document.querySelectorAll('.form-hapus').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop submit default
 
-            // Menutup modal setelah 3 detik
-            setTimeout(function() {
-                myModal.hide();
-            }, 3000); // 3000ms = 3 detik
-        @endif
-        // Dropdown toggle
-        const userBtn = document.getElementById('userBtn');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-
-        userBtn.addEventListener('click', () => {
-            const isExpanded = userBtn.getAttribute('aria-expanded') === 'true';
-            userBtn.setAttribute('aria-expanded', !isExpanded);
-            dropdownMenu.classList.toggle('hidden');
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data bisnis akan dihapus secara permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit(); // Lanjutkan submit jika dikonfirmasi
+                }
+            });
         });
-
-        // Close dropdown if clicked outside
-        window.addEventListener('click', (e) => {
-            if (!userBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
-                userBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-
-        // Modal logic
-        const successModal = document.getElementById('successModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const closeModalBtnFooter = document.getElementById('closeModalBtnFooter');
-
-        function closeModal() {
-            successModal.classList.add('hidden');
-        }
-
-        closeModalBtn?.addEventListener('click', closeModal);
-        closeModalBtnFooter?.addEventListener('click', closeModal);
-
-        // Show modal if session success exists
-        @if (session('success'))
-            successModal.classList.remove('hidden');
-            setTimeout(() => {
-                closeModal();
-            }, 3000);
-        @endif
-
-        // Function to toggle dropdown visibility
-        function toggleDropdown() {
-            const dropdown = document.getElementById("dropdown-menu");
-            dropdown.classList.toggle("show");
-        }
+    });
+        
     </script>
-    </body>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 3000
+            });
+        </script>
+    @endif
 
-</html>
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                showConfirmButton: false,
+                timer: 3000
+            });
+        </script>
+    @endif
+@endsection
+
+@endsection
+
+

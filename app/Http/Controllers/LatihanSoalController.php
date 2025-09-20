@@ -51,63 +51,53 @@ class LatihanSoalController extends Controller
     }
 
 
-    public function store(Request $request)
-    {
-        // Log the request data to check if everything is correct
-        Log::info('Request data:', $request->all());
+public function store(Request $request)
+{
+    // Log the request data to check if everything is correct
+    Log::info('Request data:', $request->all());
 
-        // Validasi input
-        $validated = $request->validate([
-            'Topik' => 'required|string|max:255',
-            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
-            'id_mata_pelajaran' => 'required|exists:mata_pelajaran,id_mata_pelajaran',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'acak' => 'required|in:Aktif,Tidak Aktif',
-            'status_jawaban' => 'required|in:Aktif,Tidak Aktif',
-            'grade' => 'required|integer|min:100|max:100',
-        ],[
-            'Topik.required' => 'Topik harus diisi',
-            'id_kurikulum.required' => 'Kurikulum Harus dipilih',
-            'id_mata_pelajaran' => 'Mata Pelajaran Harus dipilih',
-            'id_kelas' => 'Kelas harus dipilih',
-            'acak' => 'Pilih acak soal',
-            'status_jawaban' => 'Pilih status jawaban',
-            'grade' => 'Grade min 100 max 100'
+    // Validasi input
+    $validated = $request->validate([
+        'Topik' => 'required|string|max:255',
+        'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
+        'id_mata_pelajaran' => 'required|exists:mata_pelajaran,id_mata_pelajaran',
+        'id_kelas' => 'required|exists:kelas,id_kelas',
+        // Hapus validasi untuk 'acak', 'status_jawaban', dan 'grade' karena sudah otomatis
+    ], [
+        'Topik.required' => 'Topik harus diisi',
+        'id_kurikulum.required' => 'Kurikulum Harus dipilih',
+        'id_mata_pelajaran' => 'Mata Pelajaran Harus dipilih',
+        'id_kelas' => 'Kelas harus dipilih',
+    ]);
 
-        ]);
+    // Log the validated data
+    Log::info('Validated data:', $validated);
 
-        // Log the validated data
-        Log::info('Validated data:', $validated);
+    $idUser   = auth()->user()->id;
+    $guru = guru::where('id_user', $idUser)->first();
 
-        $idUser   = auth()->user()->id;
-        $guru = guru::where('id_user', $idUser)->first();
-
-        if (!$guru) {
-            throw new \Exception('Guru tidak ditemukan untuk pengguna yang sedang login.');
-        }
-        // Menyimpan data latihan
-        $latihan = latihan::create([
-            'Topik' => $validated['Topik'],
-            'acak' => $validated['acak'],
-            'status_jawaban' => $validated['status_jawaban'],
-            'grade' => $validated['grade'],
-            'id_guru' => $guru->id_guru,
-            'id_kurikulum' => $validated['id_kurikulum'],
-            'id_mata_pelajaran' => $validated['id_mata_pelajaran'],
-            'id_kelas' => $validated['id_kelas'],
-        ]);
-
-        // Log the created `latihan` object
-        Log::info('Latihan created:', ['id_latihan' => $latihan->id]);
-
-        // Redirect atau kembali dengan pesan sukses
-        return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan berhasil dibuat.');
+    if (!$guru) {
+        throw new \Exception('Guru tidak ditemukan untuk pengguna yang sedang login.');
     }
 
-    public function show(latihan $latihanSoal)
-    {
-        return view('Role.Guru.Latihan.index', compact('mataPelajarans', 'mapel', 'kurikulums', 'kelas', 'user'));
-    }
+    // Menyimpan data latihan dengan nilai default
+    $latihan = latihan::create([
+        'Topik' => $validated['Topik'],
+        'acak' => 'Aktif',  // Nilai default
+        'status_jawaban' => 'Aktif',  // Nilai default
+        'grade' => 100,  // Nilai default
+        'id_guru' => $guru->id_guru,
+        'id_kurikulum' => $validated['id_kurikulum'],
+        'id_mata_pelajaran' => $validated['id_mata_pelajaran'],
+        'id_kelas' => $validated['id_kelas'],
+    ]);
+
+    // Log the created latihan object
+    Log::info('Latihan created:', ['id_latihan' => $latihan->id]);
+
+    // Redirect atau kembali dengan pesan sukses
+    return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan berhasil dibuat.');
+}
 
     public function edit(Request $request, $id_latihan)
     {
@@ -130,32 +120,48 @@ class LatihanSoalController extends Controller
     }
 
 
-    public function update(Request $request, $id_latihan)
-    {
-        $validated = $request->validate([
-            'Topik' => 'required|string|max:255',
-            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
-            'id_mata_pelajaran' => 'required|exists:mata_pelajaran,id_mata_pelajaran',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'acak' => 'required|in:Aktif,Tidak Aktif',
-            'status_jawaban' => 'required|in:Aktif,Tidak Aktif',
-            'grade' => 'required|integer|min:100|max:100',
-        ]);
+   public function update(Request $request, $id_latihan)
+{
+    $validated = $request->validate([
+        'Topik' => 'required|string|max:255',
+        'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
+        'id_mata_pelajaran' => 'required|exists:mata_pelajaran,id_mata_pelajaran',
+        'id_kelas' => 'required|exists:kelas,id_kelas',
+        // Hapus validasi untuk 'acak', 'status_jawaban', dan 'grade' karena sudah otomatis
+    ]);
 
-        $latihan = latihan::findOrFail($id_latihan);
-        $latihan->update($validated);
+    $latihan = latihan::findOrFail($id_latihan);
 
-        return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan berhasil diperbarui.');
+    // Set nilai default jika tidak ada perubahan
+    $latihan->update([
+        'Topik' => $validated['Topik'],
+        'id_kurikulum' => $validated['id_kurikulum'],
+        'id_mata_pelajaran' => $validated['id_mata_pelajaran'],
+        'id_kelas' => $validated['id_kelas'],
+        'acak' => $latihan->acak ?: 'Aktif',  // Set default 'Aktif' jika kosong
+        'status_jawaban' => $latihan->status_jawaban ?: 'Aktif',  // Set default 'Aktif' jika kosong
+        'grade' => $latihan->grade ?: 100,  // Set default 100 jika kosong
+    ]);
+
+    return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan berhasil diperbarui.');
+}
+
+   public function destroy($id_latihan)
+{
+    // Find the latihan by its ID
+    $latihanSoal = latihan::findOrFail($id_latihan);
+
+    // Check if the latihan has an associated image and delete it
+    if ($latihanSoal->Image) {
+        // Delete the image from the storage
+        Storage::disk('public')->delete($latihanSoal->Image);
     }
 
-    public function destroy(latihan $latihanSoal)
-    {
-        if ($latihanSoal->Image) {
-            Storage::disk('public')->delete($latihanSoal->Image);
-        }
+    // Delete the latihan record
+    $latihanSoal->delete();
 
-        $latihanSoal->delete();
+    // Redirect back to the index page with a success message
+    return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan Soal deleted successfully.');
+}
 
-        return redirect()->route('Guru.Latihan.index')->with('success', 'Latihan Soal deleted successfully.');
-    }
 }

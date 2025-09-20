@@ -1,374 +1,223 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.operator-layout')
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator | Kelas</title>
+@section('title', 'Daftar Kelas')
+@section('page-title', 'Daftar Kelas')
+@section('page-description', 'Kelola informasi kelas dan ruang belajar')
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-    <style>
-        /* General Styles */
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
-
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            /* border-radius: 0 0 20px 20px; */
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom, #00796b, #29baa9, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #5eaba2;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button Styles */
-        .btn-add-top-right {
-            position: absolute;
-            top: 100px;
-            right: 30px;
-            background-color: #00bfae;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            border: none;
-            transition: background-color 0.3s ease;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-add-top-right:hover {
-            background-color: #00796b;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        table th,
-        table td {
-            padding: 18px 25px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #14A098;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        table tr:hover {
-            background-color: #f1f1f1;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-
-        table td {
-            vertical-align: middle;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                top: 0;
-                left: 0;
-                height: auto;
-                border-radius: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 70px 20px 20px;
-            }
-
-            .btn-add-top-right {
-                width: 100%;
-                padding: 15px 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid" style="max-height: 55px;">
-
-        <div class="relative dropdown">
-            <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-                <div class="flex flex-col items-center">
-                    <span class="text-white">Welcome, Operator</span>
-                    <span class="text-white font-semibold">{{ $user->name }}</span>
+@section('content')
+    <div class="space-y-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-school text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Kelas</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ count($kelas) }}</p>
+                    </div>
                 </div>
-                <i
-                    class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
             </div>
-            <div id="dropdown-menu" class="dropdown-menu">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-danger w-100">Logout</button>
-                </form>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chalkboard text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Ruang Tersedia</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ count($kelas) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        @if (session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md shadow-sm" role="alert">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">{{ session('error') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-md shadow-sm"
+                role="alert">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Main Content Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Informasi Kelas</h3>
+                        <p class="text-sm text-gray-600 mt-1">Kelola informasi kelas dan ruang belajar</p>
+                    </div>
+                    <a href="{{ route('Operator.Kelas.create') }}"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>
+                        Tambah Kelas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                @if (count($kelas) > 0)
+                    <div class="space-y-4">
+                        @foreach ($kelas as $kelases)
+                            <div
+                                class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-green-50 hover:to-emerald-50 hover:border-green-200">
+                                <div
+                                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                                    <div class="flex items-center space-x-4">
+                                        <!-- Icon Container -->
+                                        <div
+                                            class="w-16 h-16 bg-gradient-to-br from-blue-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                            <i class="fas fa-school text-white text-2xl"></i>
+                                        </div>
+
+                                        <!-- Class Name -->
+                                        <div class="flex-1">
+                                            <h4 class="text-xl font-semibold text-gray-900 mb-2 text-center">
+                                                {{ $kelases->nama_kelas }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <a href="{{ route('Operator.Kelas.edit', $kelases->id_kelas) }}"
+                                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors group">
+                                            <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"></i>
+                                            Edit
+                                        </a>
+                                        <form action="{{ route('Operator.Kelas.destroy', $kelases->id_kelas) }}"
+                                            method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" onclick="confirmDelete(this)"
+                                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-12">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-school text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada kelas</h3>
+                        <p class="text-gray-600 mb-6">Mulai dengan menambahkan kelas pertama Anda.</p>
+                        <a href="{{ route('Operator.Kelas.create') }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Kelas
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <ul>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kurikulum.index') }}"
-                        class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-calendar-alt text-white mr-2"></i> Kurikulum
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}"
-                        class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-book text-white mr-2"></i> Mata Pelajaran
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kelas.index') }}"
-                        class="flex items-center text-black p-2 rounded-lg shadow hover:bg-blue-500">
-                        <i class="fas fa-home text-black mr-2"></i> Kelas
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Guru.index') }}"
-                        class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-chalkboard-teacher text-white mr-2"></i> Daftar Guru
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Siswa.index') }}"
-                        class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-user-graduate text-white mr-2"></i> Daftar Siswa
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="flex justify-end mb-4">
-                <a href="{{ route('Operator.Kelas.create') }}"
-                    class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                    <i class="fas fa-plus mr-2"></i> Tambahkan
-                </a>
-            </div>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
-                <h1 class="text-lg font-bold mb-4 text-blue-600">Informasi Kelas</h1>
-                <div class="space-y-4">
-                    @foreach ($kelas as $kelases)
-                        <div
-                            class="bg-gray-100 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
-                            <h2 class="text-2xl font-bold text-teal-700">
-                                {{ $kelases->nama_kelas }}
-                            </h2>
-                            <a href="{{ route('Operator.Kelas.edit', $kelases->id_kelas) }}"
-                                class="text-blue-500 flex items-center hover:text-blue-400 hover:shadow-lg hover:scale-105 transition-all duration-300">
-                                <i class="fas fa-pen mr-1"></i> Edit
-                            </a>
-                        </div>
-                    @endforeach
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Hapus</h3>
+                        <p class="text-sm text-gray-600">Apakah Anda yakin ingin menghapus kelas ini? Semua data terkait
+                            juga akan dihapus.</p>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeDeleteModal()"
+                        class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        Batal
+                    </button>
+                    <button id="confirmDeleteBtn"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        Hapus
+                    </button>
                 </div>
             </div>
         </div>
-        <!-- Modal -->
-        <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel">Berhasil Menambahkan Data</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        @if (session('success'))
-                            {{ session('success') }}
-                        @endif
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    </div>
 
-        <!-- JavaScript to show modal if success message exists and auto-close after 3 seconds -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            // Menampilkan modal otomatis jika session success ada
-            @if (session('success'))
-                var myModal = new bootstrap.Modal(document.getElementById('successModal'));
-                myModal.show();
+    <script>
+        // Delete confirmation functions
+        let deleteForm = null;
 
-                // Menutup modal setelah 3 detik
-                setTimeout(function() {
-                    myModal.hide();
-                }, 3000); // 3000ms = 3 detik
-            @endif
+        function confirmDelete(button) {
+            deleteForm = button.closest('form');
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
 
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            deleteForm = null;
+        }
 
-            // Function to toggle dropdown visibility
-            function toggleDropdown() {
-                const dropdown = document.getElementById("dropdown-menu");
-                dropdown.classList.toggle("show");
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (deleteForm) {
+                deleteForm.submit();
             }
-        </script>
-</body>
+        });
 
-</html>
+        // Show success message if exists
+        @if (session('success'))
+            // Auto-hide success message after 5 seconds
+            setTimeout(function() {
+                const successAlert = document.querySelector('.bg-green-100');
+                if (successAlert) {
+                    successAlert.style.transition = 'opacity 0.5s ease-out';
+                    successAlert.style.opacity = '0';
+                    setTimeout(() => successAlert.remove(), 500);
+                }
+            }, 5000);
+        @endif
+
+        // Add hover effects and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const classItems = document.querySelectorAll('.class-item');
+
+            classItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+@endsection

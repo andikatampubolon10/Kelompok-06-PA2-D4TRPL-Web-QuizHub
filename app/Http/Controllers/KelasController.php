@@ -8,14 +8,20 @@ use Illuminate\Http\Request;
 
 class KelasController extends Controller
 {
-    public function index()
+ public function index()
     {
-        $kelas = kelas::with('operator')->get();
         $user = auth()->user();
 
         if (!$user) {
             return redirect()->route('login');
         }
+
+        $operator = Operator::where('id_user', $user->id)->first();
+
+        $kelas = Kelas::where('id_operator', $operator->id_operator)
+            ->with('operator')  
+            ->get();
+
         return view('Role.Operator.Kelas.index', compact('kelas', 'user'));
     }
 

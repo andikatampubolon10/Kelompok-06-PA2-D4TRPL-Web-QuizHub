@@ -16,12 +16,15 @@ class PersentaseController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $courses = kursus::all(); // Ambil semua kursus, sesuaikan dengan query yang Anda butuhkan
+
+        $guru = $user->guru; // This will automatically load the guru relationship
+
+        $courses = Kursus::where('id_guru', $guru->id_guru)->get();
 
         $persentases = persentase::with(['kursus', 'tipeUjian'])->get();
 
         // Kirim variabel 'courses' dan 'persentases' ke view
-        return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user'));
+        return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user', 'guru'));
     }
 
     // Menampilkan halaman create
@@ -36,7 +39,7 @@ class PersentaseController extends Controller
 
         $id_kursus = $request->query('id_kursus');
 
-        $kursus = kursus::where('id_guru', $guru->id_guru)->get();
+        $kursus = Kursus::where('id_guru', $guru->id_guru)->get();
 
         $tipeUjian = tipe_ujian::all();
         $tipePersentase = tipe_persentase::all();

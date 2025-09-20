@@ -10,12 +10,32 @@ class KurikulumController extends Controller
 {
     public function index()
     {
-        $kurikulums = kurikulum::with('operator')->get();
         $user = auth()->user();
+
         if (!$user) {
             return redirect()->route('login');
         }
-        return view('Role.Operator.Kurikulum.index', compact('kurikulums', 'user'));
+
+        $operator = $user->operator;
+
+        if (!$operator) {
+            return redirect()->back()->withErrors('User tidak memiliki data operator.');
+        }
+
+        $operatorId = $operator->id_operator;
+
+        $kurikulumAktif = Kurikulum::where('Status', 'Aktif')
+            ->where('id_operator', $operatorId)
+            ->first();
+
+        // Jika tidak ada kurikulum aktif, tetapkan null atau default value
+        if (!$kurikulumAktif) {
+            $kurikulumAktif = null; // atau Anda bisa set default, misalnya: 'Belum ada kurikulum'
+        }
+
+        $kurikulums = Kurikulum::where('id_operator', $operatorId)->get();
+
+        return view('Role.Operator.Kurikulum.index', compact('kurikulums', 'kurikulumAktif', 'user'));
     }
 
     public function create()
@@ -25,13 +45,13 @@ class KurikulumController extends Controller
         if (!$user) {
             return redirect()->route('login');
         }
-        return view('Role.Operator.Kurikulum.create', compact('operators','user'));
+        return view('Role.Operator.Kurikulum.create', compact('operators', 'user'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_kurikulum' => 'required|string|max:20|unique:kurikulum', // Make sure the curriculum name is unique
+            'nama_kurikulum' => 'required|string|max:20|', // Make sure the curriculum name is unique
         ], [
             'nama_kurikulum.required' => 'Nama kurikulum harus diisi.', // Custom message for 'required'
             'nama_kurikulum.string' => 'Nama kurikulum harus berupa teks.', // Custom message for 'string'
@@ -54,7 +74,7 @@ class KurikulumController extends Controller
     {
         $kurikulum = kurikulum::with('operator')->findOrFail($id);
         $operator = Operator::all();
-        return view('Role.Operator.Kurikulum.index', compact('kurikulum','operator'));
+        return view('Role.Operator.Kurikulum.index', compact('kurikulum', 'operator'));
     }
 
     public function edit(string $id)

@@ -9,20 +9,19 @@ use Illuminate\Support\Facades\Log;
 class BisnisController extends Controller
 {
     // Show all business records
-    public function index()
+     public function index()
     {
-        $user = auth()->user();
-        $bisnises = bisnis::all(); // Mengambil semua data bisnis dari database
-        return view('Role.Admin.Bisnis.index', compact('bisnises','user'));
+        $bisnises = Bisnis::all(); // Mengambil semua data bisnis dari database
+        return view('Role.Admin.Bisnis.index', compact('bisnises'));
     }
 
     // Show the form for creating a new business record
     public function create()
     {
-                $user = auth()->user();
-        return view('Role.Admin.Bisnis.create','user');
+        return view('Role.Admin.Bisnis.create');
     }
 
+    // Store a newly created business record in storage
     public function store(Request $request)
     {
         // Validate the input
@@ -46,7 +45,7 @@ class BisnisController extends Controller
             );
 
             // Create the business record with the file path
-            bisnis::create([
+            Bisnis::create([
                 'nama_sekolah' => $request->nama_sekolah,
                 'jumlah_pendapatan' => $request->jumlah_pendapatan,
                 'perjanjian' => $filePath, // Store the file path
@@ -63,9 +62,8 @@ class BisnisController extends Controller
     // Show the form to edit a business record
     public function edit($id_bisnis)
     {
-                $user = auth()->user();
-        $bisnis = bisnis::findOrFail($id_bisnis); // Find the business by its ID
-        return view('Role.Admin.Bisnis.edit', compact('bisnis','user'));
+        $bisnis = Bisnis::findOrFail($id_bisnis); // Find the business by its ID
+        return view('Role.Admin.Bisnis.edit', compact('bisnis'));
     }
 
     // Update the business record
@@ -82,7 +80,7 @@ class BisnisController extends Controller
         ]);
 
         // Find the business record to update
-        $bisnis = bisnis::findOrFail($id_bisnis);
+        $bisnis = Bisnis::findOrFail($id_bisnis);
 
         // Update the business details
         $bisnis->update($request->only(['nama_sekolah', 'jumlah_pendapatan']));
@@ -105,9 +103,9 @@ class BisnisController extends Controller
     // Delete a business record
     public function destroy($id_bisnis)
     {
-        $bisnis = bisnis::findOrFail($id_bisnis); 
-        $bisnis->delete();
+        $bisnis = Bisnis::findOrFail($id_bisnis); // Find the business by its ID
+        $bisnis->delete(); // Delete the business record
 
         return redirect()->route('Admin.Bisnis.index')->with('success', 'Bisnis berhasil dihapus.');
-    }
+}
 }

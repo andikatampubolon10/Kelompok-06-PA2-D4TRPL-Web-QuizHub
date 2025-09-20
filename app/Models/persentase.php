@@ -28,6 +28,6 @@ class Persentase extends Model
 
     public function tipeUjian()
     {
-        return $this->belongsTo(Tipe_Ujian::class, 'id_tipe_ujian','id_tipe_ujian');
+        return $this->belongsTo(tipe_ujian::class, 'id_tipe_ujian','id_tipe_ujian');
     }
 }

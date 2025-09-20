@@ -1,433 +1,318 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.operator-layout')
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator | Guru</title>
+@section('title', 'Tambah Guru')
+@section('page-title', 'Tambah Guru')
+@section('page-description', 'Formulir untuk menambahkan guru baru ke dalam sistem')
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        /* General Styles */
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
+@section('content')
+    <div class="space-y-6">
 
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom,#00796b, #00bfae, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-       
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #00796b;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button Styles */
-        .btn-add-top-right {
-                position: absolute;
-                top: 100px;
-            right: 30px;
-            background-color: #00bfae;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            border: none;
-            transition: background-color 0.3s ease;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-add-top-right:hover {
-            background-color: #00796b;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        table th,
-        table td {
-            padding: 18px 25px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #14A098;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        table tr:hover {
-            background-color: #f1f1f1;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-
-        table td {
-            vertical-align: middle;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                top: 0;
-                left: 0;
-                height: auto;
-                border-radius: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 70px 20px 20px;
-            }
-
-            .btn-add-top-right {
-                width: 100%;
-                padding: 15px 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header">
-        <h1 class="text-2xl font-bold text-white">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10">
-        </h1>
-        
-        <div class="relative dropdown">
-            <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-                <div class="flex flex-col items-center">
-                    <span class="text-white">Welcome, Operator</span>
-                    <span class="text-white font-semibold">{{ $user->name }}</span>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-white p-4 rounded-lg shadow-md flex items-center gap-2">
+                <li class="inline-flex items-center">
+                    <a href="{{ route('Operator.Guru.index') }}"
+                        class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Daftar Guru
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Tambah Guru</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+        <!-- Import Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                        <i class="fas fa-upload text-blue-500 mr-2"></i>
+                        Import Data Guru
+                    </h3>
+                    <p class="text-sm text-gray-600">Unggah file Excel untuk menambahkan multiple guru sekaligus</p>
                 </div>
-                <i class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
-            </div>
-            <div id="dropdown-menu" class="dropdown-menu">
-                <form action="{{ route('logout') }}" method="POST">
+
+                <form id="importForm" action="{{ route('Operator.Guru.import') }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
-                    <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left">Logout</button>
+                    <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx,.xls" />
+                    <button type="button" id="importButton"
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
+                        <i class="fas fa-upload mr-2"></i>
+                        Pilih File Excel
+                    </button>
                 </form>
             </div>
-        </div>
-    </div>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <ul>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kurikulum.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-calendar-alt text-white mr-2"></i> Kurikulum
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-book text-white mr-2"></i> Mata Pelajaran
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kelas.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-home text-white mr-2"></i> Kelas
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Guru.index') }}" class="flex items-center text-black p-2 rounded-lg shadow hover:bg-blue-500">
-                        <i class="fas fa-chalkboard-teacher text-black mr-2"></i> Daftar Guru
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Siswa.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-user-graduate text-white mr-2"></i> Daftar Siswa
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-white p-4 rounded-lg shadow-md flex items-center gap-2 mt-8 mb-6">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('Operator.Guru.store') }}"
-                            class="text-teal-500 hover:text-teal-700 font-semibold">Guru</a>
-                    </li>
-                    <li class="breadcrumb-item active text-gray-600" aria-current="page">Tambah Guru</li>
-                </ol>
-            </nav>
-
-            <div class="flex-1 p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <form id="importForm" action="{{ route('Operator.Guru.import') }}" method="POST"
-                        enctype="multipart/form-data" class="flex justify-end mb-4 w-full">
-                        @csrf
-                        <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx, .xls" />
-                        <div class="ml-auto"> <!-- This div will push the button to the right -->
-                            <button type="button" id="importButton"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-400">
-                                <i class="fas fa-upload mr-2"></i> Import File
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md h-full w-full">
-                    <form action="{{ route('Operator.Guru.store') }}" method="POST">
-                        @csrf
-                        <div class="mb-4">
-                            <label class="block font-bold mb-2">NIP</label>
-                            <input type="number" maxlength="20" pattern="\d{20}" name="nip"
-                                class="block w-full p-2 border border-gray-300 rounded-md">
-                            @error('nip')
-                                <span class="alert-danger">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-bold mb-2">Nama Guru</label>
-                            <input type="text" name="name"
-                                class="block w-full p-2 border border-gray-300 rounded-md">
-                            @error('name')
-                                <span class="text-red-500 text-sm">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-bold mb-2">Email</label>
-                            <input type="email" name="email"
-                                class="block w-full p-2 border border-gray-300 rounded-md">
-                            @error('email')
-                                <span class="text-red-500 text-sm">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label for="mata_pelajaran" class="block font-bold mb-2">Mata Pelajaran</label>
-                            <select id="mata_pelajaran" name="mata_pelajaran"
-                                class="block w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                                <option value="">Pilih Mata Pelajaran</option>
-                                @foreach ($mataPelajaran as $mataPelajaran)
-                                    <option value="{{ $mataPelajaran->id_mata_pelajaran }}">
-                                        {{ $mataPelajaran->nama_mata_pelajaran }}</option>
-                                @endforeach
-                            </select>
-                            @error('mata_pelajaran')
-                                <span class="text-red-500 text-sm">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-bold mb-2">Password</label>
-                            <input type="password" name="password"
-                                class="block w-full p-2 border border-gray-300 rounded-md">
-                            @error('password')
-                                <span class="text-red-500 text-sm">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-bold mb-2">Konfirmasi Password<span
-                                    class="text-red-500">*</span></label>
-                            <input type="password" name="password_confirmation"
-                                class="w-full border border-gray-300 p-2 rounded-md">
-                            @error('password_confirmation')
-                                <span class="text-red-500 text-sm">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="flex justify-end mt-4">
-                            <button type="submit"
-                                class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                                <span>Simpan</span>
-                                <i class="fas fa-check ml-2"></i>
-                            </button>
-                        </div>
-                    </form>                    
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            Format file Excel harus memiliki kolom: NIP, Nama, Email, Password
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-        <script>
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
-            const importForm = document.getElementById('importForm');
 
-            document.querySelector('.dropdown').addEventListener('click', function() {
-                this.querySelector('.dropdown-menu').classList.toggle('hidden');
-            });
+        <!-- Form Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                    <i class="fas fa-user-plus text-green-500 mr-2"></i>
+                    Tambah Guru Manual
+                </h3>
+                <p class="text-sm text-gray-600">Isi formulir di bawah untuk menambahkan guru baru</p>
+            </div>
 
-            importButton.addEventListener('click', handleImportButtonClick);
-            fileInput.addEventListener('change', handleFileInputChange);
+            <form action="{{ route('Operator.Guru.store') }}" method="POST" class="space-y-6">
+                @csrf
 
-            function handleImportButtonClick(event) {
-                fileInput.click();
+                <!-- Help Section -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Tips Pengisian Form</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>NIP harus terdiri dari 18 digit angka</li>
+                                    <li>Email harus unik dan belum terdaftar di sistem</li>
+                                    <li>Pilih minimal satu mata pelajaran yang akan diampu</li>
+                                    <li>Kata sandi minimal 8 karakter</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NIP Field -->
+                <div>
+                    <label for="nip" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-id-card text-gray-400 mr-1"></i>
+                        NIP <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="nip" name="nip" maxlength="18" value="{{ old('nip') }}"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 18); validateNIP(this)"
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nip') border-red-500 @enderror"
+                        placeholder="Masukkan NIP (18 digit)">
+
+                    @error('nip')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+
+                    <script>
+                        function validateNIP(input) {
+                            const nip = input.value;
+
+                            if (nip.length === 18 && /^\d{18}$/.test(nip)) {
+                                input.setCustomValidity(""); // Clear the error if valid
+                            } else {
+                                input.setCustomValidity("NIP harus terdiri dari 18 digit angka.");
+                            }
+                        }
+                    </script>
+                    <style>
+                        input::-webkit-outer-spin-button,
+                        input::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+
+                        /* Hilangkan spinner di Firefox */
+                        input[type=number] {
+                            -moz-appearance: textfield;
+                        }
+                    </style>
+                    @error('nip')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Nama Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user text-gray-400 mr-1"></i>
+                        Nama Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror"
+                        placeholder="Masukkan nama lengkap guru">
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-envelope text-gray-400 mr-1"></i>
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('email') border-red-500 @enderror"
+                        placeholder="contoh@email.com">
+                    @error('email')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Mata Pelajaran Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-book text-gray-400 mr-1"></i>
+                        Mata Pelajaran <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        @foreach ($mataPelajaran as $mapel)
+                            <div class="flex items-center">
+                                <input type="checkbox" id="mata_pelajaran_{{ $mapel->id_mata_pelajaran }}"
+                                    name="mata_pelajaran[]" value="{{ $mapel->id_mata_pelajaran }}"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    {{ in_array($mapel->id_mata_pelajaran, old('mata_pelajaran', [])) ? 'checked' : '' }}>
+                                <label for="mata_pelajaran_{{ $mapel->id_mata_pelajaran }}"
+                                    class="ml-2 text-sm text-gray-700">
+                                    {{ $mapel->nama_mata_pelajaran }}
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('mata_pelajaran')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock text-gray-400 mr-1"></i>
+                        Kata Sandi <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password') border-red-500 @enderror"
+                            placeholder="Masukkan kata sandi">
+                        <button type="button" onclick="togglePassword('password')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="password-icon" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock text-gray-400 mr-1"></i>
+                        Konfirmasi Kata Sandi <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="password_confirmation" name="password_confirmation"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password_confirmation') border-red-500 @enderror"
+                            placeholder="Ulangi kata sandi">
+                        <button type="button" onclick="togglePassword('password_confirmation')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="password_confirmation-icon" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                        </button>
+                    </div>
+                    @error('password_confirmation')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+                <div
+                    class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0 pt-6 border-t border-gray-100">
+                    <a href="{{ route('Operator.Guru.index') }}"
+                        class="inline-flex items-center px-6 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+                    <div class="flex space-x-3">
+                        <button type="submit"
+                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                            <i class="fas fa-save mr-2"></i>
+                            Simpan Kursus
+                        </button>
+                    </div>
+                </div>
+        </div>
+        </form>
+    </div>
+    </div>
+
+    <script>
+        // Import functionality
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
+        const importForm = document.getElementById('importForm');
+
+        importButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Show loading state
+                importButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengupload...';
+                importButton.disabled = true;
+
+                // Submit form
+                importForm.submit();
             }
+        });
 
-            function handleFileInputChange(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    importForm.submit();
-                }
+        // Password toggle functionality
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '-icon');
+
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-        </script>
-</body>
+        }
 
-</html>
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const checkboxes = document.querySelectorAll('input[name="mata_pelajaran[]"]:checked');
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                alert('Pilih minimal satu mata pelajaran!');
+                return false;
+            }
+        });
+    </script>
+@endsection

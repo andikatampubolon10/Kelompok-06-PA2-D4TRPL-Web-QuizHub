@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class kelas extends Model
 {
 
-    protected $table = 'kelas'; 
+    protected $table = 'kelas';
 
     protected $primaryKey = 'id_kelas';
 
@@ -17,11 +17,23 @@ class kelas extends Model
         'id_operator',
     ];
 
-    public function operator(){
-        return $this->belongsTo(operator::class);
+    public function operator()
+    {
+        return $this->belongsTo(Operator::class);
     }
 
-    public function siswa(){
-        return $this->hasMany(siswa::class,'id_kelas','id_kelas');
+    public function siswa()
+    {
+        return $this->hasMany(siswa::class, 'id_kelas', 'id_kelas');
+    }
+
+    public function kursus()
+    {
+        return $this->hasMany(kursus::class, 'id_kelas', 'id_kelas');
+    }
+
+    public function kelasDetail()
+    {
+        return $this->hasMany(KelasDetail::class, 'id_kelas', 'id_kelas');
     }
 }

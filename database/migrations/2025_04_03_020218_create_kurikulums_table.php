@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kurikulum', function (Blueprint $table) {
             $table->id('id_kurikulum');
             $table->string('nama_kurikulum');
+            $table->enum('status', ['Aktif', 'Tidak Aktif']);
             $table->unsignedBigInteger('id_operator');
             $table->foreign('id_operator')->references('id_operator')->on('operator')->onDelete('cascade');
             $table->timestamps();

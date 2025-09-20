@@ -1,355 +1,206 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.operator-layout')
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator | Kelas</title>
+@section('title', 'Edit Kelas')
+@section('page-title', 'Edit Data Kelas')
+@section('page-description', 'Ubah informasi data kelas yang sudah terdaftar')
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+@section('content')
+    <div class="space-y-6">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center space-x-2 text-sm text-gray-600 bg-white p-4 rounded-lg shadow-sm">
+            <a href="{{ route('Operator.Kelas.index') }}" class="flex items-center hover:text-teal-600 transition-colors">
+                <i class="fas fa-home mr-1"></i>
+                Daftar Kelas
+            </a>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+            <span class="text-gray-800 font-medium">Edit Kelas</span>
+        </nav>
 
-    <style>
-        /* General Styles */
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
-
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            /* border-radius: 0 0 20px 20px; */
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(to bottom, #00796b, #29baa9, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-      
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #5eaba2;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button Styles */
-        .btn-add-top-right {
-            position: absolute;
-            top: 100px;
-            right: 30px;
-            background-color: #00bfae;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            border: none;
-            transition: background-color 0.3s ease;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-add-top-right:hover {
-            background-color: #00796b;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        table th,
-        table td {
-            padding: 18px 25px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #14A098;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        table tr:hover {
-            background-color: #f1f1f1;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-
-        table td {
-            vertical-align: middle;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                top: 0;
-                left: 0;
-                height: auto;
-                border-radius: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 70px 20px 20px;
-            }
-
-            .btn-add-top-right {
-                width: 100%;
-                padding: 15px 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header">
-        <h1 class="text-2xl font-bold text-white">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10">
-        </h1>
-        
-        <div class="relative dropdown">
-            <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-                <div class="flex flex-col items-center">
-                    <span class="text-white">Welcome, Operator</span>
-                    <span class="text-white font-semibold">{{ $user->name }}</span>
+        <!-- Kelas Info Card -->
+        <div class="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg p-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-home text-2xl text-teal-600"></i>
                 </div>
-                <i class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
-            </div>
-            <div id="dropdown-menu" class="dropdown-menu">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="logout-btn">
-                        <span>Logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <ul>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kurikulum.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-calendar-alt text-white mr-2"></i> Kurikulum
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-book text-white mr-2"></i> Mata Pelajaran
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Kelas.index') }}" class="flex items-center text-black p-2 rounded-lg shadow hover:bg-blue-500">
-                        <i class="fas fa-home text-black mr-2"></i> Kelas
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Guru.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-chalkboard-teacher text-white mr-2"></i> Daftar Guru
-                    </a>
-                </li>
-                <li class="mb-4">
-                    <a href="{{ route('Operator.Siswa.index') }}" class="flex items-center text-white p-2 rounded-lg hover:bg-blue-500">
-                        <i class="fas fa-user-graduate text-white mr-2"></i> Daftar Siswa
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-white p-4 rounded-lg shadow-md flex items-center gap-2 mt-8 mb-6">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('Operator.Kelas.store') }}"
-                            class="text-teal-500 hover:text-teal-700 font-semibold">Kelas</a>
-                    </li>
-                    <li class="breadcrumb-item active text-gray-600" aria-current="page">Edit Kelas</li>
-                </ol>
-            </nav>
-            <div class="space-y-4 bg-white p-6 rounded-lg shadow-md">
-                <form action="{{ route('Operator.Kelas.update', $kelas->id_kelas) }}" method="POST" class="space-y-6">
-                    @csrf
-                    @method('PATCH') <!-- This ensures the form submits as a PATCH request -->
-
-                    <div>
-                        <label class="block font-bold text-lg text-gray-700">
-                            Nama Kelas<span class="text-red-500">*</span>
-                        </label>
-                        <input name="nama_kelas" type="text" value="{{ old('nama_kelas', $kelas->nama_kelas) }}"
-                            class="mt-1 block w-full border border-gray-300 rounded p-2" required>
-                        @error('nama_kelas')
-                            <span class="alert-danger">
-                                {{ $message }}
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-gray-800">{{ $kelas->nama_kelas }}</h3>
+                    <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                        <span class="flex items-center">
+                            <i class="fas fa-calendar mr-1"></i>
+                            Dibuat: {{ $kelas->created_at ? $kelas->created_at->format('d M Y') : 'Tidak diketahui' }}
+                        </span>
+                        @if ($kelas->updated_at && $kelas->updated_at != $kelas->created_at)
+                            <span class="flex items-center">
+                                <i class="fas fa-edit mr-1"></i>
+                                Diperbarui: {{ $kelas->updated_at->format('d M Y') }}
                             </span>
-                        @enderror
+                        @endif
                     </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit"
-                            class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                            <span>Simpan</span>
-                            <i class="fas fa-check ml-2"></i>
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
+
+        <!-- Form Edit -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-edit text-teal-600 mr-2"></i>
+                    Form Edit Data Kelas
+                </h2>
+            </div>
+
+            <form action="{{ route('Operator.Kelas.update', $kelas->id_kelas) }}" method="POST" class="p-6 space-y-6"
+                id="editKelasForm">
+                @csrf
+                @method('PATCH')
+
+                <!-- Help Section -->
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-400 mt-1 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-blue-800 mb-1">Tips Pengisian Form</h3>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Nama kelas harus unik dan tidak boleh sama dengan kelas lain</li>
+                                <li>• Gunakan format yang konsisten (contoh: X-A, XI-IPA-1, XII-IPS-2)</li>
+                                <li>• Nama kelas akan digunakan dalam sistem penjadwalan</li>
+                                <li>• Pastikan nama mudah diidentifikasi oleh guru dan siswa</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nama Kelas Field -->
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-medium text-gray-700">
+                        <i class="fas fa-home text-teal-600 mr-2"></i>
+                        Nama Kelas <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <input type="text" name="nama_kelas" value="{{ old('nama_kelas', $kelas->nama_kelas) }}"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors @error('nama_kelas') border-red-500 @enderror"
+                        placeholder="Masukkan nama kelas (contoh: X-A, XI-IPA-1)" maxlength="50" required>
+                    @error('nama_kelas')
+                        <div class="flex items-center mt-1 text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            <span class="text-sm">{{ $message }}</span>
+                        </div>
+                    @enderror
+                    <div class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-lightbulb mr-1"></i>
+                        Contoh format: X-A, XI-IPA-1, XII-IPS-2, atau sesuai standar sekolah
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-200 space-y-3 sm:space-y-0">
+                    <a href="{{ route('Operator.Kelas.index') }}"
+                        class="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+                    <button type="submit" id="submitBtn"
+                        class="w-full sm:w-auto inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <span id="submitSpinner" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                        </span>
+                        <i id="submitIcon" class="fas fa-save mr-2"></i>
+                        <span id="submitText">Simpan Perubahan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        function toggleDropdown() {
-            const dropdown = document.getElementById("dropdown-menu");
-            dropdown.classList.toggle("show");
-        }
-    </script>
-</body>
+        // Form submission with loading state
+        document.getElementById('editKelasForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            const submitIcon = document.getElementById('submitIcon');
 
-</html>
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.textContent = 'Menyimpan...';
+            submitSpinner.classList.remove('hidden');
+            submitIcon.classList.add('hidden');
+
+            // Validate form
+            const namaKelas = document.querySelector('input[name="nama_kelas"]').value.trim();
+
+            if (!namaKelas) {
+                e.preventDefault();
+                alert('Nama kelas harus diisi!');
+
+                // Reset button state
+                submitBtn.disabled = false;
+                submitText.textContent = 'Simpan Perubahan';
+                submitSpinner.classList.add('hidden');
+                submitIcon.classList.remove('hidden');
+                return false;
+            }
+
+            // Additional validation for class name format
+            if (namaKelas.length < 2) {
+                e.preventDefault();
+                alert('Nama kelas terlalu pendek! Minimal 2 karakter.');
+
+                // Reset button state
+                submitBtn.disabled = false;
+                submitText.textContent = 'Simpan Perubahan';
+                submitSpinner.classList.add('hidden');
+                submitIcon.classList.remove('hidden');
+                return false;
+            }
+        });
+
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+
+            // Add character counter for nama_kelas
+            const namaKelasInput = document.querySelector('input[name="nama_kelas"]');
+            if (namaKelasInput) {
+                const maxLength = namaKelasInput.getAttribute('maxlength');
+                const counterDiv = document.createElement('div');
+                counterDiv.className = 'text-xs text-gray-400 mt-1 text-right';
+                counterDiv.innerHTML =
+                    `<span id="char-count">${namaKelasInput.value.length}</span>/${maxLength} karakter`;
+                namaKelasInput.parentNode.appendChild(counterDiv);
+
+                namaKelasInput.addEventListener('input', function() {
+                    document.getElementById('char-count').textContent = this.value.length;
+
+                    // Change color based on length
+                    if (this.value.length > maxLength * 0.8) {
+                        counterDiv.className = 'text-xs text-orange-500 mt-1 text-right';
+                    } else {
+                        counterDiv.className = 'text-xs text-gray-400 mt-1 text-right';
+                    }
+                });
+            }
+        });
+
+        // Add smooth transitions for form elements
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('focus', function() {
+                this.parentNode.style.transform = 'translateY(-1px)';
+                this.parentNode.style.transition = 'transform 0.2s ease';
+            });
+
+            element.addEventListener('blur', function() {
+                this.parentNode.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+@endsection

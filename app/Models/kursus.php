@@ -19,28 +19,35 @@ class Kursus extends Model
         'id_guru',
         'image',
         'image_url',
+        'id_mata_pelajaran',
+        'id_operator',
+        'id_kelas',
+        'ID_Tahun_Ajaran',
     ];
-
-    protected function getFotoUrlAttribute($value)
-    {
-        $defaultFoto = \DB::table('settings')->where('key', 'default_student_photo')->value('value');
-
-        if (!$defaultFoto) {
-            $defaultFoto = 'images/student-default.png';  // Default fallback jika tidak ada di database
-        }
-
-        if ($this->attributes['image'] == null || $this->attributes['image'] == '') {
-            return asset($defaultFoto);
-        }
-
-        $foto = (Storage::exists($this->attributes['image'])) ? $this->attributes['image'] : $defaultFoto;
-
-        return url(Storage::url($foto));
-    }
 
     public function guru()
     {
-        return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');
+        return $this->belongsTo(guru::class, 'id_guru', 'id_guru','id_guru','id_guru');
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(kelas::class, 'id_kelas', 'id_kelas');
+    }
+
+    public function operator()
+    {
+        return $this->belongsTo(operator::class, 'id_operator', 'id_operator');
+    }
+
+    public function tahun_ajaran()
+    {
+        return $this->belongsTo(TahunAjaran::class, 'ID_Tahun_Ajaran', 'ID_Tahun_Ajaran', 'ID_Tahun_Ajaran');
+    }
+
+    public function mataPelajaran()
+    {
+        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran');
     }
 
     public function kursusSiswa()
@@ -60,7 +67,7 @@ class Kursus extends Model
 
     public function persentase()
     {
-        return $this->hasMany(Persentase::class, 'id_kursus', 'id_kursus','id_kursus');
+        return $this->hasMany(Persentase::class, 'id_kursus', 'id_kursus', 'id_kursus');
     }
 
     public function materi()
@@ -75,6 +82,6 @@ class Kursus extends Model
 
     public function siswa()
     {
-        return $this->belongsToMany(Siswa::class, 'kursus_siswa', 'id_kursus', 'id_siswa');
+        return $this->belongsToMany(siswa::class, 'kursus_siswa', 'id_kursus', 'id_siswa');
     }
 }

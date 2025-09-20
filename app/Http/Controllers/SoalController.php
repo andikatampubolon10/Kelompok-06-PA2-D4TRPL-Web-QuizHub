@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\soal;
 use App\Models\User;
 use App\Models\kursus;
-use App\Models\ujian;
+use App\Models\Ujian;
 use App\Models\guru;
 use App\Models\latihan;
 use App\Models\tipe_ujian;
-use App\Models\jawaban_soal;
+use App\Models\JawabanSoal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -25,12 +25,12 @@ class SoalController extends Controller
         $soals = null;
 
         if ($idUjian) {
-            $soals = soal::where('id_ujian', $idUjian)
+            $soals = Soal::where('id_ujian', $idUjian)
                 ->with(['ujian', 'latihan', 'tipe_soal'])
                 ->orderBy('id_soal', 'DESC')
                 ->get();
         } elseif ($idLatihan) {
-            $soals = soal::where('id_latihan', $idLatihan)
+            $soals = Soal::where('id_latihan', $idLatihan)
                 ->with(['latihan', 'tipe_soal'])
                 ->orderBy('id_soal', 'DESC')
                 ->get();
@@ -39,7 +39,7 @@ class SoalController extends Controller
         // Ambil data user yang sedang login
         $user = auth()->user();
 
-        $guru = guru::where('id_user', $user->id)->first();
+        $guru = Guru::where('id_user', $user->id)->first();
 
         if (!$guru) {
             return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
@@ -76,8 +76,9 @@ class SoalController extends Controller
     {
         Log::info('Menerima request untuk membuat soal.');
 
+        // Validasi input
         $validated = $request->validate([
-            'soal' => 'required|string|max:40',
+            'soal' => 'required|string',
             'id_tipe_soal' => 'required|exists:tipe_soal,id_tipe_soal',
             'id_latihan' => 'nullable|exists:latihan,id_latihan', // Untuk latihan
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
@@ -91,19 +92,33 @@ class SoalController extends Controller
 
         Log::info('Validasi berhasil untuk soal.', ['validated_data' => $validated]);
 
-        $idUjian = null;
-        $idLatihan = $validated['id_latihan'] ?? null;
+        // Ambil id_ujian dan id_latihan dari URL atau request
+        $idUjian = $request->input('id_ujian'); // Ambil id_ujian dari URL jika ada
+        $idLatihan = $validated['id_latihan']; // Ambil id_latihan dari request
 
+        // Pastikan id_ujian atau id_latihan valid
+        if (!$idUjian && !$idLatihan) {
+            $guru = Guru::where('id_user', auth()->user()->id)->first();
+            $kursus = $guru->kursus()->first();
+
+            // Ambil ujian pertama yang terkait dengan kursus
+            $ujian = $kursus->ujian()->first();
+            $idUjian = $ujian ? $ujian->id_ujian : null;
+        }
+
+        // Jika id_ujian atau id_latihan tidak ada, kirimkan pesan error
+        if (!$idUjian && !$idLatihan) {
+            return redirect()->route('Guru.Soal.index')->with('error', 'Ujian atau Latihan tidak ditemukan.');
+        }
+
+        // Mengambil data pengguna
         $users = Auth::user();
-
         if (!$users) {
             return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu.');
         }
 
-        $guru = guru::where('id_user', auth()->user()->id)->first();
-
+        // Menangani upload gambar jika ada
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            // Ensure the images folder exists
             $imagePath = public_path('images');
             if (!is_dir($imagePath)) {
                 mkdir($imagePath, 0755, true);
@@ -111,57 +126,53 @@ class SoalController extends Controller
 
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move($imagePath, $imageName);
-
             $imageUrl = url('images/' . $imageName);
         } else {
             $imageName = null;
             $imageUrl = null;
         }
 
-        $kursus = $guru->kursus()->first();
-
+        // Jika id_latihan ada, buat soal untuk latihan
         if ($idLatihan) {
-            $latihan = latihan::findOrFail($idLatihan);
+            $latihan = Latihan::findOrFail($idLatihan);
 
-            $soal = soal::create([
+            $soal = Soal::create([
                 'soal' => $validated['soal'],
                 'image' => $imageName,
-                'id_tipe_soal' => $validated['id_tipe_soal'],
-                'id_latihan' => $idLatihan,
                 'image_url' => $imageUrl,
+                'id_latihan' => $idLatihan, // Jika ada latihan, gunakan id_latihan
+                'id_tipe_soal' => $validated['id_tipe_soal'],
             ]);
 
-            $jumlahSoalLatihan = soal::where('id_latihan', $idLatihan)->count();
-
+            // Update nilai per soal latihan
+            $jumlahSoalLatihan = Soal::where('id_latihan', $idLatihan)->count();
             $nilaiPerSoalLatihan = $jumlahSoalLatihan > 0 ? round(100 / $jumlahSoalLatihan, 2) : 0;
 
             $soal->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
-            soal::where('id_latihan', $idLatihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
+            Soal::where('id_latihan', $idLatihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
 
             Log::info('Soal latihan berhasil dibuat.', ['soal_id' => $soal->id_soal]);
         } else {
-            $ujian = $kursus->ujian()->first();
-            $idUjian = $ujian ? $ujian->id_ujian : null;
-
-            $soal = soal::create([
+            // Jika id_latihan tidak ada, buat soal untuk ujian
+            $soal = Soal::create([
                 'soal' => $validated['soal'],
                 'image' => $imageName,
                 'image_url' => $imageUrl,
-                'id_ujian' => $idUjian, // If there is an ujian, store id_ujian
+                'id_ujian' => $idUjian, // Jika ada ujian, gunakan id_ujian
                 'id_tipe_soal' => $validated['id_tipe_soal'],
-                'id_latihan' => null, // Soal for ujian is not related to latihan
+                'id_latihan' => null, // Soal untuk ujian tidak terkait dengan latihan
             ]);
 
-            $jumlahSoal = soal::where('id_ujian', $idUjian)->count();
-
+            // Update nilai per soal ujian
+            $jumlahSoal = Soal::where('id_ujian', $idUjian)->count();
             $nilaiPerSoal = $jumlahSoal > 0 ? round(100 / $jumlahSoal, 2) : 0;
-
             $soal->update(['nilai_per_soal' => $nilaiPerSoal]);
-            soal::where('id_ujian', $idUjian)->update(['nilai_per_soal' => $nilaiPerSoal]);
+            Soal::where('id_ujian', $idUjian)->update(['nilai_per_soal' => $nilaiPerSoal]);
 
             Log::info('Soal ujian berhasil dibuat.', ['soal_id' => $soal->id_soal]);
         }
 
+        // Menangani jawaban soal
         $jawaban_data = [];
         if ($validated['id_tipe_soal'] == 1) {
             $jawaban_data = [
@@ -182,8 +193,10 @@ class SoalController extends Controller
             ];
         }
 
+        // Simpan jawaban soal
         $soal->jawaban_soal()->createMany($jawaban_data);
 
+        // Redirect sesuai dengan tipe soal (ujian atau latihan)
         if ($idUjian) {
             return redirect()->route('Guru.Soal.index', ['id_ujian' => $idUjian])->with('success', 'Soal berhasil dibuat.');
         }
@@ -199,7 +212,7 @@ class SoalController extends Controller
     public function edit(Request $request, $id_soal)
     {
 
-        $soal = soal::findOrFail($id_soal);
+        $soal = Soal::findOrFail($id_soal);
 
         $user = auth()->user();
 
@@ -225,7 +238,7 @@ class SoalController extends Controller
 
     public function preview(Request $request, $id_soal)
     {
-        $soal = soal::findOrFail($id_soal);
+        $soal = Soal::findOrFail($id_soal);
 
         $user = auth()->user();
 
@@ -246,7 +259,7 @@ class SoalController extends Controller
         Log::info('Menerima request untuk memperbarui soal.');
 
         $validated = $request->validate([
-            'soal' => 'required|string|max:40',
+            'soal' => 'required|string',
             'id_tipe_soal' => 'required|exists:tipe_soal,id_tipe_soal', // Pastikan tipe soal valid
             'id_latihan' => 'nullable|exists:latihan,id_latihan', // Jika ada id_latihan
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -258,7 +271,7 @@ class SoalController extends Controller
             'correct_answer' => 'required|string',
         ]);
 
-        $soal = soal::findOrFail($id_soal);
+        $soal = Soal::findOrFail($id_soal);
 
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
             $imagePath = public_path('images');
@@ -318,17 +331,17 @@ class SoalController extends Controller
         Log::info('Jawaban berhasil disimpan untuk soal.', ['soal_id' => $soal->id_soal]);
 
         if ($soal->id_latihan) {
-            $jumlahSoalLatihan = soal::where('id_latihan', $soal->id_latihan)->count();
+            $jumlahSoalLatihan = Soal::where('id_latihan', $soal->id_latihan)->count();
             $nilaiPerSoalLatihan = $jumlahSoalLatihan > 0 ? 100 / $jumlahSoalLatihan : 0;
             $soal->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
 
-            soal::where('id_latihan', $soal->id_latihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
+            Soal::where('id_latihan', $soal->id_latihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
         } elseif ($soal->id_ujian) {
             $jumlahSoal = Soal::where('id_ujian', $soal->id_ujian)->count();
             $nilaiPerSoal = $jumlahSoal > 0 ? $soal->ujian->grade / $jumlahSoal : 0;
             $soal->update(['nilai_per_soal' => $nilaiPerSoal]);
 
-            soal::where('id_ujian', $soal->id_ujian)->update(['nilai_per_soal' => $nilaiPerSoal]);
+            Soal::where('id_ujian', $soal->id_ujian)->update(['nilai_per_soal' => $nilaiPerSoal]);
         }
 
         return redirect()->route('Guru.Soal.index', ['id_ujian' => $soal->id_ujian ?? null, 'id_latihan' => $soal->id_latihan ?? null])->with('success', 'Soal berhasil diperbarui.');
@@ -338,7 +351,7 @@ class SoalController extends Controller
     {
         try {
             // Cari soal berdasarkan id_soal
-            $soal = soal::findOrFail($id_soal); // Menemukan soal berdasarkan id_soal
+            $soal = Soal::findOrFail($id_soal); // Menemukan soal berdasarkan id_soal
 
             // Simpan id_ujian atau id_latihan untuk redirect
             $idUjian = $soal->id_ujian;
@@ -380,10 +393,10 @@ class SoalController extends Controller
 
     protected function updateNilaiPerSoalUjian($idUjian)
     {
-        $jumlahSoal = soal::where('id_ujian', $idUjian)->count();
-        $ujian = ujian::find($idUjian);
+        $jumlahSoal = Soal::where('id_ujian', $idUjian)->count();
+        $ujian = Ujian::find($idUjian);
         $nilaiPerSoal = $jumlahSoal > 0 ? $ujian->grade / $jumlahSoal : 0;
-        soal::where('id_ujian', $idUjian)->update(['nilai_per_soal' => $nilaiPerSoal]);
+        Soal::where('id_ujian', $idUjian)->update(['nilai_per_soal' => $nilaiPerSoal]);
 
         return $nilaiPerSoal;
     }
@@ -391,9 +404,9 @@ class SoalController extends Controller
     // Fungsi untuk update nilai per soal latihan
     protected function updateNilaiPerSoalLatihan($idLatihan)
     {
-        $jumlahSoal = soal::where('id_latihan', $idLatihan)->count();
+        $jumlahSoal = Soal::where('id_latihan', $idLatihan)->count();
         $nilaiPerSoalLatihan = $jumlahSoal > 0 ? 100 / $jumlahSoal : 0;
-        soal::where('id_latihan', $idLatihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
+        Soal::where('id_latihan', $idLatihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
 
         return $nilaiPerSoalLatihan;
     }

@@ -20,12 +20,12 @@ class Soal extends Model
 
     public function ujian()
     {
-        return $this->belongsTo(Ujian::class, 'id_ujian', 'id_ujian');
+        return $this->belongsTo(ujian::class, 'id_ujian', 'id_ujian');
     }
 
     public function latihan()
     {
-        return $this->belongsTo(Latihan::class, 'id_latihan', 'id_latihan');
+        return $this->belongsTo(latihan::class, 'id_latihan', 'id_latihan');
     }
 
     public function jawaban_soal()

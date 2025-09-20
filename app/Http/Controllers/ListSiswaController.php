@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\siswa;
-use App\Models\Kursus;
+use App\Models\kursus;
 use App\Models\persentase;
 use App\Models\Kelas;
 use App\Models\TipeNilai;

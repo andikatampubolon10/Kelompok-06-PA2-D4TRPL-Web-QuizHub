@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,7 @@ class Guru extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user');
+        return $this->belongsTo(User::class, 'id_user','id');
     }
 
     public function operator()
@@ -31,7 +32,7 @@ class Guru extends Model
 
     public function kursus()
     {
-        return $this->hasMany(Kursus::class, 'id_guru', 'id_guru');
+        return $this->hasMany(Kursus::class, 'id_guru', 'id_guru','id_guru','id_guru');
     }
 
     public function latihan()
@@ -39,9 +40,9 @@ class Guru extends Model
         return $this->hasMany(Latihan::class);
     }
 
-    public function mataPelajaran()
+    public function guru_mata_pelajaran()
     {
-        return $this->belongsTo(MataPelajaran::class, 'id_mata_pelajaran');
+        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
     }
 
     public function ujian()
@@ -57,5 +58,10 @@ class Guru extends Model
     public function nilai()
     {
         return $this->hasMany(Nilai::class, 'id_kursus', 'id_kursus');
+    }
+
+    public function mataPelajaran()
+    {
+        return $this->belongsToMany(mata_pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
     }
 }

@@ -1,472 +1,262 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.guru-layout')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guru | Ujian | Create</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+@section('title', 'Tambah Akun')
 
-    <style>
-        /* General Styles */
-        body {
-            background-color: #f4f5f7;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            margin: 0;
-            color: #333;
-        }
-
-        /* Header Styles */
-        .header {
-            background: linear-gradient(to right, #00bfae, #00796b);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .header .logo img {
-            max-width: 120px;
-            border-radius: 8px;
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .header .user-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .header .user-info img:hover {
-            transform: scale(1.1);
-        }
-
-        .header .user-info span {
-            font-size: 16px;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Dropdown Menu Styles */
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            width: 150px;
-            z-index: 1500;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #e04040;
-        }
-
-        .sidebar {
-            background: linear-gradient(to bottom, #00796b, #00bfae, #00796b);
-            width: 260px;
-            padding: 25px 15px;
-            position: fixed;
-            top: 80px;
-            left: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-            z-index: 900;
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 22px;
-        }
-
-        .sidebar a.active {
-            background-color: #00796b;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar a:hover {
-            background-color: #004d40;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Adjust the "Course" button to match other sidebar items */
-        #dropdownButton {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 12px 18px;
-            /* Same as other sidebar items */
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s ease;
-        }
-
-        #dropdownButton i {
-            font-size: 22px;
-            /* Same icon size as other items */
-        }
-
-        #dropdownButton span {
-            font-size: 17px;
-            /* Same font size as other items */
-        }
-
-
-        /* Button Styles */
-        .btn-add-top-right {
-            position: absolute;
-            top: 100px;
-            right: 30px;
-            background-color: #00bfae;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            border: none;
-            transition: background-color 0.3s ease;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-add-top-right:hover {
-            background-color: #00796b;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        table th,
-        table td {
-            padding: 18px 25px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table th {
-            background-color: #14A098;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        table tr:hover {
-            background-color: #f1f1f1;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-
-        table td {
-            vertical-align: middle;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 280px;
-            padding: 100px 30px 30px;
-            flex: 1;
-            transition: all 0.3s ease-in-out;
-            overflow-y: auto;
-        }
-
-        /* Main Content Box */
-        .main-content-box {
-            padding: 30px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                top: 0;
-                left: 0;
-                height: auto;
-                border-radius: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 70px 20px 20px;
-            }
-
-            .btn-add-top-right {
-                width: 100%;
-                padding: 15px 0;
-            }
-        }
-
-        .alert-danger {
-            color: #e74c3c;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid" style="max-height: 55px;">
-
-        <div class="relative dropdown">
-            <div class="flex items-center cursor-pointer" onclick="toggleDropdown()">
-                <div class="flex flex-col items-center">
-                    <span class="text-white">Welcome, Guru</span>
-                    <span class="text-white font-semibold">{{ $user->name }}</span>
-                </div>
-                <i
-                    class="fas fa-user rounded-full ml-4 text-3xl text-gray-700 bg-white p-2 w-12 h-12 flex items-center justify-center"></i>
+@section('content')
+    <!-- Additional Info Section -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+        <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
             </div>
-            <div id="dropdown-menu" class="dropdown-menu">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-danger w-100">Logout</button>
-                </form>
+            <div>
+                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Ujian</h4>
+                <ul class="text-xs text-blue-700 space-y-1">
+                    <li>• Masukkan Nama Ujian</li>
+                    <li>• Masukkan Password Masuk dan Keluar Ujian</li>
+                    <li>• Pilih Tipe Ujian</li>
+                    <li>• Pilih Waktu Mulai dan Selesan Ujian
             </div>
         </div>
     </div>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <a
-                href="{{ route('Guru.Course.index') }}"class="flex items-center text-black p-2 rounded-lg shadow hover:bg-blue-500">
-                <i class="fas fa-book-open text-sm"></i>
-                <span>Kursus</span>
-            </a>
-            <a
-                href="{{ route('Guru.Latihan.index') }}"class="d-flex align-items-center text-gray-700 p-2 rounded-lg hover:bg-gray-300">
-                <i class="fas fa-pen text-sm"></i>
-                <span>Latihan Soal</span>
-            </a>
+    <!-- Form Container -->
+    <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
 
-            <a
-                href="{{ route('Guru.Nilai.index') }}"class="d-flex align-items-center text-gray-700 p-2 rounded-lg hover:bg-gray-300">
-                <i class="fas fa-chart-line text-sm"></i>
-                <span>Nilai</span>
-            </a>
-        </div>
-        <div class="main-content">
-            <div class="bg-white p-6 rounded-lg shadow-md h-full w-full">
-                <nav class="text-gray-600 text-lg mb-4" aria-label="Breadcrumb">
-                    <ol class="list-reset flex">
-                        <li><a href="{{ route('Guru.Course.index') }}" class="text-blue-600 hover:underline">Course</a>
-                        </li>
-                        <li><span class="mx-2">/</span></li>
-                        <li><a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
-                                class="text-blue-600 hover:underline">Materi</a></li>
-                        <li><span class="mx-2">/</span></li>
-                        <li><a href="" class="text-blue-600 hover:underline">Tambah Ujian</a></li>
-                    </ol>
-                </nav>
-                <form action="{{ route('Guru.Ujian.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-4">
-                        <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
-                        <input type="text" name="nama_ujian"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
+        <form action="{{ route('Guru.Ujian.store') }}" method="POST">
+            @csrf
+
+            <!-- Nama Sekolah Field -->
+            <div class="mb-6">
+                       <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
+                        <input type="text" name="nama_ujian" class="block w-full p-2 border border-gray-300 rounded-md" required>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="password" class="block font-bold mb-2">Password Masuk</label>
-                        <input type="password" name="password_masuk"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
 
-                    <div class="mb-4">
-                        <label for="password" class="block font-bold mb-2">Password Keluar</label>
-                        <input type="password" name="password_keluar"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
+            <!-- Email Field -->
+            <div class="mb-6">
+                 <label for="password_masuk" class="block font-bold mb-2">Password Masuk</label>
+                        <input type="password" name="password_masuk" class="block w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+            <!-- Password Field -->
+            <div class="mb-6">
+                     <label for="password_keluar" class="block font-bold mb-2">Password Keluar</label>
+                        <input type="password" name="password_keluar" class="block w-full p-2 border border-gray-300 rounded-md" required>
                     </div>
 
                     <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
 
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <label for="tipe_ujian" class="block font-bold mb-2">Tipe Ujian</label>
                         <div class="flex items-center space-x-4">
                             <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="1"
-                                    class="form-radio text-green-500" required>
+                                <input type="radio" name="id_tipe_ujian" value="1" class="form-radio text-green-500" required>
                                 <span class="ml-2">Kuis</span>
                             </label>
                             <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="2"
-                                    class="form-radio text-green-500" required>
+                                <input type="radio" name="id_tipe_ujian" value="2" class="form-radio text-green-500" required>
                                 <span class="ml-2">Ujian Tengah Semester</span>
                             </label>
                             <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="3"
-                                    class="form-radio text-green-500" required>
+                                <input type="radio" name="id_tipe_ujian" value="3" class="form-radio text-green-500" required>
                                 <span class="ml-2">Ujian Akhir Semester</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                      {{-- <div class="mb-4">
                         <label for="acak" class="block font-bold mb-2">Acak Soal dan Pilihan</label>
-                        <select name="acak" class="block w-full p-2 border border-gray-300 rounded-md" required>
+                        <input type="text" name="acak" value="100" class="block w-full p-2 border border-gray-300 rounded-md" readonly>
                             <option value="" disabled selected>Pilih opsi</option>
                             <option value="Aktif">Aktif</option>
                             <option value="Tidak Aktif">Tidak Aktif</option>
                         </select>
-                    </div>
-
+                    </div> --}}
+{{-- 
                     <div class="mb-4">
-                        <label for="status_jawaban" class="block font-bold mb-2">Status Jawaban</label>
-                        <select name="status_jawaban" class="block w-full p-2 border border-gray-300 rounded-md"
-                            required>
-                            <option value="" disabled selected>Pilih opsi</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
-                        </select>
-                    </div>
-
+                        <label for="status_jawaban" class="block font-bold mb-2">Tampilan Nilai</label>
+                        <input type="text" name="status_jawaban" value="Aktif" class="block w-full p-2 border border-gray-300 rounded-md" readonly>
+                    </div> --}}
+{{-- 
                     <div class="mb-4">
                         <label for="grade" class="block font-bold mb-2">Grade</label>
-                        <input type="number" name="grade"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
+                        <input type="number" name="grade" class="block w-full p-2 border border-gray-300 rounded-md" required>
+                    </div> --}}
+
+                     <div class="mb-6">
+                      <label for="Waktu_Mulai" class="block font-bold mb-2">Waktu Mulai</label>
+    <input type="datetime-local" name="waktu_mulai" class="block w-full p-2 border border-gray-300 rounded-md" required id="waktu_mulai">
+</div>
+
+ <div class="mb-6">
+            <label for="Waktu_Selesai" class="block font-bold mb-2">Waktu Selesai</label>
+    <input type="datetime-local" name="waktu_selesai" class="block w-full p-2 border border-gray-300 rounded-md" required id="waktu_selesai">
+</div>
+
+
+
+
+
+
+          
+              
+                <!-- Form Actions -->
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Semua field yang bertanda (*) wajib diisi</span>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="Waktu_Mulai" class="block font-bold mb-2">Waktu Mulai</label>
-                        <input type="datetime-local" name="waktu_mulai"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
+                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali
+                        </a>
 
-                    <div class="mb-4">
-                        <label for="Waktu_Selesai" class="block font-bold mb-2">Waktu Selesai</label>
-                        <input type="datetime-local" name="waktu_selesai"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
-
-                    <div class="flex justify-end mt-4">
                         <button type="submit"
-                            class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-400">
-                            <span>Simpan</span>
-                            <i class="fas fa-check ml-2"></i>
+                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                            <i class="fas fa-save mr-2"></i>
+                            Simpan 
                         </button>
                     </div>
-                </form>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (session('success'))
+        <div id="successAlert"
+            class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
+            <i class="fas fa-check-circle text-xl"></i>
+            <div>
+                <p class="font-semibold">Berhasil!</p>
+                <p class="text-sm">{{ session('success') }}</p>
             </div>
+            <button onclick="closeAlert('successAlert')" class="ml-4 text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
 
-            <script>
-                // Dropdown toggle script
-                const dropdownButton = document.getElementById('dropdownButton');
-                const dropdownMenu = document.getElementById('dropdownMenu');
-                const dropdownIcon = document.getElementById('dropdownIcon');
+    @if (session('error'))
+        <div id="errorAlert"
+            class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
+            <i class="fas fa-exclamation-circle text-xl"></i>
+            <div>
+                <p class="font-semibold">Error!</p>
+                <p class="text-sm">{{ session('error') }}</p>
+            </div>
+            <button onclick="closeAlert('errorAlert')" class="ml-4 text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
 
-                dropdownButton.addEventListener('click', () => {
-                    const isExpanded = dropdownButton.getAttribute('aria-expanded') === 'true';
-                    dropdownButton.setAttribute('aria-expanded', !isExpanded);
+    <script>
 
-                    if (dropdownMenu.style.maxHeight && dropdownMenu.style.maxHeight !== '0px') {
-                        dropdownMenu.style.maxHeight = '0px';
-                        dropdownMenu.style.paddingTop = '0';
-                        dropdownMenu.style.paddingBottom = '0';
-                        dropdownIcon.style.transform = 'rotate(0deg)';
-                    } else {
-                        dropdownMenu.style.maxHeight = dropdownMenu.scrollHeight + 'px';
-                        dropdownMenu.style.paddingTop = '0.5rem';
-                        dropdownMenu.style.paddingBottom = '0.5rem';
-                        dropdownIcon.style.transform = 'rotate(180deg)';
-                    }
-                });
+         document.addEventListener('DOMContentLoaded', function() {
+        const waktuMulaiInput = document.getElementById('waktu_mulai');
+        const waktuSelesaiInput = document.getElementById('waktu_selesai');
 
-                // Close dropdown if clicked outside
-                window.addEventListener('click', (e) => {
-                    if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.style.maxHeight = '0px';
-                        dropdownMenu.style.paddingTop = '0';
-                        dropdownMenu.style.paddingBottom = '0';
-                        dropdownButton.setAttribute('aria-expanded', 'false');
-                        dropdownIcon.style.transform = 'rotate(0deg)';
-                    }
-                });
+        // Set waktu minimal untuk waktu mulai
+        const now = new Date();
+        const nowString = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+        waktuMulaiInput.min = nowString;
 
-                // Initialize dropdown closed
-                dropdownMenu.style.maxHeight = '0px';
-                dropdownMenu.style.overflow = 'hidden';
-                dropdownMenu.style.transition = 'max-height 0.3s ease, padding 0.3s ease';
+        // Set waktu minimal untuk waktu selesai (harus setelah waktu mulai)
+        waktuMulaiInput.addEventListener('change', function() {
+            waktuSelesaiInput.min = this.value;
+        });
 
-                function toggleDropdown() {
-                    const dropdown = document.getElementById("dropdown-menu");
-                    dropdown.classList.toggle("show");
+        // Optionally, set waktu selesai minimal saat halaman dimuat
+        waktuSelesaiInput.min = nowString;
+    });
+        // Dropdown toggle script
+        function toggleDropdown() {
+            const dropdown = document.getElementById("dropdown-menu");
+            dropdown.classList.toggle("show");
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+                var startDateInput = document.getElementById('start_date');
+                var endDateInput = document.getElementById('end_date');
+
+                var today = new Date();
+                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+                // Set tanggal mulai tidak bisa lebih awal dari hari ini
+                if (startDateInput) {
+                    startDateInput.min = todayString;
                 }
-            </script>
-</body>
 
-</html>
+                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                if (startDateInput && endDateInput) {
+                    startDateInput.addEventListener('change', function() {
+                        var startDate = startDateInput.value;
+                        endDateInput.min =
+                        startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                    });
+                }
+            });
+              function toggleDropdown() {
+                const dropdown = document.getElementById("dropdown-menu");
+                dropdown.classList.toggle("show");
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var startDateInput = document.getElementById('start_date');
+                var endDateInput = document.getElementById('end_date');
+
+                var today = new Date();
+                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+                // Set tanggal mulai tidak bisa lebih awal dari hari ini
+                if (startDateInput) {
+                    startDateInput.min = todayString;
+                }
+
+                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                if (startDateInput && endDateInput) {
+                    startDateInput.addEventListener('change', function() {
+                        var startDate = startDateInput.value;
+                        endDateInput.min =
+                            startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                    });
+                }
+            });
+        function closeAlert(alertId) {
+            document.getElementById(alertId).style.display = 'none';
+        }
+
+        // Auto close alerts after 5 seconds
+        setTimeout(() => {
+            const successAlert = document.getElementById('successAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            if (successAlert) successAlert.style.display = 'none';
+            if (errorAlert) errorAlert.style.display = 'none';
+        }, 5000);
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const nameInput = document.getElementById('nama_kurikulum');
+
+            nameInput.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    this.classList.remove('border-red-500');
+                    this.classList.add('border-green-500');
+                }
+            });
+
+            form.addEventListener('submit', function(e) {
+                if (nameInput.value.trim() === '') {
+                    e.preventDefault();
+                    nameInput.classList.add('border-red-500');
+                    nameInput.focus();
+                }
+            });
+        });
+    </script>
+@endsection
