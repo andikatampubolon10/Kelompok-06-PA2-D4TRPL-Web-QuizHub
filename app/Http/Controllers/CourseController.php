@@ -28,7 +28,7 @@ class CourseController extends Controller
         $courses = kursus::where('id_guru', $guru->id_guru)->get(); // Use $guru->id_guru to filter courses
 
         // Pass the user and courses to the view
-        return view('Role.Guru.index', compact('courses', 'user','guru'));
+        return view('Role.Guru.Course.index', compact('courses', 'user','guru'));
     }
 
 

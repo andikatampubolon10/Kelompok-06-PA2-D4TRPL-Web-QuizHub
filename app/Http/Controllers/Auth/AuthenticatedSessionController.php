@@ -47,24 +47,24 @@ public function logout(Request $request)
      * Handle an incoming authentication request.
      */
 public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if ($user->hasRole('Admin')) {
-        return redirect()->route('Admin.Akun.index');
-    } elseif ($user->hasRole('Guru')) {
-        return redirect()->route('Guru.Course.index');
-    } elseif ($user->hasRole('Siswa')) {
-        return redirect()->route('Siswa.Course.index');
-    } elseif ($user->hasRole('Operator')) {
-        return redirect()->route('Operator.Kurikulum.index');
+        if ($user->hasRole('Admin')) {
+            return redirect()->route('Admin.Akun.index');
+        } elseif ($user->hasRole('Guru')) {
+            return redirect()->route('Guru.Course.index');
+        } elseif ($user->hasRole('Siswa')) {
+            return redirect()->route('Siswa.Course.index');
+        } elseif ($user->hasRole('Operator')) {
+            return redirect()->route('Operator.Kurikulum.index');
+        }
+
+        return redirect()->route('login');
     }
-
-    return redirect()->route('login');
-}
 
 
     /**

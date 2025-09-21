@@ -58,7 +58,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('Guru')->name('Guru.')->middleware('role:Guru')->group(function () {
-        Route::get('/Guru/Course/{id_guru}', [CourseController::class, 'index'])->name('Guru.Course.index');
         Route::resource('/Course', CourseController::class);
         Route::resource('/Siswa', SiswaController::class);
         Route::resource('/Latihan', LatihanSoalController::class);
