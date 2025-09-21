@@ -46,44 +46,26 @@ public function logout(Request $request)
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        // Clear all session data
-        $request->session()->flush();
+public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
+    $request->session()->regenerate();
 
-        // Authenticate user
-        $request->authenticate();
+    $user = Auth::user();
 
-        // Regenerate session
-        $request->session()->regenerate();
-
-        // Get the authenticated user
-        $user = Auth::user();
-
-        // Redirect based on role
-        if ($user->hasRole('Admin')) {
-            return redirect()->route('Admin.Akun.index');
-        } elseif ($user->hasRole('Guru')) {
-            $guru = $user->guru;
-
-            if (!$guru) {
-                // Jika guru tidak ditemukan, arahkan ke halaman dashboard atau tampilkan error
-                return redirect()->route('dashboard')->withErrors([
-                    'error' => 'Akun ini belum memiliki data guru. Silakan hubungi admin.'
-                ]);
-            }
-
-            // Jika ada data guru, lanjutkan redirect
-            return redirect()->route('Guru.Course.index');
-        } elseif ($user->hasRole('Siswa')) {
-            return redirect()->route('Siswa.Course.index');
-        } elseif ($user->hasRole('Operator')) {
-            return redirect()->route('Operator.Kurikulum.index');
-        }
-
-        // Fallback jika tidak ada role yang dikenali
-        return redirect()->route('login');
+    if ($user->hasRole('Admin')) {
+        return redirect()->route('Admin.Akun.index');
+    } elseif ($user->hasRole('Guru')) {
+        return redirect()->route('Guru.Course.index');
+    } elseif ($user->hasRole('Siswa')) {
+        return redirect()->route('Siswa.Course.index');
+    } elseif ($user->hasRole('Operator')) {
+        return redirect()->route('Operator.Kurikulum.index');
     }
+
+    return redirect()->route('login');
+}
+
 
     /**
      * Destroy an authenticated session.
