@@ -6,8 +6,8 @@
 
 @section('content')
     <div class="space-y-6">
-
-
+        {{-- @dd($kurikulum) --}}
+        <pre>{{ session('success') }}</pre>
         <nav
             class="flex items-center space-x-2 text-sm text-gray-600 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100">
             <a href="{{ route('Operator.Kurikulum.index') }}"
@@ -76,7 +76,7 @@
                         <p class="text-sm text-gray-600 mt-1">Kelola dan atur tahun ajaran sekolah</p>
                     </div>
                     <!-- Fixed route to use parameter instead of query string -->
-                    <a href="{{ route('Operator.TahunAjaran.create', $kurikulum->id_kurikulum) }}"
+                    <a href="{{ route('Operator.TahunAjaran.create', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}"
                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Tahun Ajaran
@@ -93,8 +93,10 @@
                                 <div
                                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                     <div class="flex-1">
-                                        <a href="{{ route('Operator.semester.index') }}">
+                                        <a
+                                            href="{{ route('Operator.semester.index', ['id_tahun_ajaran' => $tahun->ID_Tahun_Ajaran]) }}">
                                             <h4 class="text-xl font-semibold text-gray-900 mb-2">
+                                                {{-- @dd($tahun->ID_Tahun_Ajaran) --}}
                                                 {{ $tahun->Nama_Tahun_Ajaran }}
                                             </h4>
                                         </a>
@@ -125,7 +127,10 @@
                                                 Tidak Aktif
                                             </span>
                                         @endif
-                                        <a href="{{ route('Operator.TahunAjaran.edit', $tahun->ID_Tahun_Ajaran) }}"
+                                        <a href="{{ route('Operator.TahunAjaran.edit', [
+                                            'id_kurikulum' => $kurikulum->id_kurikulum,
+                                            'id_tahun_ajaran' => $tahun->ID_Tahun_Ajaran,
+                                        ]) }}"
                                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
                                             <i class="fas fa-edit mr-2"></i>
                                             Edit
@@ -143,7 +148,7 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada tahun ajaran</h3>
                         <p class="text-gray-600 mb-6">Mulai dengan menambahkan tahun ajaran pertama Anda.</p>
                         <!-- Fixed route to use parameter instead of query string -->
-                        <a href="{{ route('Operator.TahunAjaran.create', $kurikulum->id_kurikulum) }}"
+                        <a href="{{ route('Operator.TahunAjaran.create', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}"
                             class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-plus mr-2"></i>
                             Tambah Tahun Ajaran

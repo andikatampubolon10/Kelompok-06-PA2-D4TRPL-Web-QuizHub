@@ -98,7 +98,27 @@ Route::middleware('auth')->group(function () {
         Route::post('/Siswa/import', [SiswaController::class, 'import'])->name('Siswa.import');
 
         // Gunakan resource untuk TahunAjaran, create sudah otomatis ada
-        Route::resource('/TahunAjaran', TahunAjaranController::class);
+        Route::prefix('/Kurikulum/{id_kurikulum}')->group(function () {
+            // Index (list tahun ajaran untuk kurikulum tertentu)
+            Route::get('/TahunAjaran', [TahunAjaranController::class, 'index'])
+                ->name('TahunAjaran.index');
+
+            // Create form (butuh id_kurikulum)
+            Route::get('/TahunAjaran/create', [TahunAjaranController::class, 'create'])
+                ->name('TahunAjaran.create');
+
+            // Store (simpan tahun ajaran untuk kurikulum ini)
+            Route::post('/TahunAjaran', [TahunAjaranController::class, 'store'])
+                ->name('TahunAjaran.store');
+
+            // Edit/Update/Delete (opsional, pakai id_tahun_ajaran sebagai param)
+            Route::get('/TahunAjaran/{id_tahun_ajaran}/edit', [TahunAjaranController::class, 'edit'])
+                ->name('TahunAjaran.edit');
+            Route::put('/TahunAjaran/{id_tahun_ajaran}', [TahunAjaranController::class, 'update'])
+                ->name('TahunAjaran.update');
+            Route::delete('/TahunAjaran/{id_tahun_ajaran}', [TahunAjaranController::class, 'destroy'])
+                ->name('TahunAjaran.destroy');
+        });
 
         // Route untuk Kelas dan Kurikulum
         Route::resource('/Kelas', KelasController::class);

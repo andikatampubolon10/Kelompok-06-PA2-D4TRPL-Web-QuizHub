@@ -8,7 +8,7 @@
     <div class="space-y-6">
         <nav
             class="flex items-center space-x-2 text-sm text-gray-600 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100">
-            <a href="{{ route('Operator.TahunAjaran.index', ['kurikulum' => $kurikulum->id_kurikulum]) }}"
+            <a href="{{ route('Operator.TahunAjaran.index', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}"
                 class="text-green-600 hover:text-green-700 font-medium transition-colors">
                 <i class="fas fa-calendar mr-1"></i>
                 Tahun Ajaran
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('Operator.TahunAjaran.store') }}" method="POST" class="p-6" id="tahunAjaranForm">
+            <form action="{{ route('Operator.TahunAjaran.store', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}" method="POST" class="p-6" id="tahunAjaranForm">
                 @csrf
                 
                 {{-- Perbaiki penggunaan variabel kurikulum --}}
@@ -125,7 +125,7 @@
 
                     <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                         {{-- Perbaiki link kembali dengan parameter kurikulum --}}
-                        <a href="{{ route('Operator.TahunAjaran.index', ['kurikulum' => $kurikulum->id_kurikulum]) }}"
+                        <a href="{{ route('Operator.TahunAjaran.index', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}"
                             class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Kembali

@@ -4,8 +4,11 @@
 @section('page-title', 'Daftar Semester')
 @section('page-description', 'Kelola informasi semester akademik')
 
+
 @section('content')
+{{-- @dd($id_semester) --}}
     <div class="space-y-6">
+        {{-- @dd($id_tahun_ajaran) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center">
@@ -91,7 +94,7 @@
                         <h3 class="text-lg font-semibold text-gray-900">Daftar Semester</h3>
                         <p class="text-sm text-gray-600 mt-1">Kelola informasi semester akademik</p>
                     </div>
-                    <a href="{{ route('Operator.Semester.create') }}"
+                    <a href="#"
                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Semester
@@ -156,6 +159,7 @@
                 @if (count($semesters) > 0)
                     <div class="space-y-4">
                         @foreach ($semesters as $semester)
+                        {{-- @dd($semester) --}}
                             <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-purple-50 hover:to-indigo-50 hover:border-purple-200 semester-item"
                                 data-tahun="{{ $semester->tahun_akademik }}" data-jenis="{{ $semester->jenis_semester }}"
                                 data-status="{{ $semester->status }}">
@@ -170,7 +174,7 @@
                                             </div>
                                             <div class="flex-1">
                                                 <h4 class="text-xl font-semibold text-gray-900 mb-2">
-                                                    Semester {{ $semester->jenis_semester }}
+                                                    Semester {{ $semester->nama_semester }}
                                                     {{ $semester->tahun_akademik }}
                                                 </h4>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
@@ -207,12 +211,12 @@
                                                 Aktifkan
                                             </button>
                                         @endif
-                                        <a href="{{ route('Operator.Semester.edit', $semester->id_semester) }}"
+                                        <a href="#"
                                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors group">
                                             <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('Operator.Semester.destroy', $semester->id_semester) }}"
+                                        <form action="#"
                                             method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
@@ -234,7 +238,7 @@
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada semester</h3>
                         <p class="text-gray-600 mb-6">Mulai dengan menambahkan semester pertama Anda.</p>
-                        <a href="{{ route('Operator.Semester.create') }}"
+                        <a href="#"
                             class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-plus mr-2"></i>
                             Tambah Semester

@@ -87,6 +87,7 @@
                                         <a
                                             href="{{ route('Operator.TahunAjaran.index', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}">
                                             {{ $kurikulum->nama_kurikulum }}
+                                            {{-- @dd($kurikulum->id_kurikulum) --}}
                                         </a>
 
                                         <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
