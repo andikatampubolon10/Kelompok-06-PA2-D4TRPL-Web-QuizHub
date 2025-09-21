@@ -6,7 +6,7 @@
 
 
 @section('content')
-{{-- @dd($id_semester) --}}
+    {{-- @dd($id_semester) --}}
     <div class="space-y-6">
         {{-- @dd($id_tahun_ajaran) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
@@ -94,63 +94,6 @@
                         <h3 class="text-lg font-semibold text-gray-900">Daftar Semester</h3>
                         <p class="text-sm text-gray-600 mt-1">Kelola informasi semester akademik</p>
                     </div>
-                    <a href="#"
-                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>
-                        Tambah Semester
-                    </a>
-                </div>
-            </div>
-
-            <!-- Filter Section -->
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <div class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4">
-                    <div class="w-full md:w-1/3">
-                        <label for="tahun_akademik" class="block text-sm font-medium text-gray-700 mb-1">Filter Berdasarkan
-                            Tahun Akademik</label>
-                        <div class="relative">
-                            <select id="tahun_akademik" name="tahun_akademik"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none bg-white">
-                                <option value="">Semua Tahun Akademik</option>
-                                @foreach ($semesters->pluck('tahun_akademik')->unique() as $tahun)
-                                    <option value="{{ $tahun }}">{{ $tahun }}</option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-1/3">
-                        <label for="jenis_semester" class="block text-sm font-medium text-gray-700 mb-1">Filter Berdasarkan
-                            Jenis</label>
-                        <div class="relative">
-                            <select id="jenis_semester" name="jenis_semester"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none bg-white">
-                                <option value="">Semua Jenis</option>
-                                <option value="Ganjil">Semester Ganjil</option>
-                                <option value="Genap">Semester Genap</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-1/3">
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Filter Berdasarkan
-                            Status</label>
-                        <div class="relative">
-                            <select id="status" name="status"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none bg-white">
-                                <option value="">Semua Status</option>
-                                <option value="Aktif">Aktif</option>
-                                <option value="Tidak Aktif">Tidak Aktif</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -159,65 +102,52 @@
                 @if (count($semesters) > 0)
                     <div class="space-y-4">
                         @foreach ($semesters as $semester)
-                        {{-- @dd($semester) --}}
+                            {{-- @dd($semester) --}}
                             <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-purple-50 hover:to-indigo-50 hover:border-purple-200 semester-item"
-                                data-tahun="{{ $semester->tahun_akademik }}" data-jenis="{{ $semester->jenis_semester }}"
-                                data-status="{{ $semester->status }}">
+                                data-nama="{{ $semester->nama_semester }}"
+                                data-tahun-ajaran="{{ $semester->ID_Tahun_Ajaran }}" data-id="{{ $semester->id_semester }}">
                                 <div
                                     class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                                     <div class="flex-1">
                                         <div class="flex items-start space-x-4">
                                             <div
-                                                class="w-16 h-16 bg-gradient-to-br {{ $semester->jenis_semester == 'Ganjil' ? 'from-blue-500 to-purple-600' : 'from-green-500 to-teal-600' }} rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                                class="w-16 h-16 bg-gradient-to-br {{ $semester->nama_semester == 'Ganjil' ? 'from-blue-500 to-purple-600' : 'from-green-500 to-teal-600' }} rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                 <i
-                                                    class="fas {{ $semester->jenis_semester == 'Ganjil' ? 'fa-calendar-alt' : 'fa-calendar-check' }} text-white text-2xl"></i>
+                                                    class="fas {{ $semester->nama_semester == 'Ganjil' ? 'fa-calendar-alt' : 'fa-calendar-check' }} text-white text-2xl"></i>
                                             </div>
                                             <div class="flex-1">
+                                                <a href="{{ route('Operator.MataPelajaran.index',['id_semester' => $semester->id_semester]) }}">
                                                 <h4 class="text-xl font-semibold text-gray-900 mb-2">
                                                     Semester {{ $semester->nama_semester }}
-                                                    {{ $semester->tahun_akademik }}
                                                 </h4>
+                                                </a>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                                                     <span class="flex items-center">
-                                                        <i class="fas fa-calendar mr-2 text-blue-600"></i>
-                                                        Tahun Akademik: {{ $semester->tahun_akademik }}
+                                                        <i class="fas fa-calendar-plus mr-2 text-green-600"></i>
+                                                        Dibuat:
+                                                        {{ \Carbon\Carbon::parse($semester->created_at)->format('d M Y H:i') }}
                                                     </span>
                                                     <span class="flex items-center">
-                                                        <i
-                                                            class="fas {{ $semester->jenis_semester == 'Ganjil' ? 'fa-moon' : 'fa-sun' }} mr-2 text-purple-600"></i>
-                                                        Jenis: Semester {{ $semester->jenis_semester }}
-                                                    </span>
-                                                    <span class="flex items-center">
-                                                        <i class="fas fa-calendar-day mr-2 text-green-600"></i>
-                                                        Periode:
-                                                        {{ $semester->tanggal_mulai ? \Carbon\Carbon::parse($semester->tanggal_mulai)->format('d M Y') : 'Belum ditentukan' }}
-                                                        -
-                                                        {{ $semester->tanggal_selesai ? \Carbon\Carbon::parse($semester->tanggal_selesai)->format('d M Y') : 'Belum ditentukan' }}
-                                                    </span>
-                                                    <span class="flex items-center">
-                                                        <i
-                                                            class="fas fa-circle mr-2 {{ strtolower($semester->status) == 'aktif' ? 'text-green-600' : 'text-red-600' }}"></i>
-                                                        Status: {{ $semester->status }}
+                                                        <i class="fas fa-calendar-edit mr-2 text-orange-600"></i>
+                                                        Diperbarui:
+                                                        {{ \Carbon\Carbon::parse($semester->updated_at)->format('d M Y H:i') }}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="flex items-center space-x-3">
-                                        @if (strtolower($semester->status) != 'aktif')
-                                            <button onclick="activateSemester({{ $semester->id_semester }})"
-                                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-lg hover:bg-green-200 transition-colors group">
-                                                <i class="fas fa-play mr-2 group-hover:scale-110 transition-transform"></i>
-                                                Aktifkan
-                                            </button>
-                                        @endif
                                         <a href="#"
                                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors group">
                                             <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"></i>
-                                            Edit
+                                            Ubah
                                         </a>
-                                        <form action="#"
-                                            method="POST" class="inline">
+                                        <button onclick="copySemester({{ $semester->id_semester }})"
+                                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-lg hover:bg-green-200 transition-colors group">
+                                            <i class="fas fa-copy mr-2 group-hover:scale-110 transition-transform"></i>
+                                            Salin
+                                        </button>
+                                        <form action="#" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" onclick="confirmDelete(this)"
@@ -330,6 +260,11 @@
             activateSemesterId = null;
         }
 
+        function copySemester(semesterId) {
+            // You can implement copy functionality here
+            alert('Fitur salin semester akan segera tersedia untuk ID: ' + semesterId);
+        }
+
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
             if (deleteForm) {
                 deleteForm.submit();
@@ -365,14 +300,16 @@
             const tahunSelect = document.getElementById('tahun_akademik');
             const jenisSelect = document.getElementById('jenis_semester');
             const statusSelect = document.getElementById('status');
+            const sortBySelect = document.getElementById('sort_by');
             const semesterItems = document.querySelectorAll('.semester-item');
 
             function filterSemesters() {
                 const selectedTahun = tahunSelect.value;
                 const selectedJenis = jenisSelect.value;
                 const selectedStatus = statusSelect.value;
+                const selectedSort = sortBySelect.value;
 
-                let visibleCount = 0;
+                let visibleItems = [];
 
                 semesterItems.forEach(item => {
                     const itemTahun = item.getAttribute('data-tahun');
@@ -385,7 +322,7 @@
 
                     if (tahunMatch && jenisMatch && statusMatch) {
                         item.style.display = 'block';
-                        visibleCount++;
+                        visibleItems.push(item);
                     } else {
                         item.style.display = 'none';
                     }
@@ -398,7 +335,7 @@
                 }
 
                 // Show no results message if no semesters are visible
-                if (visibleCount === 0) {
+                if (visibleItems.length === 0) {
                     const contentArea = document.querySelector('.p-6');
                     const noResults = document.createElement('div');
                     noResults.id = 'no-results';
@@ -442,6 +379,7 @@
             tahunSelect.addEventListener('change', filterSemesters);
             jenisSelect.addEventListener('change', filterSemesters);
             statusSelect.addEventListener('change', filterSemesters);
+            sortBySelect.addEventListener('change', filterSemesters);
 
             // Add hover effects and animations
             semesterItems.forEach(item => {

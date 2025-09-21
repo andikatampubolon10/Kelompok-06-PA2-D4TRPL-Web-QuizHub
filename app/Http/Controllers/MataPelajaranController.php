@@ -5,38 +5,46 @@ namespace App\Http\Controllers;
 use App\Models\mata_pelajaran;
 use App\Models\kurikulum;
 use App\Models\Operator;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 
 class MataPelajaranController extends Controller
 {
     public function index(Request $request)
-        {
-            $user = auth()->user();
+    {
+        $user = auth()->user();
 
-            $operator = Operator::where('id_user', $user->id)->first();
+        $operator = Operator::where('id_user', $user->id)->first();
 
-            $kurikulums = Kurikulum::where('id_operator', $operator->id_operator)->get();
+        $kurikulums = Kurikulum::where('id_operator', $operator->id_operator)->get();
 
-            if ($request->has('kurikulum') && $request->kurikulum != '') {
-                $mataPelajarans = mata_pelajaran::where('id_kurikulum', $request->kurikulum)
-                    ->with(['operator', 'kurikulum'])
-                    ->get();
-            } else {
-                $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
-            }
-
-            $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
-                ->with(['operator', 'kurikulum']) // You can also load relationships if needed
+        if ($request->has('kurikulum') && $request->kurikulum != '') {
+            $mataPelajarans = mata_pelajaran::where('id_kurikulum', $request->kurikulum)
+                ->with(['operator', 'kurikulum'])
                 ->get();
-
-            return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'kurikulums', 'user'));
+        } else {
+            $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
         }
 
-    public function create()
+        $semesters = Semester::all();
+        $activeSemester = $semesters->first(); // Get first semester as default active
+
+        return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'kurikulums', 'activeSemester', 'semesters', 'user'));
+    }
+
+    public function create(Request $request)
     {
-        $kurikulums = kurikulum::all();
         $user = auth()->user();
-        return view('Role.Operator.Mapel.create', compact('user', 'kurikulums'));
+        
+        $semesterId = $request->get('id_semester');
+        $semester = null;
+        $semesters = Semester::all();
+        
+        if ($semesterId) {
+            $semester = Semester::find($semesterId);
+        }
+        
+        return view('Role.Operator.Mapel.create', compact('user', 'semester', 'semesters'));
     }
 
     public function store(Request $request)
@@ -44,12 +52,12 @@ class MataPelajaranController extends Controller
         // Validation with custom messages
         $request->validate([
             'nama_mata_pelajaran' => 'required|unique:mata_pelajaran',
-            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
+            'id_semester' => 'required|exists:semester,id_semester',
         ], [
             'nama_mata_pelajaran.required' => 'Nama mata pelajaran harus diisi.',
             'nama_mata_pelajaran.unique' => 'Nama mata pelajaran sudah terdaftar.',
-            'id_kurikulum.required' => 'Kurikulum harus dipilih.',
-            'id_kurikulum.exists' => 'Kurikulum yang dipilih tidak valid.',
+            'id_semester.required' => 'Semester harus dipilih.',
+            'id_semester.exists' => 'Semester yang dipilih tidak valid.',
         ]);
 
         $idUser  = auth()->user()->id;
@@ -58,7 +66,7 @@ class MataPelajaranController extends Controller
         mata_pelajaran::create([
             'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
             'id_operator' => $operator->id_operator,
-            'id_kurikulum' => $request->id_kurikulum,
+            'id_semester' => $request->id_semester,
         ]);
 
         return redirect()->route('Operator.MataPelajaran.index')

@@ -41,7 +41,7 @@
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-layer-group text-purple-600 text-xl"></i>
+                            <i class="fas fa-layer-group text-purple-600"></i>
                         </div>
                     </div>
                     <div class="ml-4">
@@ -89,11 +89,19 @@
                     <div class="text-sm text-gray-600">
                         <span id="showing-count">{{ count($mataPelajarans) }}</span> mata pelajaran ditampilkan
                     </div>
-                    <a href="{{ route('Operator.MataPelajaran.create') }}"
-                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>
-                        Tambah Mata Pelajaran
-                    </a>
+                    @if(isset($activeSemester) && $activeSemester)
+                        <a href="{{ route('Operator.MataPelajaran.create', ['id_semester' => $activeSemester->id_semester]) }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Mata Pelajaran
+                        </a>
+                    @else
+                        <a href="{{ route('Operator.MataPelajaran.create') }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Mata Pelajaran
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -194,11 +202,19 @@
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada mata pelajaran</h3>
                         <p class="text-gray-600 mb-6">Mulai dengan menambahkan mata pelajaran pertama Anda.</p>
-                        <a href="{{ route('Operator.MataPelajaran.create') }}"
-                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>
-                            Tambah Mata Pelajaran
-                        </a>
+                        @if(isset($activeSemester) && $activeSemester)
+                            <a href="{{ route('Operator.MataPelajaran.create', ['id_semester' => $activeSemester->id_semester]) }}"
+                                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Tambah Mata Pelajaran
+                            </a>
+                        @else
+                            <a href="{{ route('Operator.MataPelajaran.create') }}"
+                                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Tambah Mata Pelajaran
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>

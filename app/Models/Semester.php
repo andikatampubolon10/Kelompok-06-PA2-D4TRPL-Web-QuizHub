@@ -12,9 +12,12 @@ class Semester extends Model
     protected $table = 'semester';
 
     protected $fillable = [
+        'id_semester',
         'nama_semester',
         'ID_Tahun_Ajaran'
     ];
+
+    protected $primaryKey = 'id_semester';
 
     public function tahun_ajaran()
     {

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id('id_mata_pelajaran');
             $table->string('nama_mata_pelajaran');
             $table->unsignedBigInteger('id_operator');
-            $table->unsignedBigInteger('id_kurikulum');
+            $table->unsignedBigInteger('id_semester');
             $table->foreign('id_operator')->references('id_operator')->on('operator')->onDelete('cascade');
-            $table->foreign('id_kurikulum')->references('id_kurikulum')->on('kurikulum')->onDelete('cascade');
+            $table->foreign('id_semester')->references('id_semester')->on('semester')->onDelete('cascade');
             $table->timestamps();
         });
     }
