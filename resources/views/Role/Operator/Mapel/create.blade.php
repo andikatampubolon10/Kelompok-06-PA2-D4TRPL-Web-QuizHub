@@ -37,7 +37,6 @@
             <form action="{{ route('Operator.MataPelajaran.store') }}" method="POST" class="p-6" id="mataPelajaranForm">
                 @csrf
 
-
                 <!-- Additional Info Section -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div class="flex items-start space-x-3">
@@ -47,7 +46,7 @@
                         <div>
                             <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Menambah Mata Pelajaran</h4>
                             <ul class="text-xs text-blue-700 space-y-1">
-                                <li>• Pastikan kurikulum sudah dipilih sebelum mengisi nama mata pelajaran</li>
+                                <li>• Semester akan dipilih otomatis sesuai parameter URL</li>
                                 <li>• Gunakan nama yang standar dan mudah dipahami</li>
                                 <li>• Hindari penggunaan singkatan yang tidak umum</li>
                                 <li>• Periksa kembali ejaan nama mata pelajaran</li>
@@ -55,99 +54,119 @@
                         </div>
                     </div>
                 </div>
-        </div>
-        <!-- Form Fields -->
-        <div class="space-y-6">
-            <!-- Kurikulum Selection Field -->
-            <div class="space-y-2">
-                <label for="id_kurikulum" class="block text-sm font-semibold text-gray-700">
-                    <i class="fas fa-layer-group text-green-600 mr-2"></i>
-                    Pilih Kurikulum
-                    <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                    <select id="id_kurikulum" name="id_kurikulum"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors @error('id_kurikulum') border-red-500 @enderror appearance-none bg-white">
-                        <option value="">Pilih Kurikulum</option>
-                        @foreach ($kurikulums as $kurikulum)
-                            <option value="{{ $kurikulum->id_kurikulum }}"
-                                {{ old('id_kurikulum') == $kurikulum->id_kurikulum ? 'selected' : '' }}>
-                                {{ $kurikulum->nama_kurikulum }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400"></i>
+
+                <!-- Form Fields -->
+                <div class="space-y-6">
+                    <!-- Semester Selection Field -->
+                    <div class="space-y-2">
+                        <label for="id_semester" class="block text-sm font-semibold text-gray-700">
+                            <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
+                            Semester
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            @if($semester)
+                                <!-- Auto-select semester from URL parameter -->
+                                <input type="hidden" name="id_semester" value="{{ $semester->id_semester }}">
+                                <div class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 flex items-center justify-between">
+                                    <span class="font-medium">{{ $semester->nama_semester }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Dipilih
+                                        </span>
+                                        <i class="fas fa-lock text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Semester dipilih otomatis berdasarkan parameter URL
+                                </p>
+                            @else
+                                <select id="id_semester" name="id_semester"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors @error('id_semester') border-red-500 @enderror appearance-none bg-white">
+                                    <option value="">Pilih Semester</option>
+                                    @foreach ($semesters as $sem)
+                                        <option value="{{ $sem->id_semester }}"
+                                            {{ old('id_semester') == $sem->id_semester ? 'selected' : '' }}>
+                                            {{ $sem->nama_semester }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                                <p class="text-xs text-red-600 mt-1">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Tidak ada semester yang dipilih dari URL. Silakan pilih semester.
+                                </p>
+                            @endif
+                        </div>
+                        @error('id_semester')
+                            <div class="flex items-center space-x-2 text-red-600 text-sm mt-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+                    </div>
+
+                    <!-- Nama Mata Pelajaran Field -->
+                    <div class="space-y-2">
+                        <label for="nama_mata_pelajaran" class="block text-sm font-semibold text-gray-700">
+                            <i class="fas fa-book text-green-600 mr-2"></i>
+                            Nama Mata Pelajaran
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="nama_mata_pelajaran" name="nama_mata_pelajaran"
+                                value="{{ old('nama_mata_pelajaran') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors @error('nama_mata_pelajaran') border-red-500 @enderror"
+                                placeholder="Masukkan nama mata pelajaran (contoh: Matematika, Bahasa Indonesia)">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-edit text-gray-400"></i>
+                            </div>
+                        </div>
+                        @error('nama_mata_pelajaran')
+                            <div class="flex items-center space-x-2 text-red-600 text-sm mt-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Nama mata pelajaran harus unik dalam semester yang dipilih
+                        </p>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Semua field yang bertanda (*) wajib diisi</span>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                            <a href="{{ route('Operator.MataPelajaran.index') }}"
+                                class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali
+                            </a>
+
+                            <button type="button" onclick="previewData()"
+                                class="inline-flex items-center justify-center px-6 py-3 border border-blue-300 text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <i class="fas fa-eye mr-2"></i>
+                                Preview
+                            </button>
+
+                            <button type="submit"
+                                class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan Mata Pelajaran
+                            </button>
+                        </div>
                     </div>
                 </div>
-                @error('id_kurikulum')
-                    <div class="flex items-center space-x-2 text-red-600 text-sm mt-1">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{ $message }}</span>
-                    </div>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Pilih kurikulum yang sesuai untuk mata pelajaran ini
-                </p>
-            </div>
-
-            <!-- Nama Mata Pelajaran Field -->
-            <div class="space-y-2">
-                <label for="nama_mata_pelajaran" class="block text-sm font-semibold text-gray-700">
-                    <i class="fas fa-book text-green-600 mr-2"></i>
-                    Nama Mata Pelajaran
-                    <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                    <input type="text" id="nama_mata_pelajaran" name="nama_mata_pelajaran"
-                        value="{{ old('nama_mata_pelajaran') }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors @error('nama_mata_pelajaran') border-red-500 @enderror"
-                        placeholder="Masukkan nama mata pelajaran (contoh: Matematika, Bahasa Indonesia)">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fas fa-edit text-gray-400"></i>
-                    </div>
-                </div>
-                @error('nama_mata_pelajaran')
-                    <div class="flex items-center space-x-2 text-red-600 text-sm mt-1">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{ $message }}</span>
-                    </div>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Nama mata pelajaran harus unik dalam kurikulum yang dipilih
-                </p>
-            </div>
-
-            <!-- Form Actions -->
-            <div
-                class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                <div class="flex items-center space-x-2 text-sm text-gray-600">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Semua field yang bertanda (*) wajib diisi</span>
-                </div>
-
-                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                    <a href="{{ route('Operator.MataPelajaran.index') }}"
-                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
-
-                    <button type="button" onclick="previewData()"
-                        class="inline-flex items-center justify-center px-6 py-3 border border-blue-300 text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        <i class="fas fa-eye mr-2"></i>
-                        Preview
-                    </button>
-
-                    <button type="submit"
-                        class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                        <i class="fas fa-save mr-2"></i>
-                        Simpan Mata Pelajaran
-                    </button>
-                </div>
-            </div>
             </form>
         </div>
     </div>
@@ -164,8 +183,8 @@
                 </div>
                 <div class="space-y-4">
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <p class="text-sm font-medium text-gray-800">Kurikulum:</p>
-                        <p id="previewKurikulum" class="text-gray-900 font-semibold">-</p>
+                        <p class="text-sm font-medium text-gray-800">Semester:</p>
+                        <p id="previewSemester" class="text-gray-900 font-semibold">-</p>
                     </div>
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
                         <p class="text-sm font-medium text-gray-800">Nama Mata Pelajaran:</p>
@@ -260,11 +279,16 @@
                 return;
             }
 
-            const kurikulumSelect = document.getElementById('id_kurikulum');
-            const kurikulumText = kurikulumSelect.options[kurikulumSelect.selectedIndex].text;
-            const nama = document.getElementById('nama_mata_pelajaran').value;
+            @if($semester)
+                const semesterText = "{{ $semester->nama_semester }}";
+                document.getElementById('previewSemester').textContent = semesterText;
+            @else
+                const semesterSelect = document.getElementById('id_semester');
+                const semesterText = semesterSelect.options[semesterSelect.selectedIndex].text;
+                document.getElementById('previewSemester').textContent = semesterSelect.value ? semesterText : '-';
+            @endif
 
-            document.getElementById('previewKurikulum').textContent = kurikulumSelect.value ? kurikulumText : '-';
+            const nama = document.getElementById('nama_mata_pelajaran').value;
             document.getElementById('previewNama').textContent = nama || '-';
 
             document.getElementById('previewModal').classList.remove('hidden');
@@ -297,23 +321,29 @@
         // Form validation and enhancement
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('mataPelajaranForm');
-            const kurikulumSelect = document.getElementById('id_kurikulum');
+            const semesterSelect = document.getElementById('id_semester');
             const namaInput = document.getElementById('nama_mata_pelajaran');
 
             // Validation functions
             function validateForm() {
                 const errors = [];
-                const kurikulum = kurikulumSelect.value;
+                @if($semester)
+                    const semester = "{{ $semester->id_semester }}";
+                @else
+                    const semester = semesterSelect ? semesterSelect.value : '';
+                @endif
                 const nama = namaInput.value.trim();
 
                 // Reset all field styles
                 resetFieldStyles();
 
-                // Validate Kurikulum
-                if (!kurikulum) {
-                    errors.push('Kurikulum harus dipilih');
-                    markFieldError('id_kurikulum');
-                }
+                @if(!$semester)
+                    // Validate Semester
+                    if (!semester) {
+                        errors.push('Semester harus dipilih');
+                        markFieldError('id_semester');
+                    }
+                @endif
 
                 // Validate Nama Mata Pelajaran
                 if (!nama) {
@@ -339,7 +369,10 @@
             }
 
             function resetFieldStyles() {
-                const fields = ['id_kurikulum', 'nama_mata_pelajaran'];
+                const fields = [
+                    @if(!$semester) 'id_semester', @endif
+                    'nama_mata_pelajaran'
+                ];
                 fields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     if (field) {
@@ -381,7 +414,10 @@
             });
 
             // Real-time validation feedback
-            const inputs = [kurikulumSelect, namaInput];
+            const inputs = [
+                @if(!$semester) semesterSelect, @endif
+                namaInput
+            ].filter(Boolean);
 
             inputs.forEach(input => {
                 if (input) {

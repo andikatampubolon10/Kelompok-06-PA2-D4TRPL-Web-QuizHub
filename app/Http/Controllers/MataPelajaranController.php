@@ -5,17 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\mata_pelajaran;
 use App\Models\kurikulum;
 use App\Models\Operator;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 
 class MataPelajaranController extends Controller
 {
     public function index(Request $request)
-        {
-            $user = auth()->user();
+    {
+        $user = auth()->user();
 
-            $operator = Operator::where('id_user', $user->id)->first();
+        $operator = Operator::where('id_user', $user->id)->first();
 
-<<<<<<< HEAD
         if ($request->has('id_semester') && $request->id_semester != '') {
             $mataPelajarans = mata_pelajaran::where('id_semester', $request->id_semester)
                 ->where('id_operator', $operator->id_operator)
@@ -34,30 +34,23 @@ class MataPelajaranController extends Controller
     }
 
     public function create(Request $request)
-=======
-            $kurikulums = Kurikulum::where('id_operator', $operator->id_operator)->get();
+    {
+        $user = auth()->user();
 
-            if ($request->has('kurikulum') && $request->kurikulum != '') {
-                $mataPelajarans = mata_pelajaran::where('id_kurikulum', $request->kurikulum)
-                    ->with(['operator', 'kurikulum'])
-                    ->get();
-            } else {
-                $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
-            }
+        // Ambil id_semester dari query parameter URL
+        $semesterId = $request->get('id_semester');
 
-            $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
-                ->with(['operator', 'kurikulum']) // You can also load relationships if needed
-                ->get();
+        $semester = null;
 
-            return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'kurikulums', 'user'));
+        // Ambil semua data semester untuk dropdown
+        $semesters = Semester::all();
+
+        // Jika ada id_semester, cari semester berdasarkan id_semester
+        if ($semesterId) {
+            $semester = Semester::where('id_semester', $semesterId)->first(); // pakai 'id_semester' bukan 'id'
         }
 
-    public function create()
->>>>>>> 4fec7715132b29472c95658f2dce39503adea415
-    {
-        $kurikulums = kurikulum::all();
-        $user = auth()->user();
-        return view('Role.Operator.Mapel.create', compact('user', 'kurikulums'));
+        return view('Role.Operator.Mapel.create', compact('user', 'semester', 'semesters'));
     }
 
     public function store(Request $request)
@@ -65,28 +58,28 @@ class MataPelajaranController extends Controller
         // Validation with custom messages
         $request->validate([
             'nama_mata_pelajaran' => 'required|unique:mata_pelajaran',
-            'id_kurikulum' => 'required|exists:kurikulum,id_kurikulum',
+            'id_semester' => 'required|exists:semester,id_semester',
         ], [
             'nama_mata_pelajaran.required' => 'Nama mata pelajaran harus diisi.',
             'nama_mata_pelajaran.unique' => 'Nama mata pelajaran sudah terdaftar.',
-            'id_kurikulum.required' => 'Kurikulum harus dipilih.',
-            'id_kurikulum.exists' => 'Kurikulum yang dipilih tidak valid.',
+            'id_semester.required' => 'Semester harus dipilih.',
+            'id_semester.exists' => 'Semester yang dipilih tidak valid.',
         ]);
 
         $idUser  = auth()->user()->id;
         $operator = Operator::where('id_user', $idUser)->first();
-        
+
         mata_pelajaran::create([
             'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
             'id_operator' => $operator->id_operator,
-            'id_kurikulum' => $request->id_kurikulum,
+            'id_semester' => $request->id_semester,
         ]);
 
         $redirectUrl = route('Operator.MataPelajaran.index');
         if ($request->id_semester) {
             $redirectUrl .= '?id_semester=' . $request->id_semester;
         }
-        
+
         return redirect($redirectUrl)
             ->with('success', 'Mata Pelajaran berhasil ditambahkan.');
     }
@@ -101,17 +94,17 @@ class MataPelajaranController extends Controller
     {
         $user = auth()->user();
         $operator = Operator::where('id_user', $user->id)->first();
-        
+
         $mataPelajaran = mata_pelajaran::with('semester')->findOrFail($id);
-        
+
         // Check if the mata pelajaran belongs to the current operator
         if ($mataPelajaran->id_operator !== $operator->id_operator) {
             return redirect()->route('Operator.MataPelajaran.index')
                 ->with('error', 'Anda tidak memiliki akses untuk mengedit mata pelajaran ini.');
         }
-        
+
         $semesters = Semester::all();
-        
+
         return view('Role.Operator.Mapel.edit', compact('mataPelajaran', 'semesters', 'user'));
     }
 
@@ -129,15 +122,15 @@ class MataPelajaranController extends Controller
 
         $user = auth()->user();
         $operator = Operator::where('id_user', $user->id)->first();
-        
+
         $mataPelajaran = mata_pelajaran::findOrFail($id);
-        
+
         // Check if the mata pelajaran belongs to the current operator
         if ($mataPelajaran->id_operator !== $operator->id_operator) {
             return redirect()->route('Operator.MataPelajaran.index')
                 ->with('error', 'Anda tidak memiliki akses untuk mengedit mata pelajaran ini.');
         }
-        
+
         $mataPelajaran->update([
             'nama_mata_pelajaran' => $request->nama_mata_pelajaran,
             'id_semester' => $request->id_semester,
@@ -156,15 +149,15 @@ class MataPelajaranController extends Controller
     {
         $user = auth()->user();
         $operator = Operator::where('id_user', $user->id)->first();
-        
+
         $mataPelajaran = mata_pelajaran::findOrFail($id);
-        
+
         // Check if the mata pelajaran belongs to the current operator
         if ($mataPelajaran->id_operator !== $operator->id_operator) {
             return redirect()->route('Operator.MataPelajaran.index')
                 ->with('error', 'Anda tidak memiliki akses untuk menghapus mata pelajaran ini.');
         }
-        
+
         $mataPelajaran->delete();
 
         return redirect()->route('Operator.MataPelajaran.index')
