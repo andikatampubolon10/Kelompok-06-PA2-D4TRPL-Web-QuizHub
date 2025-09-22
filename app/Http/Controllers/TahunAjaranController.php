@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TahunAjaran;
-use App\Models\Kurikulum;
+use App\Models\kurikulum;
 use App\Models\Semester;
 use App\Models\Operator;
 use Illuminate\Http\Request;
