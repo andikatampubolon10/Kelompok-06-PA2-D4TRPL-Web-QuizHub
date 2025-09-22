@@ -82,7 +82,7 @@
                 </div>
 
                 <!-- Login Form -->
-                <form class="space-y-6" method="POST" action="{{ route('login') }}" novalidate>
+                <form class="space-y-6" method="POST" action="{{ route('login.store') }}" novalidate>
                     @csrf
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2" for="email">

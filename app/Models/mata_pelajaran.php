@@ -15,7 +15,7 @@ class mata_pelajaran extends Model
         'id_mata_pelajaran',
         'nama_mata_pelajaran',
         'id_operator',
-        'id_semester',
+        'id_kurikulum',
     ];
 
     public function operator()
