@@ -32,13 +32,9 @@
                             <p class="text-blue-900 font-semibold">{{ $mataPelajaran->nama_mata_pelajaran }}</p>
                         </div>
                         <div class="bg-white bg-opacity-60 rounded-lg p-3">
-                            <p class="text-blue-700 font-medium">Kurikulum:</p>
+                            <p class="text-blue-700 font-medium">Semester:</p>
                             <p class="text-blue-900 font-semibold">
-                                @foreach ($kurikulums as $kurikulum)
-                                    @if ($kurikulum->id_kurikulum == $mataPelajaran->id_kurikulum)
-                                        {{ $kurikulum->nama_kurikulum }}
-                                    @endif
-                                @endforeach
+                                {{ $mataPelajaran->semester ? $mataPelajaran->semester->nama_semester : 'Tidak ada semester' }}
                             </p>
                         </div>
                     </div>
@@ -94,6 +90,40 @@
                         <p class="text-xs text-gray-500 mt-1">
                             <i class="fas fa-info-circle mr-1"></i>
                             Pastikan nama mata pelajaran yang baru berbeda dan mudah diidentifikasi
+                        </p>
+                    </div>
+
+                    <!-- Semester Field -->
+                    <div class="space-y-2">
+                        <label for="id_semester" class="block text-sm font-semibold text-gray-700">
+                            <i class="fas fa-calendar text-green-600 mr-2"></i>
+                            Semester
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select id="id_semester" name="id_semester"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors @error('id_semester') border-red-500 @enderror">
+                                <option value="">Pilih Semester</option>
+                                @foreach($semesters as $semester)
+                                    <option value="{{ $semester->id_semester }}" 
+                                        {{ old('id_semester', $mataPelajaran->id_semester) == $semester->id_semester ? 'selected' : '' }}>
+                                        {{ $semester->nama_semester }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        @error('id_semester')
+                            <div class="flex items-center space-x-2 text-red-600 text-sm mt-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Pilih semester untuk mata pelajaran ini
                         </p>
                     </div>
 
@@ -169,6 +199,10 @@
                     <div class="bg-green-50 border border-green-200 rounded-lg p-3">
                         <p class="text-sm font-medium text-green-800">Nama Baru:</p>
                         <p id="previewNewName" class="text-green-900">-</p>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p class="text-sm font-medium text-green-800">Semester Baru:</p>
+                        <p id="previewNewSemester" class="text-green-900">-</p>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
@@ -247,9 +281,9 @@
     @endif
 
     <script>
-        // Original data for comparison
         const originalData = {
-            nama: '{{ $mataPelajaran->nama_mata_pelajaran }}'
+            nama: '{{ $mataPelajaran->nama_mata_pelajaran }}',
+            semester: '{{ $mataPelajaran->id_semester }}'
         };
 
         function closeAlert(alertId) {
@@ -265,7 +299,11 @@
             }
 
             const nama = document.getElementById('nama_mata_pelajaran').value;
+            const semesterSelect = document.getElementById('id_semester');
+            const semesterText = semesterSelect.options[semesterSelect.selectedIndex].text;
+            
             document.getElementById('previewNewName').textContent = nama || '-';
+            document.getElementById('previewNewSemester').textContent = semesterText || '-';
             document.getElementById('previewModal').classList.remove('hidden');
         }
 
@@ -293,7 +331,6 @@
             }
         }
 
-        // Auto close alerts after 5 seconds
         setTimeout(() => {
             const successAlert = document.getElementById('successAlert');
             const errorAlert = document.getElementById('errorAlert');
@@ -301,20 +338,18 @@
             if (errorAlert) errorAlert.style.display = 'none';
         }, 5000);
 
-        // Form validation and enhancement
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('editMataPelajaranForm');
             const namaInput = document.getElementById('nama_mata_pelajaran');
+            const semesterSelect = document.getElementById('id_semester');
 
-            // Validation functions
             function validateForm() {
                 const errors = [];
                 const nama = namaInput.value.trim();
+                const semester = semesterSelect.value;
 
-                // Reset all field styles
                 resetFieldStyles();
 
-                // Validate Nama Mata Pelajaran
                 if (!nama) {
                     errors.push('Nama Mata Pelajaran harus diisi');
                     markFieldError('nama_mata_pelajaran');
@@ -326,11 +361,16 @@
                     markFieldError('nama_mata_pelajaran');
                 }
 
-                // Check if any changes were made
-                const currentNama = document.getElementById('nama_mata_pelajaran').value.trim();
+                if (!semester) {
+                    errors.push('Semester harus dipilih');
+                    markFieldError('id_semester');
+                }
 
-                if (currentNama === originalData.nama) {
-                    errors.push('Tidak ada perubahan yang dilakukan. Silakan ubah nama mata pelajaran.');
+                const currentNama = document.getElementById('nama_mata_pelajaran').value.trim();
+                const currentSemester = document.getElementById('id_semester').value;
+
+                if (currentNama === originalData.nama && currentSemester === originalData.semester) {
+                    errors.push('Tidak ada perubahan yang dilakukan. Silakan ubah nama mata pelajaran atau pilih semester yang berbeda.');
                 }
 
                 return errors;
@@ -345,7 +385,7 @@
             }
 
             function resetFieldStyles() {
-                const fields = ['nama_mata_pelajaran'];
+                const fields = ['nama_mata_pelajaran', 'id_semester'];
                 fields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     if (field) {
@@ -371,9 +411,8 @@
                 document.getElementById('validationModal').classList.add('hidden');
             }
 
-            // Form validation
             form.addEventListener('submit', function(e) {
-                e.preventDefault(); // Always prevent default first
+                e.preventDefault();
 
                 const errors = validateForm();
 
@@ -382,17 +421,13 @@
                     return false;
                 }
 
-                // If no errors, submit the form
                 this.submit();
             });
 
-            // Real-time validation feedback
             if (namaInput) {
                 namaInput.addEventListener('input', function() {
-                    // Remove error styling when user starts typing
                     this.classList.remove('border-red-500', 'bg-red-50');
 
-                    // Check if value has changed from original
                     const hasChanged = this.value.trim() !== originalData.nama;
 
                     if (this.value.trim() !== '' && hasChanged) {
@@ -403,7 +438,6 @@
                 });
 
                 namaInput.addEventListener('blur', function() {
-                    // Validate individual field on blur
                     const errors = validateForm();
                     if (errors.length === 0) {
                         this.classList.add('border-green-500');
@@ -412,7 +446,18 @@
                 });
             }
 
-            // Make functions globally available
+            if (semesterSelect) {
+                semesterSelect.addEventListener('change', function() {
+                    const hasChanged = this.value !== originalData.semester;
+
+                    if (hasChanged) {
+                        this.classList.add('border-green-500');
+                    } else {
+                        this.classList.remove('border-green-500');
+                    }
+                });
+            }
+
             window.validateForm = validateForm;
             window.showValidationModal = showValidationModal;
             window.closeValidationModal = closeValidationModal;

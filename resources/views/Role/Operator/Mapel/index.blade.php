@@ -31,8 +31,9 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Kurikulum Aktif</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ count($kurikulums) }}</p>
+                        <!-- Updated to show semester count instead of kurikulum -->
+                        <p class="text-sm font-medium text-gray-600">Semester Aktif</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ count($semesters) }}</p>
                     </div>
                 </div>
             </div>
@@ -46,8 +47,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Kategori</p>
+                        <!-- Updated to group by semester instead of kurikulum -->
                         <p class="text-2xl font-semibold text-gray-900">
-                            {{ $mataPelajarans->groupBy('id_kurikulum')->count() }}
+                            {{ $mataPelajarans->groupBy('id_semester')->count() }}
                         </p>
                     </div>
                 </div>
@@ -72,15 +74,18 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div class="flex-1 max-w-md">
-                    <label for="kurikulum" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <!-- Updated filter to use semester instead of kurikulum -->
+                    <label for="semester" class="block text-sm font-semibold text-gray-700 mb-2">
                         <i class="fas fa-filter text-green-600 mr-2"></i>
-                        Filter Berdasarkan Kurikulum
+                        Filter Berdasarkan Semester
                     </label>
-                    <select id="kurikulum" name="kurikulum"
+                    <select id="semester" name="semester" onchange="filterBySemester()"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
-                        <option value="">Semua Kurikulum</option>
-                        @foreach ($kurikulums as $kurikulum)
-                            <option value="{{ $kurikulum->id_kurikulum }}">{{ $kurikulum->nama_kurikulum }}</option>
+                        <option value="">Semua Semester</option>
+                        @foreach ($semesters as $semester)
+                            <option value="{{ $semester->id_semester }}" {{ request('id_semester') == $semester->id_semester ? 'selected' : '' }}>
+                                {{ $semester->nama_semester }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -127,8 +132,9 @@
                 @if (count($mataPelajarans) > 0)
                     <div id="mapel-list" class="space-y-4">
                         @foreach ($mataPelajarans as $mapel)
+                            <!-- Updated data attribute to use semester -->
                             <div class="mapel-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-green-50 hover:to-emerald-50 hover:border-green-200"
-                                data-kurikulum="{{ $mapel->id_kurikulum }}">
+                                data-semester="{{ $mapel->id_semester }}">
                                 <div
                                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                     <div class="flex-1">
@@ -144,17 +150,13 @@
                                                     </h4>
                                                 </a>
                                                 <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                                    <!-- Updated to show semester instead of kurikulum -->
                                                     <span class="flex items-center">
-                                                        <i class="fas fa-layer-group mr-2 text-green-600"></i>
-                                                        Kurikulum:
-                                                        @foreach ($kurikulums as $kurikulum)
-                                                            @if ($kurikulum->id_kurikulum == $mapel->id_kurikulum)
-                                                                {{ $kurikulum->nama_kurikulum }}
-                                                            @endif
-                                                        @endforeach
+                                                        <i class="fas fa-calendar-alt mr-2 text-green-600"></i>
+                                                        Semester: {{ $mapel->semester->nama_semester ?? 'N/A' }}
                                                     </span>
                                                     <span class="flex items-center">
-                                                        <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                                                        <i class="fas fa-clock mr-2 text-blue-600"></i>
                                                         Dibuat:
                                                         {{ $mapel->created_at ? $mapel->created_at->format('d M Y') : 'N/A' }}
                                                     </span>
@@ -175,8 +177,9 @@
                                             <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"></i>
                                             Edit
                                         </a>
+                                        <!-- Updated detail modal to show semester info -->
                                         <button
-                                            onclick="showDetailModal('{{ $mapel->nama_mata_pelajaran }}', '{{ $kurikulums->where('id_kurikulum', $mapel->id_kurikulum)->first()->nama_kurikulum ?? 'N/A' }}', '{{ $mapel->created_at ? $mapel->created_at->format('d M Y, H:i') : 'N/A' }}')"
+                                            onclick="showDetailModal('{{ $mapel->nama_mata_pelajaran }}', '{{ $mapel->semester->nama_semester ?? 'N/A' }}', '{{ $mapel->created_at ? $mapel->created_at->format('d M Y, H:i') : 'N/A' }}')"
                                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-lg hover:bg-green-200 transition-colors">
                                             <i class="fas fa-eye mr-2"></i>
                                             Detail
@@ -193,7 +196,7 @@
                             <i class="fas fa-search text-gray-400 text-3xl"></i>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada mata pelajaran ditemukan</h3>
-                        <p class="text-gray-600 mb-6">Coba ubah filter kurikulum atau tambah mata pelajaran baru.</p>
+                        <p class="text-gray-600 mb-6">Coba ubah filter semester atau tambah mata pelajaran baru.</p>
                     </div>
                 @else
                     <div class="text-center py-12">
@@ -246,11 +249,12 @@
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <div class="flex items-center space-x-3 mb-3">
                             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-layer-group text-blue-600"></i>
+                                <i class="fas fa-calendar-alt text-blue-600"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Kurikulum</p>
-                                <p id="detailKurikulum" class="text-lg font-semibold text-gray-900">-</p>
+                                <!-- Updated label from Kurikulum to Semester -->
+                                <p class="text-sm font-medium text-gray-600">Semester</p>
+                                <p id="detailSemester" class="text-lg font-semibold text-gray-900">-</p>
                             </div>
                         </div>
                     </div>
@@ -311,39 +315,23 @@
     @endif
 
     <script>
-        // Filter functionality
-        document.getElementById('kurikulum').addEventListener('change', function() {
-            const selectedKurikulum = this.value;
-            const mapelItems = document.querySelectorAll('.mapel-item');
-            const noResults = document.getElementById('no-results');
-            const showingCount = document.getElementById('showing-count');
-            let visibleCount = 0;
-
-            mapelItems.forEach(item => {
-                const itemKurikulum = item.getAttribute('data-kurikulum');
-                if (selectedKurikulum === '' || itemKurikulum === selectedKurikulum) {
-                    item.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-
-            // Update showing count
-            showingCount.textContent = visibleCount;
-
-            // Show/hide no results message
-            if (visibleCount === 0) {
-                noResults.classList.remove('hidden');
+        function filterBySemester() {
+            const selectedSemester = document.getElementById('semester').value;
+            const currentUrl = new URL(window.location.href);
+            
+            if (selectedSemester) {
+                currentUrl.searchParams.set('id_semester', selectedSemester);
             } else {
-                noResults.classList.add('hidden');
+                currentUrl.searchParams.delete('id_semester');
             }
-        });
+            
+            window.location.href = currentUrl.toString();
+        }
 
-        // Detail modal functions
-        function showDetailModal(nama, kurikulum, tanggal) {
+        // Detail modal functions - Updated to use semester parameter
+        function showDetailModal(nama, semester, tanggal) {
             document.getElementById('detailNama').textContent = nama;
-            document.getElementById('detailKurikulum').textContent = kurikulum;
+            document.getElementById('detailSemester').textContent = semester;
             document.getElementById('detailTanggal').textContent = tanggal;
             document.getElementById('detailModal').classList.remove('hidden');
         }

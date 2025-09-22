@@ -20,12 +20,12 @@ class mata_pelajaran extends Model
 
     public function operator()
     {
-        return $this->belongsTo(Operator::class);
+        return $this->belongsTo(Operator::class, 'id_operator', 'id_operator');
     }
 
-    public function kurikulum()
+    public function semester()
     {
-        return $this->belongsTo(kurikulum::class);
+        return $this->belongsTo(Semester::class, 'id_semester', 'id_semester');
     }
 
     public function mata_pelajaran_siswa()
