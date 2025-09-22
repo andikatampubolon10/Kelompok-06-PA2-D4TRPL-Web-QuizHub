@@ -178,7 +178,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const startDateInput = document.getElementById('Mulai_Tahun_Ajaran');
             const endDateInput = document.getElementById('Selesai_Tahun_Ajaran');
-            const nameInput = document.getElementById('Nama_Tahun_Ajaran');
             const form = document.getElementById('tahunAjaranForm');
 
             const today = new Date().toISOString().split('T')[0];
@@ -190,20 +189,6 @@
                 startDateInput.addEventListener('change', function() {
                     const startDate = startDateInput.value;
                     endDateInput.min = startDate;
-
-                    if (startDate) {
-                        const startDateObj = new Date(startDate);
-                        const endDateObj = new Date(startDateObj);
-                        endDateObj.setFullYear(startDateObj.getFullYear() + 1);
-                        
-                        // Format the end date to YYYY-MM-DD
-                        const endDateFormatted = endDateObj.toISOString().split('T')[0];
-                        endDateInput.value = endDateFormatted;
-
-                        const startYear = startDateObj.getFullYear();
-                        const endYear = endDateObj.getFullYear();
-                        nameInput.value = `${startYear}/${endYear}`;
-                    }
 
                     if (endDateInput.value && endDateInput.value < startDate) {
                         endDateInput.value = '';

@@ -54,7 +54,7 @@ class User extends Authenticatable
      * Get the courses associated with the user.
      */
     public function guru(){
-         return $this->hasOne(guru::class, 'id_user', 'id');
+         return $this->hasOne(\App\Models\guru::class, 'id_user', 'id');
     }
     
     public function operator(){
