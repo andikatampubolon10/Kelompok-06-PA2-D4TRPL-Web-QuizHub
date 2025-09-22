@@ -70,31 +70,10 @@
             </div>
         </div>
 
-        <!-- Filter and Add Button Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <div class="flex-1 max-w-md">
-                    <!-- Updated filter to use semester instead of kurikulum -->
-                    <label for="semester" class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-filter text-green-600 mr-2"></i>
-                        Filter Berdasarkan Semester
-                    </label>
-                    <select id="semester" name="semester" onchange="filterBySemester()"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
-                        <option value="">Semua Semester</option>
-                        @foreach ($semesters as $semester)
-                            <option value="{{ $semester->id_semester }}" {{ request('id_semester') == $semester->id_semester ? 'selected' : '' }}>
-                                {{ $semester->nama_semester }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-3">
-                    <div class="text-sm text-gray-600">
-                        <span id="showing-count">{{ count($mataPelajarans) }}</span> mata pelajaran ditampilkan
-                    </div>
-                    @if(isset($activeSemester) && $activeSemester)
+                <div class="flex sm:ml-auto"> <!-- Menambahkan flex untuk mengatur tombol agar berada di kanan -->
+                    @if (isset($activeSemester) && $activeSemester)
                         <a href="{{ route('Operator.MataPelajaran.create', ['id_semester' => $activeSemester->id_semester]) }}"
                             class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                             <i class="fas fa-plus mr-2"></i>
@@ -119,10 +98,6 @@
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Daftar Mata Pelajaran</h3>
                         <p class="text-sm text-gray-600 mt-1">Kelola dan atur mata pelajaran sekolah</p>
-                    </div>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Klik mata pelajaran untuk melihat detail</span>
                     </div>
                 </div>
             </div>
@@ -205,7 +180,7 @@
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada mata pelajaran</h3>
                         <p class="text-gray-600 mb-6">Mulai dengan menambahkan mata pelajaran pertama Anda.</p>
-                        @if(isset($activeSemester) && $activeSemester)
+                        @if (isset($activeSemester) && $activeSemester)
                             <a href="{{ route('Operator.MataPelajaran.create', ['id_semester' => $activeSemester->id_semester]) }}"
                                 class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                                 <i class="fas fa-plus mr-2"></i>
@@ -318,13 +293,13 @@
         function filterBySemester() {
             const selectedSemester = document.getElementById('semester').value;
             const currentUrl = new URL(window.location.href);
-            
+
             if (selectedSemester) {
                 currentUrl.searchParams.set('id_semester', selectedSemester);
             } else {
                 currentUrl.searchParams.delete('id_semester');
             }
-            
+
             window.location.href = currentUrl.toString();
         }
 
