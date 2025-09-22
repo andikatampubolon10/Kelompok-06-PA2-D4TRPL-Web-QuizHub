@@ -6,7 +6,7 @@
 
 
 @section('content')
-{{-- @dd($id_semester) --}}
+    {{-- @dd($id_semester) --}}
     <div class="space-y-6">
         {{-- @dd($id_tahun_ajaran) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
@@ -159,7 +159,7 @@
                 @if (count($semesters) > 0)
                     <div class="space-y-4">
                         @foreach ($semesters as $semester)
-                        {{-- @dd($semester) --}}
+                            {{-- @dd($semester) --}}
                             <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-purple-50 hover:to-indigo-50 hover:border-purple-200 semester-item"
                                 data-tahun="{{ $semester->tahun_akademik }}" data-jenis="{{ $semester->jenis_semester }}"
                                 data-status="{{ $semester->status }}">
@@ -173,10 +173,13 @@
                                                     class="fas {{ $semester->jenis_semester == 'Ganjil' ? 'fa-calendar-alt' : 'fa-calendar-check' }} text-white text-2xl"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <h4 class="text-xl font-semibold text-gray-900 mb-2">
-                                                    Semester {{ $semester->nama_semester }}
-                                                    {{ $semester->tahun_akademik }}
-                                                </h4>
+                                                <a
+                                                        href="{{ route('Operator.MataPelajaran.index', ['id_semester' => $semester->id_semester]) }}">
+                                                        <h4 class="text-xl font-semibold text-gray-900 mb-2">
+                                                            Semester {{ $semester->nama_semester }}
+                                                            {{ $semester->tahun_akademik }}
+                                                        </h4>
+                                                    </a>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                                                     <span class="flex items-center">
                                                         <i class="fas fa-calendar mr-2 text-blue-600"></i>
@@ -216,8 +219,7 @@
                                             <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"></i>
                                             Edit
                                         </a>
-                                        <form action="#"
-                                            method="POST" class="inline">
+                                        <form action="#" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" onclick="confirmDelete(this)"
