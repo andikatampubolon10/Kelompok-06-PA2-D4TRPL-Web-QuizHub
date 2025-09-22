@@ -315,4 +315,40 @@
             }
         });
     </script>
+
+    {{-- CDN SweetAlert2 (taruh di bawah, sebelum @endsection / penutup body) --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Notifikasi BERHASIL
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: @json(session('success')),
+            confirmButtonText: 'OK'
+        });
+    @endif
+
+    // Notifikasi GAGAL umum (mis. from ->with('error', '...'))
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: @json(session('error')),
+            confirmButtonText: 'Tutup'
+        });
+    @endif
+
+    // Notifikasi VALIDASI (error bag)
+    @if ($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+            confirmButtonText: 'Perbaiki'
+        });
+    @endif
+</script>
+
 @endsection

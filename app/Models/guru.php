@@ -27,23 +27,25 @@ class Guru extends Model
 
     public function operator()
     {
-        return $this->belongsTo(Operator::class);
+        return $this->belongsTo(Operator::class, 'id_operator', 'id_operator');
     }
+
 
     public function kursus()
     {
-        return $this->hasMany(Kursus::class, 'id_guru', 'id_guru','id_guru','id_guru');
+        return $this->hasMany(Kursus::class, 'id_guru', 'id_guru');
     }
+
 
     public function latihan()
     {
-        return $this->hasMany(Latihan::class);
+        return $this->hasMany(Latihan::class, 'id_guru', 'id_guru');
     }
 
-    public function guru_mata_pelajaran()
-    {
-        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
-    }
+    // public function guru_mata_pelajaran()
+    // {
+    //     return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
+    // }
 
     public function ujian()
     {
@@ -52,16 +54,17 @@ class Guru extends Model
 
     public function materi()
     {
-        return $this->hasMany(Materi::class, 'id_materi', 'id_materi');
+        return $this->hasMany(Materi::class,  'id_guru', 'id_guru');
     }
 
     public function nilai()
     {
-        return $this->hasMany(Nilai::class, 'id_kursus', 'id_kursus');
+        return $this->hasMany(Nilai::class,   'id_guru', 'id_guru');
     }
 
     public function mataPelajaran()
     {
-        return $this->belongsToMany(mata_pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
+        return $this->belongsTo(Mata_Pelajaran::class, 'id_mata_pelajaran', 'id_mata_pelajaran');
     }
+
 }

@@ -85,12 +85,13 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
+        Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload');
+        Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import');
         Route::resource('/Guru', GuruController::class);
         Route::get('/Course/beranda', [CourseController::class, 'beranda'])->name('Course.beranda');
         Route::resource('/Course', CourseController::class);
         Route::resource('semester', SemesterController::class);
-        Route::get('/Guru/upload', [GuruController::class, 'upload'])->name('Guru.upload');
-        Route::post('/Guru/import', [GuruController::class, 'import'])->name('Guru.import');
+ 
 
         Route::resource('/Siswa', SiswaController::class);
         Route::get('/Siswa/upload', [SiswaController::class, 'upload'])->name('Siswa.upload');
