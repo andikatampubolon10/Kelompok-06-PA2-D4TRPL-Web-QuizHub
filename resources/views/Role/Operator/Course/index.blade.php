@@ -117,14 +117,12 @@
                         </button>
                     </div>
 
-                    @if ($courses->isEmpty())
                         <a href="{{ route('Operator.Course.create', ['id_mata_pelajaran' => $id_mata_pelajaran]) }}"
                             aria-label="Tambah kursus pertama"
                             class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-plus mr-2" aria-hidden="true"></i>
                             Tambah Kursus
                         </a>
-                    @endif
                 </div>
             </div>
         </div>
