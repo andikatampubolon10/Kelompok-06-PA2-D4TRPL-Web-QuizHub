@@ -63,19 +63,22 @@ class GuruController extends Controller
 
     public function create()
     {
-        $mataPelajaran = mata_pelajaran::all();
         $user = auth()->user();
-
-        $mataPelajarans = mata_pelajaran::with('guru')
-            ->where('id_operator', $operator->id_operator)
-            ->get();
 
         if (!$user) {
             return redirect()->route('login');
         }
+
+        // Ambil operator berdasarkan user login
+        $operator = Operator::where('id_user', $user->id)->first();
+
+        // Ambil mata pelajaran + relasi guru berdasarkan operator
+        $mataPelajaran = mata_pelajaran::with('guru')
+            ->where('id_operator', $operator->id_operator)
+            ->get();
+
         return view('Role.Operator.Guru.create', compact('user', 'mataPelajaran'));
     }
-
 
     public function store(Request $request)
     {

@@ -13,21 +13,20 @@ class Kursus extends Model
     protected $appends = ['foto_url'];
 
     protected $fillable = [
-        'id_kursus',
         'nama_kursus',
         'password',
-        'id_guru',
         'image',
         'image_url',
+        'id_guru',
         'id_mata_pelajaran',
-        'id_operator',
         'id_kelas',
         'ID_Tahun_Ajaran',
+        'id_operator',
     ];
 
     public function guru()
     {
-        return $this->belongsTo(guru::class, 'id_guru', 'id_guru','id_guru','id_guru');
+        return $this->belongsTo(guru::class, 'id_guru', 'id_guru', 'id_guru', 'id_guru');
     }
 
     public function kelas()

@@ -8,9 +8,8 @@
     <div class="space-y-6">
 
         <!-- Stats Cards -->
-        <div class="flex flex-col md:flex-row gap-6 mb-8 justify-center">
-            <!-- Card 1 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full md:w-1/3 max-w-sm">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -24,8 +23,22 @@
                 </div>
             </div>
 
-            <!-- Card 2 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full md:w-1/3 max-w-sm">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <!-- Updated to show semester count instead of kurikulum -->
+                        <p class="text-sm font-medium text-gray-600">Semester Aktif</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ count($semesters) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -34,6 +47,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Kategori</p>
+                        <!-- Updated to group by semester instead of kurikulum -->
                         <p class="text-2xl font-semibold text-gray-900">
                             {{ $mataPelajarans->groupBy('id_semester')->count() }}
                         </p>
@@ -41,8 +55,7 @@
                 </div>
             </div>
 
-            <!-- Card 3 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full md:w-1/3 max-w-sm">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -106,12 +119,11 @@
                                                 <i class="fas fa-book-open text-white text-lg"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <div class="space-y-2">
-                                                    <a href="{{ route('Operator.Course.beranda', ['id_mata_pelajaran' => $mapel->id_mata_pelajaran]) }}"
-                                                        class="block text-xl font-semibold text-gray-900 hover:text-blue-600">
+                                                <a href="{{ route('Operator.Course.beranda') }}">
+                                                    <h4 class="text-xl font-semibold text-gray-900 mb-2">
                                                         {{ $mapel->nama_mata_pelajaran }}
-                                                    </a>
-                                                </div>
+                                                    </h4>
+                                                </a>
                                                 <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                                                     <!-- Updated to show semester instead of kurikulum -->
                                                     <span class="flex items-center">

@@ -152,7 +152,6 @@
                             value="{{ $tahunAjaranAktif->Nama_Tahun_Ajaran }}" readonly>
                         <p class="text-xs text-gray-500">Tahun ajaran aktif saat ini</p>
                     </div>
-
                     <!-- Subject Selection -->
                     <div class="space-y-2">
                         <label for="mata_pelajaran" class="block text-sm font-semibold text-gray-700">
@@ -199,6 +198,35 @@
                         <p class="text-xs text-gray-500">Guru akan muncul setelah memilih mata pelajaran</p>
                     </div>
 
+                    <!-- Dynamic JS Filter -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const mapelGuruData = @json($mataPelajarans);
+                            const mapelSelect = document.getElementById('mata_pelajaran');
+                            const guruSelect = document.getElementById('guru');
+
+                            mapelSelect.addEventListener('change', function() {
+                                const selectedMapelId = this.value;
+
+                                // Kosongkan dropdown guru
+                                guruSelect.innerHTML = '<option value="">Pilih Guru</option>';
+
+                                // Cari mapel yang sesuai
+                                const selectedMapel = mapelGuruData.find(mp => mp.id_mata_pelajaran == selectedMapelId);
+
+                                if (selectedMapel && selectedMapel.guru && selectedMapel.guru.length > 0) {
+                                    selectedMapel.guru.forEach(g => {
+                                        const option = document.createElement('option');
+                                        option.value = g.id_guru;
+                                        option.textContent = g.nama_guru;
+                                        guruSelect.appendChild(option);
+                                    });
+                                } else {
+                                    guruSelect.innerHTML = '<option value="">Tidak ada guru untuk mapel ini</option>';
+                                }
+                            });
+                        });
+                    </script>
                     <!-- Class Selection -->
                     <div class="space-y-2">
                         <label for="kelas" class="block text-sm font-semibold text-gray-700">
@@ -343,140 +371,146 @@
     </div>
 
     <script>
-                document.getElementById('mata_pelajaran').addEventListener('change', function() {
-                const selectedMapel = this.value;
-                const guruSelect = document.getElementById('guru');
+        document.addEventListener('DOMContentLoaded', function() {
+            const dataGuru = @json($mataPelajarans);
+            const selectMapel = document.getElementById('mata_pelajaran');
+            const selectGuru = document.getElementById('guru');
 
-                guruSelect.innerHTML = '<option value="">Pilih Guru</option>';
+            selectMapel.addEventListener('change', function() {
+                const selectedMapel = this.value;
+
+                // Kosongkan dulu daftar guru
+                selectGuru.innerHTML = '<option value="">Pilih Guru</option>';
 
                 if (selectedMapel !== '') {
-                    const dataGuru = @json($mataPelajarans);
+                    const selected = dataGuru.find(item => item.id_mata_pelajaran == selectedMapel);
 
-                    const mapel = dataGuru.find(m => m.id_mata_pelajaran == selectedMapel);
-
-                    if (mapel && mapel.guru) {
-                        mapel.guru.forEach(guru => {
+                    if (selected && selected.guru && selected.guru.length > 0) {
+                        selected.guru.forEach(g => {
                             const option = document.createElement('option');
-                            option.value = guru.id_guru;
-                            option.text = guru.nama_guru;
-                            guruSelect.appendChild(option);
+                            option.value = g.id_guru;
+                            option.textContent = g.nama_guru;
+                            selectGuru.appendChild(option);
                         });
+                    } else {
+                        selectGuru.innerHTML = '<option value="">Tidak ada guru tersedia</option>';
                     }
                 } else {
-                    guruSelect.innerHTML = '<option value="">Pilih mata pelajaran terlebih dahulu</option>';
+                    selectGuru.innerHTML = '<option value="">Pilih mata pelajaran terlebih dahulu</option>';
                 }
             });
+        });
 
-    // Password toggle functionality
-    function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const eye = document.getElementById(fieldId + '-eye');
+        // Password toggle functionality
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const eye = document.getElementById(fieldId + '-eye');
 
-    if (field.type === 'password') {
-    field.type = 'text';
-    eye.classList.remove('fa-eye');
-    eye.classList.add('fa-eye-slash');
-    } else {
-    field.type = 'password';
-    eye.classList.remove('fa-eye-slash');
-    eye.classList.add('fa-eye');
-    }
-    }
+            if (field.type === 'password') {
+                field.type = 'text';
+                eye.classList.remove('fa-eye');
+                eye.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                eye.classList.remove('fa-eye-slash');
+                eye.classList.add('fa-eye');
+            }
+        }
 
-    // Image preview functionality
-    function previewImage(input) {
-    const preview = document.getElementById('imagePreview');
-    const previewImg = document.getElementById('previewImg');
+        // Image preview functionality
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
 
-    if (input.files && input.files[0]) {
-    const reader = new FileReader();
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
 
-    reader.onload = function(e) {
-    previewImg.src = e.target.result;
-    preview.classList.remove('hidden');
-    }
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
 
-    reader.readAsDataURL(input.files[0]);
-    } else {
-    preview.classList.add('hidden');
-    }
-    }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
 
-    // Form preview functionality
-    function previewForm() {
-    const namaKursus = document.getElementById('nama_kursus').value;
-    const tahunAjaran = document.getElementById('ID_Tahun_Ajaran_display').value;
-    const mataPelajaran = document.getElementById('mata_pelajaran');
-    const guru = document.getElementById('guru');
-    const kelas = document.getElementById('kelas');
-    const password = document.getElementById('password').value;
-    const image = document.getElementById('image').files[0];
+        // Form preview functionality
+        function previewForm() {
+            const namaKursus = document.getElementById('nama_kursus').value;
+            const tahunAjaran = document.getElementById('ID_Tahun_Ajaran_display').value;
+            const mataPelajaran = document.getElementById('mata_pelajaran');
+            const guru = document.getElementById('guru');
+            const kelas = document.getElementById('kelas');
+            const password = document.getElementById('password').value;
+            const image = document.getElementById('image').files[0];
 
-    // Validate required fields
-    if (!namaKursus || !mataPelajaran.value || !guru.value || !kelas.value || !password) {
-    alert('Mohon lengkapi semua field yang wajib diisi terlebih dahulu!');
-    return;
-    }
+            // Validate required fields
+            if (!namaKursus || !mataPelajaran.value || !guru.value || !kelas.value || !password) {
+                alert('Mohon lengkapi semua field yang wajib diisi terlebih dahulu!');
+                return;
+            }
 
-    // Update preview content
-    document.getElementById('previewNama').textContent = namaKursus;
-    document.getElementById('previewTahun').textContent = tahunAjaran;
-    document.getElementById('previewMapel').textContent = mataPelajaran.options[mataPelajaran.selectedIndex].text;
-    document.getElementById('previewGuru').textContent = guru.options[guru.selectedIndex].text;
-    document.getElementById('previewKelas').textContent = kelas.options[kelas.selectedIndex].text;
-    document.getElementById('previewPassword').textContent = password ? 'Sudah diatur' : 'Belum diatur';
+            // Update preview content
+            document.getElementById('previewNama').textContent = namaKursus;
+            document.getElementById('previewTahun').textContent = tahunAjaran;
+            document.getElementById('previewMapel').textContent = mataPelajaran.options[mataPelajaran.selectedIndex].text;
+            document.getElementById('previewGuru').textContent = guru.options[guru.selectedIndex].text;
+            document.getElementById('previewKelas').textContent = kelas.options[kelas.selectedIndex].text;
+            document.getElementById('previewPassword').textContent = password ? 'Sudah diatur' : 'Belum diatur';
 
-    // Handle image preview
-    if (image) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-    document.getElementById('previewModalImg').src = e.target.result;
-    document.getElementById('previewImageContainer').style.display = 'block';
-    }
-    reader.readAsDataURL(image);
-    } else {
-    document.getElementById('previewImageContainer').style.display = 'none';
-    }
+            // Handle image preview
+            if (image) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewModalImg').src = e.target.result;
+                    document.getElementById('previewImageContainer').style.display = 'block';
+                }
+                reader.readAsDataURL(image);
+            } else {
+                document.getElementById('previewImageContainer').style.display = 'none';
+            }
 
-    // Show modal
-    document.getElementById('previewModal').classList.remove('hidden');
-    }
+            // Show modal
+            document.getElementById('previewModal').classList.remove('hidden');
+        }
 
-    function closePreviewModal() {
-    document.getElementById('previewModal').classList.add('hidden');
-    }
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.add('hidden');
+        }
 
-    function submitFromPreview() {
-    closePreviewModal();
-    document.getElementById('courseForm').submit();
-    }
+        function submitFromPreview() {
+            closePreviewModal();
+            document.getElementById('courseForm').submit();
+        }
 
-    // Form validation
-    document.getElementById('courseForm').addEventListener('submit', function(e) {
-    const password = document.getElementById('password').value;
-    const passwordConfirmation = document.getElementById('password_confirmation').value;
+        // Form validation
+        document.getElementById('courseForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const passwordConfirmation = document.getElementById('password_confirmation').value;
 
-    if (password !== passwordConfirmation) {
-    e.preventDefault();
-    alert('Kata sandi dan konfirmasi kata sandi tidak sama!');
-    return false;
-    }
-    });
+            if (password !== passwordConfirmation) {
+                e.preventDefault();
+                alert('Kata sandi dan konfirmasi kata sandi tidak sama!');
+                return false;
+            }
+        });
 
-    // Real-time password matching validation
-    document.getElementById('password_confirmation').addEventListener('input', function() {
-    const password = document.getElementById('password').value;
-    const confirmation = this.value;
+        // Real-time password matching validation
+        document.getElementById('password_confirmation').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmation = this.value;
 
-    if (confirmation && password !== confirmation) {
-    this.classList.add('border-red-500');
-    this.classList.remove('border-green-500');
-    } else if (confirmation && password === confirmation) {
-    this.classList.add('border-green-500');
-    this.classList.remove('border-red-500');
-    } else {
-    this.classList.remove('border-red-500', 'border-green-500');
-    }
-    });
+            if (confirmation && password !== confirmation) {
+                this.classList.add('border-red-500');
+                this.classList.remove('border-green-500');
+            } else if (confirmation && password === confirmation) {
+                this.classList.add('border-green-500');
+                this.classList.remove('border-red-500');
+            } else {
+                this.classList.remove('border-red-500', 'border-green-500');
+            }
+        });
     </script>
 @endsection
