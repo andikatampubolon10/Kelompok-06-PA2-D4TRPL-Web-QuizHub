@@ -17,8 +17,27 @@ return new class extends Migration
             $table->string('password');
             $table->string('image');
             $table->string('image_url')->nullable();
+
+            // FK ke guru
             $table->unsignedBigInteger('id_guru');
             $table->foreign('id_guru')->references('id_guru')->on('guru')->onDelete('cascade');
+
+            // FK ke mata pelajaran
+            $table->unsignedBigInteger('id_mata_pelajaran');
+            $table->foreign('id_mata_pelajaran')->references('id_mata_pelajaran')->on('mata_pelajaran')->onDelete('cascade');
+
+            // FK ke kelas
+            $table->unsignedBigInteger('id_kelas');
+            $table->foreign('id_kelas')->references('id_kelas')->on('kelas')->onDelete('cascade');
+
+            // FK ke tahun ajaran
+            $table->unsignedBigInteger('ID_Tahun_Ajaran');
+            $table->foreign('ID_Tahun_Ajaran')->references('ID_Tahun_Ajaran')->on('tahun_ajaran')->onDelete('cascade');
+
+            // FK ke operator
+            $table->unsignedBigInteger('id_operator');
+            $table->foreign('id_operator')->references('id_operator')->on('operator')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

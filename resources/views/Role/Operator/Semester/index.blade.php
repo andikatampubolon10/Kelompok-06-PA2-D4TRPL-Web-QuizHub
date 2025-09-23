@@ -343,7 +343,7 @@
                 // Create form to activate semester
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/operator/semester/${activateSemesterId}/activate`;
+                form.action = /operator/semester/${activateSemesterId}/activate;
 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
@@ -430,13 +430,13 @@
             function getActiveFilters() {
                 const filters = [];
                 if (tahunSelect.value) {
-                    filters.push(`Tahun: ${tahunSelect.value}`);
+                    filters.push(Tahun: ${tahunSelect.value});
                 }
                 if (jenisSelect.value) {
-                    filters.push(`Jenis: ${jenisSelect.value}`);
+                    filters.push(Jenis: ${jenisSelect.value});
                 }
                 if (statusSelect.value) {
-                    filters.push(`Status: ${statusSelect.value}`);
+                    filters.push(Status: ${statusSelect.value});
                 }
                 return filters.length > 0 ? filters.join(', ') : 'Tidak ada filter aktif';
             }
