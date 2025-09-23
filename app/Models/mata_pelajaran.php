@@ -47,4 +47,9 @@ class mata_pelajaran extends Model
     {
         return $this->hasMany(Kursus::class, 'id_mata_pelajaran');
     }
+
+    public function guruMapel()
+    {
+        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_mata_pelajaran');
+    }
 }

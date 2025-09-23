@@ -22,7 +22,7 @@ class Guru extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user','id');
+        return $this->belongsTo(User::class, 'id_user', 'id');
     }
 
     public function operator()
@@ -42,10 +42,10 @@ class Guru extends Model
         return $this->hasMany(Latihan::class, 'id_guru', 'id_guru');
     }
 
-    // public function guru_mata_pelajaran()
-    // {
-    //     return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
-    // }
+    public function guru_mata_pelajaran()
+    {
+        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
+    }
 
     public function ujian()
     {
@@ -67,4 +67,8 @@ class Guru extends Model
         return $this->belongsTo(Mata_Pelajaran::class, 'id_mata_pelajaran', 'id_mata_pelajaran');
     }
 
+    public function guruMapel()
+    {
+        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru');
+    }
 }

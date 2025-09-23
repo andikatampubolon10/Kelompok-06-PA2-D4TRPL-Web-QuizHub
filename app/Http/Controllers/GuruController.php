@@ -66,6 +66,10 @@ class GuruController extends Controller
         $mataPelajaran = mata_pelajaran::all();
         $user = auth()->user();
 
+        $mataPelajarans = mata_pelajaran::with('guru')
+            ->where('id_operator', $operator->id_operator)
+            ->get();
+
         if (!$user) {
             return redirect()->route('login');
         }
@@ -73,46 +77,54 @@ class GuruController extends Controller
     }
 
 
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'nip' => 'required|numeric|digits:18|unique:guru,nip',
-        'email' => 'required|string|email|max:255|unique:users,email',
-        'password' => 'required|string|min:8|confirmed',
-        'status' => 'in:Aktif,Tidak Aktif',
-        'mata_pelajaran' => 'required|array|min:1',
-        'mata_pelajaran.*' => 'exists:mata_pelajaran,id_mata_pelajaran',
-    ]);
-
-    return DB::transaction(function () use ($request) {
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-        $user->assignRole('Guru');
-
-        $operator = Operator::where('id_user', auth()->id())->first();
-        if (!$operator) {
-            abort(422, 'ID Operator tidak ditemukan untuk user login.');
-        }
-
-        $guru = Guru::create([
-            'nama_guru'        => $request->name,
-            'nip'              => $request->nip,
-            'id_user'          => $user->id,
-            'id_operator'      => $operator->id_operator,
-            'status'           => $request->status ?? 'Aktif',
-            'id_mata_pelajaran'=> $request->mata_pelajaran[0], // jika memang ada kolom ini
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'nip' => 'required|numeric|digits:18|unique:guru,nip',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'status' => 'in:Aktif,Tidak Aktif',
+            'mata_pelajaran' => 'required|array|min:1',
+            'mata_pelajaran.*' => 'exists:mata_pelajaran,id_mata_pelajaran',
         ]);
 
-        return redirect()
-            ->route('Operator.Guru.index')
-            ->with('success', 'Guru berhasil ditambahkan.');
-    });
-}
+        return DB::transaction(function () use ($request) {
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+            ]);
+            $user->assignRole('Guru');
+
+            $operator = Operator::where('id_user', auth()->id())->first();
+            if (!$operator) {
+                abort(422, 'ID Operator tidak ditemukan untuk user login.');
+            }
+
+            $guru = Guru::create([
+                'nama_guru'        => $request->name,
+                'nip'              => $request->nip,
+                'id_user'          => $user->id,
+                'id_operator'      => $operator->id_operator,
+                'status'           => $request->status ?? 'Aktif',
+                'id_mata_pelajaran' => $request->mata_pelajaran[0], // jika memang ada kolom ini
+            ]);
+
+            // Simpan ke tabel pivot guru_mata_pelajaran
+            foreach ($request->mata_pelajaran as $id_mapel) {
+                \App\Models\Guru_Mata_Pelajaran::create([
+                    'id_guru' => $guru->id_guru,
+                    'id_mata_pelajaran' => $id_mapel,
+                ]);
+            }
+
+            return redirect()
+                ->route('Operator.Guru.index')
+                ->with('success', 'Guru berhasil ditambahkan.');
+        });
+    }
 
     public function show(string $id)
     {

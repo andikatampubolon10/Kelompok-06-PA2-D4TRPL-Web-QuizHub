@@ -16,6 +16,8 @@ class Guru_Mata_Pelajaran extends Model
         'id_mata_pelajaran',
     ];
 
+    public $timestamps = false;
+
     public function mataPelajaran()
     {
         return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran');
@@ -26,6 +28,4 @@ class Guru_Mata_Pelajaran extends Model
     {
         return $this->belongsTo(Guru::class, 'id_guru');
     }
-
-    
 }

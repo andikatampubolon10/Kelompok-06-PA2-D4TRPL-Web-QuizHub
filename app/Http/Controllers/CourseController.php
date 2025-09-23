@@ -18,21 +18,17 @@ class CourseController extends Controller
 {
     public function index()
     {
-        // Get the currently authenticated user
         $user = auth()->user();
 
-        // Get the Guru instance related to the authenticated user
-        $guru = $user->guru; // This will automatically load the guru relationship
+        $guru = $user->guru;
 
-        // Make sure to get the courses for the authenticated Guru
         $courses = kursus::where('id_guru', $guru->id_guru)->get(); // Use $guru->id_guru to filter courses
 
-        // Pass the user and courses to the view
-        return view('Role.Guru.index', compact('courses', 'user','guru'));
+        return view('Role.Guru.index', compact('courses', 'user', 'guru'));
     }
 
 
-    public function beranda()
+    public function beranda(Request $request)
     {
         $user = auth()->user();
 
@@ -42,9 +38,29 @@ class CourseController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $courses = Kursus::with('guru', 'mataPelajaran')->get();
+        $operator = Operator::where('id_user', $user->id)->firstOrFail();
 
-        return view('Role.Operator.Course.index', compact('courses', 'user'));
+        // Ambil parameter id_mata_pelajaran dari query string
+        $id_mata_pelajaran = $request->query('id_mata_pelajaran');
+
+        $mata_pelajaran = mata_pelajaran::where('id_operator', $operator->id_operator)
+            ->distinct('id_mata_pelajaran')
+            ->get();
+
+        // Pastikan mata pelajaran tidak kosong
+        if ($mata_pelajaran->isEmpty()) {
+            return redirect()->route('Operator.Course.index')->with('error', 'Tidak ada mata pelajaran yang ditemukan.');
+        }
+
+        // Mendapatkan data kursus yang terkait dengan operator
+        $courses = Kursus::with(['guru', 'mataPelajaran', 'kelas'])
+            ->whereHas('guru', function ($q) use ($operator) {
+                $q->where('id_operator', $operator->id_operator);
+            })
+            ->get();
+
+        // Kirimkan data ke view, termasuk id_mata_pelajaran
+        return view('Role.Operator.Course.index', compact('courses', 'user', 'mata_pelajaran', 'id_mata_pelajaran'));
     }
 
     public function create(Request $request)
@@ -52,19 +68,10 @@ class CourseController extends Controller
         $user = auth()->user();
         $operator = Operator::where('id_user', $user->id)->first();
 
-        $kelas = Kelas::where('id_operator', $operator->id_operator)->get();
-
-        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
-            ->with('guru')  // Memastikan relasi guru dimuat
-            ->get();
+        // Ambil data mata pelajaran terkait dengan operator
+        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)->get();
 
         $gurus = Guru::where('id_operator', $operator->id_operator)->get();
-
-        if ($request->has('mata_pelajaran') && $request->mata_pelajaran != '') {
-            $mataPelajaran = mata_pelajaran::find($request->mata_pelajaran);
-
-            $gurus = $mataPelajaran ? $mataPelajaran->guru : [];
-        }
 
         $tahunAjaranAktif = TahunAjaran::where('Status', 'Aktif')->first();
 
@@ -72,7 +79,10 @@ class CourseController extends Controller
             $tahunAjaranAktif = (object) ['tahun_ajaran' => 'Tahun ajaran aktif tidak ditemukan'];
         }
 
-        return view('Role.Operator.Course.create', compact('gurus', 'kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
+        $kelas = Kelas::all();
+
+        // Kirimkan data ke tampilan
+        return view('Role.Operator.Course.create', compact('gurus','kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
     }
 
     public function store(Request $request)

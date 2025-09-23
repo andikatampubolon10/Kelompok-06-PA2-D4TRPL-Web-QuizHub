@@ -258,7 +258,7 @@
                         <button type="submit"
                             class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-save mr-2"></i>
-                            Simpan Kursus
+                            Simpan Guru
                         </button>
                     </div>
                 </div>

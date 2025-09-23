@@ -30,7 +30,9 @@ class MataPelajaranController extends Controller
         $semesters = Semester::all();
         $activeSemester = $semesters->first();
 
-        return view('Role.Operator.Mapel.index', compact('mataPelajarans', 'semesters', 'activeSemester', 'user'));
+        $mata_pelajaran = mata_pelajaran::where('id_operator', $operator->id_operator)->firstOrFail();
+
+        return view('Role.Operator.Mapel.index', compact('mataPelajarans','mata_pelajaran', 'semesters', 'activeSemester', 'user'));
     }
 
     public function create(Request $request)
