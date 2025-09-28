@@ -21,7 +21,7 @@ class LatihanSoalController extends Controller
         $id_latihan = $request->query('id_latihan');
         $kurikulums = kurikulum::all();
         $mapel = mata_pelajaran::all();
-        $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
+        $mataPelajarans = mata_pelajaran::with(['operator', 'semester'])->get();
         $kelas = kelas::all();
         $user = auth()->user();
 
@@ -44,7 +44,7 @@ class LatihanSoalController extends Controller
             $mapel = null;
         }
 
-        $mataPelajarans = mata_pelajaran::with(['operator', 'kurikulum'])->get();
+        $mataPelajarans = mata_pelajaran::with(['operator', 'semester'])->get();
 
         // Return the view with the selected mata pelajaran and other data
         return view('Role.Guru.Latihan.create', compact('mataPelajarans', 'mapel', 'kurikulums', 'kelas', 'user'));

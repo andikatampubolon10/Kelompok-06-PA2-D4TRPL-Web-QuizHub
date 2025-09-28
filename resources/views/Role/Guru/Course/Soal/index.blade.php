@@ -47,42 +47,48 @@
         </div>
 
         <!-- Display Questions -->
-        <div class="space-y-4">
-            @if ($idUjian)
-                @foreach ($soals as $soal)
-                    <div class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                        <div class="mb-4 md:mb-0 md:flex-1">
-                            <h3 class="text-lg font-semibold mb-2 break-words">{{ $soal->soal }}</h3>
-                            <p class="text-sm text-gray-600">Jenis: {{ $soal->tipe_soal->nama_tipe_soal }}</p>
-                        </div>
+<div class="space-y-4">
+    @forelse(($soals ?? collect()) as $soal)
+        <div class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+            <div class="mb-4 md:mb-0 md:flex-1">
+                <h3 class="text-lg font-semibold mb-2 break-words">{{ $soal->soal }}</h3>
+                <p class="text-sm text-gray-600">
+                    Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
+                </p>
+            </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex space-x-5 justify-end flex-wrap">
-                            <form action="{{ route('Guru.Soal.preview', $soal->id_soal) }}" method="GET" class="inline">
-                                <button type="submit" class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
-                                    <i class="fas fa-eye mr-1"></i> Lihat
-                                </button>
-                            </form>
+            <div class="flex space-x-5 justify-end flex-wrap">
+                <a href="{{ route('Guru.Soal.preview', $soal->id_soal) }}"
+                   class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
+                    <i class="fas fa-eye mr-1"></i> Lihat
+                </a>
 
-                            <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
-                                    <i class="fas fa-trash-alt mr-1"></i> Hapus
-                                </button>
-                            </form>
+                <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST"
+                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
+                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                    </button>
+                </form>
 
-                            <form action="{{ route('Guru.Soal.edit', $soal->id_soal) }}" method="GET" class="inline">
-                                <button type="submit" class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
-                                    <i class="fas fa-edit mr-1"></i> Edit
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @endforeach
-            @endif
+                <a href="{{ route('Guru.Soal.edit', $soal->id_soal) }}"
+                   class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                </a>
+            </div>
         </div>
-    </div>
+    @empty
+        <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-file-alt text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada Soal</h3>
+            <p class="text-gray-600">Tambahkan soal baru untuk {{ $idUjian ? 'ujian ini' : ($idLatihan ? 'latihan ini' : 'kelas ini') }}.</p>
+        </div>
+    @endforelse
+</div>
+
 
     <!-- JavaScript to Show Modal on Success -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
