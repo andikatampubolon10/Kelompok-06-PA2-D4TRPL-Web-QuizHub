@@ -366,7 +366,7 @@
                 guruSelect.innerHTML = '<option value="">Pilih mata pelajaran terlebih dahulu</option>';
             }
         });
-        // Password toggle functionality
+        
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
             const eye = document.getElementById(fieldId + '-eye');
