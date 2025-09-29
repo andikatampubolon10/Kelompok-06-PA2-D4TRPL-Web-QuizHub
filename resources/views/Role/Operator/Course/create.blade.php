@@ -153,7 +153,7 @@
                         <p class="text-xs text-gray-500">Tahun ajaran aktif saat ini</p>
                     </div>
 
-                    <!-- Subject Selection -->
+                    <!-- Mata Pelajaran -->
                     <div class="space-y-2">
                         <label for="mata_pelajaran" class="block text-sm font-semibold text-gray-700">
                             <i class="fas fa-book-open text-orange-600 mr-2"></i>
@@ -179,7 +179,7 @@
                         <p class="text-xs text-gray-500">Pilih mata pelajaran untuk kursus ini</p>
                     </div>
 
-                    <!-- Teacher Selection -->
+                    <!-- Guru Pengampu -->
                     <div class="space-y-2">
                         <label for="guru" class="block text-sm font-semibold text-gray-700">
                             <i class="fas fa-chalkboard-teacher text-blue-600 mr-2"></i>
@@ -350,7 +350,7 @@
             guruSelect.innerHTML = '<option value="">Pilih Guru</option>';
 
             if (selectedMapel !== '') {
-                const dataGuru = @json($mataPelajarans);
+                const dataGuru = @json($mataPelajarans); // Mengambil data mata pelajaran dengan guru terkait
 
                 const mapel = dataGuru.find(m => m.id_mata_pelajaran == selectedMapel);
 
@@ -366,7 +366,6 @@
                 guruSelect.innerHTML = '<option value="">Pilih mata pelajaran terlebih dahulu</option>';
             }
         });
-
         // Password toggle functionality
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);

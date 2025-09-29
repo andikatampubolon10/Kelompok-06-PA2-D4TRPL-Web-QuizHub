@@ -39,15 +39,12 @@ class MataPelajaranController extends Controller
     {
         $user = auth()->user();
 
-        // Ambil id_semester dari query parameter URL
         $semesterId = $request->get('id_semester');
 
         $semester = null;
 
-        // Ambil semua data semester untuk dropdown
         $semesters = Semester::all();
 
-        // Jika ada id_semester, cari semester berdasarkan id_semester
         if ($semesterId) {
             $semester = Semester::where('id_semester', $semesterId)->first(); // pakai 'id_semester' bukan 'id'
         }
@@ -57,7 +54,6 @@ class MataPelajaranController extends Controller
 
     public function store(Request $request)
     {
-        // Validation with custom messages
         $request->validate([
             'nama_mata_pelajaran' => 'required|unique:mata_pelajaran',
             'id_semester' => 'required|exists:semester,id_semester',
