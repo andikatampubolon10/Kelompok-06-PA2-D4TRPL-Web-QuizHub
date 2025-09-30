@@ -66,8 +66,10 @@ class CourseController extends Controller
         $operator = Operator::where('id_user', $user->id)->first();
 
         // Ambil data mata pelajaran terkait dengan operator
-        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)->get();
-
+        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
+            ->with('guru') // Pastikan guru-guru yang mengampu mata pelajaran dimuat juga
+            ->get();
+            
         $gurus = Guru::where('id_operator', $operator->id_operator)->get();
 
         $tahunAjaranAktif = TahunAjaran::where('Status', 'Aktif')->first();
@@ -78,8 +80,7 @@ class CourseController extends Controller
 
         $kelas = Kelas::all();
 
-        // Kirimkan data ke tampilan
-        return view('Role.Operator.Course.create', compact('gurus','kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
+        return view('Role.Operator.Course.create', compact('gurus', 'kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
     }
 
     public function store(Request $request)

@@ -64,7 +64,7 @@ class Guru extends Model
 
     public function mataPelajaran()
     {
-        return $this->belongsTo(Mata_Pelajaran::class, 'id_mata_pelajaran', 'id_mata_pelajaran');
+        return $this->belongsToMany(Mata_Pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
     }
 
     public function guruMapel()

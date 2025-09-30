@@ -66,6 +66,8 @@ class GuruController extends Controller
         $mataPelajaran = mata_pelajaran::all();
         $user = auth()->user();
 
+        $operator = Operator::where('id_user', $user->id)->first();
+
         $mataPelajarans = mata_pelajaran::with('guru')
             ->where('id_operator', $operator->id_operator)
             ->get();
@@ -73,7 +75,7 @@ class GuruController extends Controller
         if (!$user) {
             return redirect()->route('login');
         }
-        return view('Role.Operator.Guru.create', compact('user', 'mataPelajaran'));
+        return view('Role.Operator.Guru.create', compact('user', 'mataPelajaran','operator'));
     }
 
 
