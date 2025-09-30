@@ -19,12 +19,9 @@ class CourseController extends Controller
     public function index()
     {
         $user = auth()->user();
+// Use $guru->id_guru to filter courses
 
-        $guru = $user->guru;
-
-        $courses = kursus::where('id_guru', $guru->id_guru)->get(); // Use $guru->id_guru to filter courses
-
-        return view('Role.Guru.index', compact('courses', 'user', 'guru'));
+        return view('Role.Siswa.Course.exam_take', compact( 'user'));
     }
 
 
