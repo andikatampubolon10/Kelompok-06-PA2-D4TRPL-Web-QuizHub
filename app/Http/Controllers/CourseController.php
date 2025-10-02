@@ -19,9 +19,12 @@ class CourseController extends Controller
     public function index()
     {
         $user = auth()->user();
-// Use $guru->id_guru to filter courses
 
-        return view('Role.Siswa.Course.exam_take', compact( 'user'));
+        $guru = $user->guru;
+
+        $courses = kursus::where('id_guru', $guru->id_guru)->get(); // Use $guru->id_guru to filter courses
+
+        return view('Role.Guru.index', compact('courses', 'user', 'guru'));
     }
 
 
@@ -66,10 +69,8 @@ class CourseController extends Controller
         $operator = Operator::where('id_user', $user->id)->first();
 
         // Ambil data mata pelajaran terkait dengan operator
-        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)
-            ->with('guru') // Pastikan guru-guru yang mengampu mata pelajaran dimuat juga
-            ->get();
-            
+        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)->get();
+
         $gurus = Guru::where('id_operator', $operator->id_operator)->get();
 
         $tahunAjaranAktif = TahunAjaran::where('Status', 'Aktif')->first();
@@ -80,7 +81,8 @@ class CourseController extends Controller
 
         $kelas = Kelas::all();
 
-        return view('Role.Operator.Course.create', compact('gurus', 'kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
+        // Kirimkan data ke tampilan
+        return view('Role.Operator.Course.create', compact('gurus','kelas', 'mataPelajarans', 'user', 'tahunAjaranAktif'));
     }
 
     public function store(Request $request)
