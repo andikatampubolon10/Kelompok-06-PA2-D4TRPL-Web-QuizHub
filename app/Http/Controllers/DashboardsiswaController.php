@@ -16,42 +16,102 @@ class DashboardsiswaController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $user = auth()->user();
-
+    $user = auth()->user();
         if (!$user) {
             return redirect()->route('login');
         }
 
         $siswa = Siswa::where('id_user', $user->id)->first();
-
         if (!$siswa) {
             return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
         }
 
-        $idKelas = $siswa->id_kelas;
+        // Ambil kursus yang dimiliki siswa dari pivot `kursus_siswa`
+        // dan eager load relasi yang diperlukan
+        $courses = $siswa->kursus()
+            ->with(['guru', 'kelas', 'mataPelajaran'])
+            ->orderBy('kursus.id_kursus', 'desc')
+            ->get();
 
-        $kursus = Kursus::where('id_kelas', $idKelas)->get();
+        return view('Role.Siswa.Course.index', [
+            'user'    => $user,
+            'siswa'   => $siswa,
+            'courses' => $courses,
+        ]);
+    }
 
-        if ($request->has('enroll_kursus_id') && $request->has('password')) {
-            $kursusId = $request->input('enroll_kursus_id');
-            $passwordInput = $request->input('password');
+    public function tipeujian($id_kursus, Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) return redirect()->route('login');
 
-            $kursusToEnroll = Kursus::find($kursusId);
+        $siswa = Siswa::where('id_user', $user->id)->first();
+        if (!$siswa) return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
 
-            if ($kursusToEnroll && password_verify($passwordInput, $kursusToEnroll->password)) {
-                $siswa->kursus_siswa()->create([
-                    'id_kursus' => $kursusToEnroll->id_kursus,
-                    'id_siswa' => $siswa->id_siswa
-                ]);
-
-                return redirect()->route('Role.Guru.index')->with('success', 'Anda berhasil bergabung dengan kursus!');
-            } else {
-                return redirect()->back()->with('error', 'Password yang dimasukkan salah!');
-            }
+        // (Opsional tapi disarankan) Pastikan siswa memang enroll pada kursus ini
+        $isEnrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+        if (!$isEnrolled) {
+            return redirect()->route('Role.Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
         }
 
-        return view('Role.Guru.index', compact('siswa', 'kursus', 'user'));
+        // Ambil kursus untuk header halaman
+        $kursus = Kursus::with(['guru', 'kelas', 'mataPelajaran'])->findOrFail($id_kursus);
+
+        // Ambil ujian pada kursus ini, beserta tipe_ujian-nya
+        $ujians = Ujian::with('tipe_ujian')
+            ->where('id_kursus', $id_kursus)
+            ->orderBy('id_tipe_ujian')
+            ->orderBy('waktu_mulai')
+            ->get();
+
+        // Kelompokkan per tipe
+        $quiz = $ujians->where('id_tipe_ujian', 1); // Kuis
+        $uts  = $ujians->where('id_tipe_ujian', 2); // UTS
+        $uas  = $ujians->where('id_tipe_ujian', 3); // UAS
+
+        return view('Role.Siswa.Course.course_exam', [
+            'user'  => $user,
+            'siswa' => $siswa,
+            'kursus'=> $kursus,
+            'quiz'  => $quiz,
+            'uts'   => $uts,
+            'uas'   => $uas,
+        ]);
     }
+
+    public function enterUjian(Request $request)
+{
+    $request->validate([
+        'id_ujian'  => 'required|integer|exists:ujian,id_ujian',
+        'password'  => 'required|string',
+        'id_kursus' => 'required|integer|exists:kursus,id_kursus',
+    ]);
+
+    $user  = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->first();
+    if (!$siswa) return back()->with('error', 'Siswa tidak ditemukan');
+
+    // (Opsional) pastikan siswa enroll pada kursus terkait
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $request->id_kursus)->exists();
+    if (!$enrolled) {
+        return back()->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    $ujian = Ujian::where('id_ujian', $request->id_ujian)
+        ->where('id_kursus', $request->id_kursus)
+        ->firstOrFail();
+
+    if (!password_verify($request->password, $ujian->password_masuk)) {
+        return back()->with('error', 'Password ujian salah.')->withInput();
+    }
+
+    // TODO: arahkan ke halaman mulai ujian milikmu
+    // Misal: route('Role.Siswa.Ujian.start', ['id_ujian' => $ujian->id_ujian])
+    return redirect()->route('Siswa.Course.index', ['id_kursus' => $request->id_kursus])
+        ->with('success', 'Password benar. (Contoh) Silakan lanjut mulai ujian.');
+}
 
     public function materi(Request $request)
     {

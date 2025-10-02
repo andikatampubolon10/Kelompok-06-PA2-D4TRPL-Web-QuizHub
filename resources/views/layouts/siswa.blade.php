@@ -56,8 +56,8 @@
             <i class="fas fa-graduation-cap text-primary-foreground"></i>
           </div>
           <div>
-            <h1 class="text-lg font-bold">eCourse</h1>
-            <p class="text-sm text-muted-foreground">Del Institute of Technology</p>
+            <h1 class="text-lg font-bold">Computer Based Test</h1>
+            <p class="text-sm text-muted-foreground">SMK Negeri 2 Balige</p>
           </div>
         </div>
       </div>
@@ -105,7 +105,10 @@
           <div class="flex items-center space-x-4">
             <div>
               {{-- Ganti ke data user dinamis sesuai kebutuhan --}}
-              <h2 class="text-xl font-semibold">Nama Siswa</h2>
+            <h2 class="text-xl font-semibold">
+            {{ \App\Models\Siswa::where('id_user', auth()->id())->value('nama_siswa')
+                ?? (auth()->user()->name ?? auth()->user()->email ?? 'Siswa') }}
+            </h2>
               <p class="text-muted-foreground">Student Dashboard</p>
             </div>
           </div>

@@ -60,4 +60,15 @@ class siswa extends Model
     {
         return $this->hasMany(Nilai::class, 'id_siswa', 'id_siswa', 'id_siswa', 'id_siswa');
     }
+
+    public function kursus()
+{
+    return $this->belongsToMany(
+        \App\Models\Kursus::class,
+        'kursus_siswa',   // pivot table
+        'id_siswa',       // FK ke tabel pivot dari sisi Siswa
+        'id_kursus'       // FK ke tabel pivot menuju tabel Kursus
+    );
+}
+
 }

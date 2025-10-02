@@ -7,6 +7,7 @@ use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\BisnisController;
 use App\Http\Controllers\AttemptController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DashboardsiswaController;
 use App\Http\Controllers\JawabanSiswaLatihanSoalController;
 use App\Http\Controllers\JawabanSiswaQuizController;
 use App\Http\Controllers\JawabanSiswaUjianController;
@@ -134,7 +135,9 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk Siswa
     Route::prefix('Siswa')->name('Siswa.')->middleware('role:Siswa')->group(function () {
-        Route::resource('/Course', CourseController::class);
+        Route::get('/courses', [DashboardsiswaController::class, 'dashboard']) ->name('Course.index');
+        Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian']) ->name('Course.tipeujian');
+        Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian']) ->name('Course.ujian.enter');
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
