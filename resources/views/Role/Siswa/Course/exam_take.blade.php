@@ -1,4 +1,4 @@
-@extends('layouts.siswa')
+@extends('layouts.ujian')
 
 @section('title')
 
@@ -12,13 +12,15 @@
 
 @section('content')
   <div class="mb-6 flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold mb-1">Course Name</h1>
-      <p class="text-muted-foreground"></p>
-    </div>
+      <div>
+        <h1 class="text-2xl font-bold mb-1">{{ $kursus->nama_kursus }}</h1>
+        <p class="text-muted-foreground text-white">{{ $ujian->nama_ujian }}</p>
+
+      </div>
+
     <div class="flex items-center space-x-4">
       <div class="bg-card border border-border rounded-lg px-4 py-2">
-        <span class="text-sm text-muted-foreground">Time Left</span>
+        <span class="text-sm text-white">Time Left</span>
         <div id="timer" class="text-2xl font-bold tracking-widest">--:--</div>
       </div>
       <button id="submitBtn" class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90">
@@ -61,9 +63,19 @@
           {{-- Button nomor soal dirender JS --}}
         </div>
         <div class="mt-4 text-xs text-muted-foreground">
-          <div class="flex items-center space-x-2"><span class="w-3 h-3 inline-block bg-primary rounded-sm"></span><span>Current</span></div>
-          <div class="flex items-center space-x-2"><span class="w-3 h-3 inline-block bg-green-600 rounded-sm"></span><span>Answered</span></div>
-          <div class="flex items-center space-x-2"><span class="w-3 h-3 inline-block bg-border rounded-sm"></span><span>Unanswered</span></div>
+          <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 inline-block bg-primary rounded-sm"></span>
+          <span class="text-white">Current</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 inline-block bg-green-600 rounded-sm"></span>
+          <span class="text-white">Answered</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 inline-block bg-border rounded-sm"></span>
+          <span class="text-white">Unanswered</span>
+        </div>
+
         </div>
       </div>
     </div>
