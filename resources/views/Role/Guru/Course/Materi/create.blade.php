@@ -22,33 +22,33 @@
 
     <!-- Form Container -->
     <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
-      
-
-        <form action="{{ route('Guru.Materi.store') }}" method="POST">
-            @csrf
-
-            <!-- Nama Sekolah Field -->
-            <div class="mb-6">
-                       <label for="judul_materi" class="block font-bold mb-2">Topik Materi</label>
-                        <input type="text" name="judul_materi"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
 
 
-            <!-- Email Field -->
-            <div class="mb-6">
-                <label for="deskripsi" class="block font-bold mb-2">Deskripsi</label>
-                        <textarea name="deskripsi" class="w-full border p-2" rows="5" required></textarea>
-                    </div>
-            <!-- Password Field -->
-            <div class="mb-6">
+            <form action="{{ route('Guru.Materi.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+<input type="hidden" name="id_kursus" value="{{ $course->id_kursus }}">
+                <!-- Nama Sekolah Field -->
+                <div class="mb-6">
+                    <label for="judul_materi" class="block font-bold mb-2">Topik Materi</label>
+                    <input type="text" name="judul_materi" class="block w-full p-2 border border-gray-300 rounded-md"
+                        required>
+                </div>
+                {{-- @dd($kursus) --}}
+
+                <!-- Email Field -->
+                <div class="mb-6">
+                    <label for="deskripsi" class="block font-bold mb-2">Deskripsi</label>
+                    <textarea name="deskripsi" class="w-full border p-2" rows="5" required></textarea>
+                </div>
+                <!-- Password Field -->
+                <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="file_upload">Upload File</label>
-                        <input type="file" id="file_upload" name="file"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required>
-                    </div>
+                    <input type="file" id="file_upload" name="file"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required>
+                </div>
 
-              
+
                 <!-- Form Actions -->
                 <div
                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
@@ -67,12 +67,12 @@
                         <button type="submit"
                             class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
                             <i class="fas fa-save mr-2"></i>
-                            Simpan 
+                            Simpan
                         </button>
                     </div>
                 </div>
             </form>
-        </div>
+    </div>
     </div>
 
     <!-- Success/Error Messages -->

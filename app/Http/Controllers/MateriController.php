@@ -104,7 +104,7 @@ class MateriController extends Controller
         $fileUrl = url('files/' . $fileName); // URL that can be accessed for the file
 
         Log::info('File URL yang disimpan: ' . $fileUrl);
-
+// Log::info('ID Kursus dari request: ' . $request->id_kursus);
         try {
             Log::info('Mencari data guru berdasarkan id_user: ' . auth()->user()->id);
             $guru = Guru::where('id_user', auth()->user()->id)->first();
