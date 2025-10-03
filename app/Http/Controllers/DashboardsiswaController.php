@@ -6,6 +6,7 @@ use App\Models\mata_pelajaran;
 use App\Models\Kursus;
 use App\Models\siswa;
 use App\Models\Materi;
+use App\Models\Soal;
 use App\Models\Ujian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -109,8 +110,58 @@ class DashboardsiswaController extends Controller
 
     // TODO: arahkan ke halaman mulai ujian milikmu
     // Misal: route('Role.Siswa.Ujian.start', ['id_ujian' => $ujian->id_ujian])
-    return redirect()->route('Siswa.Course.index', ['id_kursus' => $request->id_kursus])
-        ->with('success', 'Password benar. (Contoh) Silakan lanjut mulai ujian.');
+    return redirect()->route('Siswa.Course.ujian.take', [
+    'id_kursus' => $request->id_kursus,
+    'id_ujian'  => $ujian->id_ujian,
+    ])->with('success', 'Password benar. Silakan mulai ujian.');
+}
+
+public function soal($id_kursus, $id_ujian)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->first();
+    if (!$siswa) return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
+
+    // Pastikan siswa memang terdaftar di kursus ini
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$enrolled) {
+        return redirect()->route('Role.Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    // Ambil ujian (beserta kursus untuk header)
+    $ujian = Ujian::with(['kursus.mataPelajaran','kursus.kelas','kursus.guru'])->findOrFail($id_ujian);
+    if ($ujian->id_kursus != $id_kursus) {
+        abort(404);
+    }
+
+    // Ambil semua soal + pilihan jawaban
+    $soals = Soal::with('jawaban_soal')
+        ->where('id_ujian', $id_ujian)
+        ->orderBy('id_soal')
+        ->get();
+
+    // Susun payload ringkas untuk JS
+    $questions = $soals->map(function ($s) {
+        return [
+            'id'      => $s->id_soal,
+            'text'    => $s->soal,
+            // hanya kirim teks pilihan; JANGAN expose kunci jawaban di sisi client
+            'choices' => $s->jawaban_soal->pluck('jawaban')->values(),
+        ];
+    })->values();
+
+    // Durasi: pakai kolom 'durasi' kalau ada, default 30 menit (1800 detik)
+    $durationSeconds = $ujian->durasi ? (int)$ujian->durasi * 60 : 1800;
+
+    return view('Role.Siswa.Course.exam_take', [
+        'kursus'   => $ujian->kursus,
+        'ujian'    => $ujian,
+        'questions'=> $questions,
+        'total'    => $questions->count(),
+        'duration' => $durationSeconds,
+    ]);
 }
 
     public function materi(Request $request)
@@ -191,57 +242,7 @@ class DashboardsiswaController extends Controller
         return view('kuis.enter_password', compact('ujian'));
     }
 
-    public function soal($idUjian)
-    {
-        $user = auth()->user();
-
-        // Pastikan pengguna sudah login
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        // Ambil data siswa berdasarkan user yang sedang login
-        $siswa = Siswa::where('id_user', $user->id)->first();
-
-        if (!$siswa) {
-            return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
-        }
-
-        // Temukan ujian berdasarkan ID
-        $ujian = Ujian::find($idUjian);
-
-        if (!$ujian) {
-            return redirect()->route('Role.Guru.index')->with('error', 'Ujian tidak ditemukan');
-        }
-
-        // Verifikasi apakah ujian belum selesai dan masih dalam waktu yang ditentukan
-        $currentTime = now();
-
-        if ($currentTime->lt($ujian->waktu_mulai) || $currentTime->gt($ujian->waktu_selesai)) {
-            return redirect()->back()->with('error', 'Waktu ujian sudah habis atau belum dimulai.');
-        }
-
-        // Ambil soal terkait ujian yang dipilih
-        $soals = Soal::where('id_ujian', $idUjian)->get();
-
-        // Acak soal jika diperlukan
-        if ($ujian->acak) {
-            $soals = $soals->shuffle();
-        }
-
-        // Ambil jawaban untuk setiap soal dan acak jawaban jika perlu
-        foreach ($soals as $soal) {
-            $jawaban = Jawaban::where('id_soal', $soal->id_soal)->get();
-            if ($ujian->acak_jawaban) {
-                $jawaban = $jawaban->shuffle();
-            }
-            $soal->jawaban = $jawaban;
-        }
-
-        // Kirim soal dan jawaban ke view kuis
-        return view('kuis.soal', compact('soals', 'ujian'));
-    }
-
+    
     public function submitKuis(Request $request, $idUjian)
     {
         $user = auth()->user();

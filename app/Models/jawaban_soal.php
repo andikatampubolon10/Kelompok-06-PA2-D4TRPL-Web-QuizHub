@@ -26,11 +26,12 @@ class jawaban_soal extends Model
 
     public function tipe_soal()
     {
-        return $this->belongsTo(TipeSoal::class, 'id_tipe_soal', 'id_tipe_soal');
+        return $this->belongsTo(tipe_Soal::class, 'id_tipe_soal', 'id_tipe_soal');
     }
 
 
-    public function jawaban_siswa(){
-        return $this->hasMany(jawaban_siswa::class);
+    public function jawaban_siswa()
+    {
+        return $this->hasMany(\App\Models\jawaban_siswa::class, 'id_jawaban_soal', 'id_jawaban_soal');
     }
 }

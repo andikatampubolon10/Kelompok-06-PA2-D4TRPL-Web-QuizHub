@@ -30,12 +30,14 @@ class Soal extends Model
 
     public function jawaban_soal()
     {
-        return $this->hasMany(jawaban_soal::class, 'id_soal', 'id_soal', 'id_jawaban_soal');
+        // perbaiki signature: cukup 2 arg (foreign_key, local_key)
+        return $this->hasMany(\App\Models\jawaban_soal::class, 'id_soal', 'id_soal');
     }
 
     public function tipe_soal()
     {
-        return $this->belongsTo(tipe_soal::class, 'id_tipe_soal', 'id_tipe_soal', 'id_tipe_soal');
+        // pastikan nama class sesuai
+        return $this->belongsTo(\App\Models\tipe_soal::class, 'id_tipe_soal', 'id_tipe_soal');
     }
 
     public function jawaban_siswa()

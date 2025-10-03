@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses', [DashboardsiswaController::class, 'dashboard']) ->name('Course.index');
         Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian']) ->name('Course.tipeujian');
         Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian']) ->name('Course.ujian.enter');
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal']) ->name('Course.ujian.take');
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);

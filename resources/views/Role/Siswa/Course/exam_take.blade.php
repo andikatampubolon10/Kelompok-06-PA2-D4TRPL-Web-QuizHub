@@ -72,8 +72,34 @@
   {{-- Data ujian dikirim ke JS --}}
 
 @endsection
+{{-- Data ujian dikirim ke JS --}}
+<script>
+  const QUESTIONS = @json($questions);   // [{id,text,tipe_id/type,choices?}, ...]
+  const TOTAL     = {{ $total }};
+  const DURATION  = {{ $duration }};     // dalam detik
+</script>
 
 @push('scripts')
+<script>
+  const TYPE = { PG: 1, TF: 2, ISIAN: 3 };
+
+  // Util: baca tipe dari objek question
+  function getQType(q) {
+    if (q.type) {
+      const t = String(q.type).toLowerCase();
+      if (t === 'pg' || t === 'pilihan_ganda' || t === 'pilihan berganda') return 'pg';
+      if (t === 'tf' || t.includes('benar') || t.includes('salah')) return 'tf';
+      if (t === 'isian' || t === 'essay' || t === 'essai') return 'isian';
+    }
+    if (q.tipe_id) {
+      if (q.tipe_id === TYPE.PG)    return 'pg';
+      if (q.tipe_id === TYPE.TF)    return 'tf';
+      if (q.tipe_id === TYPE.ISIAN) return 'isian';
+    }
+    // default-kan ke PG
+    return 'pg';
+  }
+</script>
 <script>
   // STATE
   let current = 0; // index soal (0-based)
@@ -99,45 +125,110 @@
 
   function renderQuestion(idx){
     const q = QUESTIONS[idx];
-    qIndexEl.textContent = idx+1;
+    const qType = getQType(q);
+    qIndexEl.textContent = idx + 1;
     qTitleEl.textContent = q.text;
 
-    // Render pilihan
     choicesEl.innerHTML = '';
-    q.choices.forEach((c, i) => {
-      const id = `q${q.id}_c${i}`;
-      const wrap = document.createElement('label');
-      wrap.className = 'flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer';
 
-      const input = document.createElement('input');
-      input.type = 'radio';
+    if (qType === 'pg') {
+      // Pilihan Ganda: render A–E sesuai data
+      const letters = ['A','B','C','D','E','F','G']; // antisipasi kalau lebih banyak
+      const list = (q.choices && q.choices.length) ? q.choices : [];
+      list.forEach((choiceText, i) => {
+        const optKey = letters[i] || String.fromCharCode(65 + i); // A,B,...
+        const wrap = document.createElement('label');
+        wrap.className = 'flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer';
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `q_${q.id}`;
+        input.value = optKey; // simpan huruf A/B/...
+        input.className = 'form-radio';
+        input.checked = (answers[idx] === optKey);
+        input.addEventListener('change', () => {
+          answers[idx] = optKey;
+          renderNavigator();
+        });
+
+        const badge = document.createElement('span');
+        badge.className = 'inline-flex items-center justify-center w-8 h-8 rounded-md border border-border text-sm font-semibold';
+        badge.textContent = optKey;
+
+        const text = document.createElement('span');
+        text.textContent = choiceText;
+
+        wrap.appendChild(input);
+        wrap.appendChild(badge);
+        wrap.appendChild(text);
+        choicesEl.appendChild(wrap);
+      });
+
+    } else if (qType === 'tf') {
+      // Benar/Salah: render True/False
+      const tfChoices = q.choices && q.choices.length ? q.choices : ['True','False'];
+      const mapKey = (txt) => (/^t(rue)?|^b(enar)?|^ya/i.test(txt) ? 'T' : 'F');
+
+      tfChoices.slice(0,2).forEach((txt) => {
+        const key = mapKey(String(txt).trim());
+        const wrap = document.createElement('label');
+        wrap.className = 'flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer';
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `q_${q.id}`;
+        input.value = key; // 'T' atau 'F'
+        input.className = 'form-radio';
+        input.checked = (answers[idx] === key);
+        input.addEventListener('change', () => {
+          answers[idx] = key;
+          renderNavigator();
+        });
+
+        const badge = document.createElement('span');
+        badge.className = 'inline-flex items-center justify-center w-10 h-8 rounded-md border border-border text-sm font-semibold';
+        badge.textContent = (key === 'T') ? 'T' : 'F';
+
+        const text = document.createElement('span');
+        text.textContent = (key === 'T') ? 'True' : 'False';
+
+        wrap.appendChild(input);
+        wrap.appendChild(badge);
+        wrap.appendChild(text);
+        choicesEl.appendChild(wrap);
+      });
+
+    } else if (qType === 'isian') {
+      // Isian: render textbox
+      const wrap = document.createElement('div');
+      wrap.className = 'space-y-2';
+
+      const input = document.createElement('textarea');
       input.name = `q_${q.id}`;
-      input.value = c;
-      input.className = 'form-radio';
-      input.checked = (answers[idx] === c);
-      input.addEventListener('change', () => {
-        answers[idx] = c;
+      input.rows = 3;
+      input.placeholder = 'Ketik jawaban kamu di sini…';
+      input.className = 'w-full rounded border border-border bg-white text-gray-900 placeholder-gray-500 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white dark:text-gray-900';
+      input.value = (answers[idx] ?? '');
+      input.addEventListener('input', () => {
+        answers[idx] = input.value.trim();
         renderNavigator();
       });
 
-      const text = document.createElement('span');
-      text.textContent = c;
-
       wrap.appendChild(input);
-      wrap.appendChild(text);
       choicesEl.appendChild(wrap);
-    });
+    }
   }
 
-  function renderNavigator(){
+    function renderNavigator(){
     navGridEl.innerHTML = '';
     for(let i=0;i<TOTAL;i++){
       const btn = document.createElement('button');
       btn.className = 'w-10 h-10 rounded-md border text-sm';
       btn.textContent = i+1;
 
-      const isCurrent = (i === current);
-      const isAnswered = answers[i] !== null;
+      const isCurrent  = (i === current);
+      const ans        = answers[i];
+      const isAnswered = (ans !== null && String(ans).trim() !== ''); // dukung isian
 
       if(isCurrent){
         btn.classList.add('bg-primary','text-primary-foreground','border-primary');
