@@ -16,12 +16,12 @@ return new class extends Migration
             $table->string('soal');
             $table->string('image')->nullable();
             $table->string('image_url')->nullable();
-            $table->decimal('nilai_per_soal', 5, 2)->nullable();
+            $table->decimal('bobot')->nullable();
             $table->unsignedBigInteger('id_ujian')->nullable();
             $table->unsignedBigInteger('id_tipe_soal')->nullable();
             $table->unsignedBigInteger('id_latihan')->nullable();
             $table->foreign('id_ujian')->references('id_ujian')->on('ujian')->onDelete('cascade');
-            $table->foreign('id_tipe_soal')->references('id_tipe_soal')->on('tipe_soal')->onDelete('cascade'); // Perbaikan di sini
+            $table->foreign('id_tipe_soal')->references('id_tipe_soal')->on('tipe_soal')->onDelete('cascade');
             $table->foreign('id_latihan')->references('id_latihan')->on('latihan')->onDelete('cascade');
             $table->timestamps();
         });
