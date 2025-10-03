@@ -18,11 +18,11 @@ class BobotTipeSoal extends Model
 
     public function ujian()
     {
-        return $this->belongsTo(Ujian::class, 'id_ujian');
+        return $this->belongsTo(Ujian::class, 'id_ujian', 'id_ujian');
     }
 
     public function tipe_soal()
     {
-        return $this->belongsTo(tipe_soal::class, 'id_tipe_soal');
+        return $this->belongsTo(tipe_soal::class, 'id_tipe_soal', 'id_tipe_soal');
     }
 }

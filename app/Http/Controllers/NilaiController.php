@@ -13,8 +13,11 @@ use App\Models\Ujian;
 use App\Models\Soal;
 use App\Models\TipeSoal;
 use App\Models\BobotTipeSoal;
+use App\Models\jawaban_siswa;
+use App\Models\jawaban_soal;
 use App\Models\JawabanSiswa;
 use App\Models\JawabanSoal;
+use App\Models\tipe_soal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -235,7 +238,7 @@ class NilaiController extends Controller
         $soalPerTipe = Soal::where('id_ujian', $id_ujian)->get()->groupBy('id_tipe_soal');
 
         // mapping id_tipe_soal -> nama untuk kemudahan
-        $tipeMap = TipeSoal::pluck('nama_tipe_soal', 'id_tipe_soal');
+        $tipeMap = tipe_soal::pluck('nama_tipe_soal', 'id_tipe_soal');
 
         // bobot_tipe_soal (%)
         $bobotPerTipe = BobotTipeSoal::where('id_ujian', $id_ujian)
@@ -249,7 +252,7 @@ class NilaiController extends Controller
 
             // semua jawaban siswa untuk soal ujian ini (agar 1x query per tipe)
             $idsSoal = $listSoal->pluck('id_soal')->all();
-            $jawabanSiswa = JawabanSiswa::whereIn('id_soal', $idsSoal)
+            $jawabanSiswa = jawaban_siswa::whereIn('id_soal', $idsSoal)
                 ->where('id_siswa', $id_siswa)
                 ->get()
                 ->keyBy('id_soal');
@@ -289,7 +292,7 @@ class NilaiController extends Controller
         return $result;
     }
 
-    private function isJawabanBenar(string $namaTipe, int $id_soal, JawabanSiswa $row): bool
+    private function isJawabanBenar(string $namaTipe, int $id_soal, jawaban_siswa $row): bool
     {
         // Pilihan Berganda / Benar Salah:
         // - cek flag benar pada jawaban_soal yang dipilih siswa
@@ -297,7 +300,7 @@ class NilaiController extends Controller
         // - bandingkan teks jawaban siswa dengan kunci pada jawaban_soal yang benar (case-insensitive & trim)
         $kunci = null;
         if (!empty($row->id_jawaban_soal)) {
-            $kunci = JawabanSoal::find($row->id_jawaban_soal);
+            $kunci = jawaban_soal::find($row->id_jawaban_soal);
         }
 
         $tipe = mb_strtolower($namaTipe);
@@ -314,7 +317,7 @@ class NilaiController extends Controller
         if ($tipe === 'isian') {
             // coba ambil satu kunci benar untuk soal ini jika id_jawaban_soal tidak menunjuk kunci
             if (!$kunci) {
-                $kunci = JawabanSoal::where('id_soal', $id_soal)
+                $kunci = jawaban_soal::where('id_soal', $id_soal)
                     ->where(function ($q) {
                         $q->where('is_benar', 1)
                           ->orWhere('benar', 1);

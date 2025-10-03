@@ -15,7 +15,7 @@ class Soal extends Model
         'id_ujian',
         'id_tipe_soal',
         'id_latihan',
-        'nilai_per_soal',
+        'bobot',
     ];
 
     public function ujian()

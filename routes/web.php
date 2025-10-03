@@ -30,6 +30,7 @@ use App\Http\Controllers\MateriController;
 use App\Http\Controllers\persentaseController;
 use App\Http\Controllers\ListSiswaController;
 use App\Http\Controllers\TahunAjaranController;
+use App\Http\Controllers\BobotTipeSoalController;
 use App\Models\mata_pelajaran;
 use App\Models\Guru;
 use App\Http\Middleware\CheckOperatorStatus;
@@ -83,6 +84,12 @@ Route::middleware('auth')->group(function () {
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
         Route::resource('/Nilai', NilaiController::class);
         Route::post('/reset-recalculate-nilai/{id_kursus}', [ListSiswaController::class, 'resetAndRecalculateNilai']);
+        Route::get('bobot-tipe-soal', [BobotTipeSoalController::class, 'index'])->name('BobotTipeSoal.index');
+        Route::get('bobot-tipe-soal/create', [BobotTipeSoalController::class, 'create'])->name('BobotTipeSoal.create');
+        Route::post('bobot-tipe-soal', [BobotTipeSoalController::class, 'store'])->name('BobotTipeSoal.store');
+        Route::get('bobot-tipe-soal/{id_bobot_tipe_soal}/edit', [BobotTipeSoalController::class, 'edit'])->name('BobotTipeSoal.edit');
+        Route::put('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'update'])->name('BobotTipeSoal.update');
+        Route::delete('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'destroy'])->name('BobotTipeSoal.destroy');
     });
 
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
@@ -92,7 +99,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/Course/beranda', [CourseController::class, 'beranda'])->name('Course.beranda');
         Route::resource('/Course', CourseController::class);
         Route::resource('semester', SemesterController::class);
- 
+
 
         Route::resource('/Siswa', SiswaController::class);
         Route::get('/Siswa/upload', [SiswaController::class, 'upload'])->name('Siswa.upload');
@@ -135,10 +142,10 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk Siswa
     Route::prefix('Siswa')->name('Siswa.')->middleware('role:Siswa')->group(function () {
-        Route::get('/courses', [DashboardsiswaController::class, 'dashboard']) ->name('Course.index');
-        Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian']) ->name('Course.tipeujian');
-        Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian']) ->name('Course.ujian.enter');
-        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal']) ->name('Course.ujian.take');
+        Route::get('/courses', [DashboardsiswaController::class, 'dashboard'])->name('Course.index');
+        Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian'])->name('Course.tipeujian');
+        Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian'])->name('Course.ujian.enter');
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
