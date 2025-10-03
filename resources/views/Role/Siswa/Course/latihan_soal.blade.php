@@ -22,8 +22,7 @@
             <i class="fas fa-book text-primary-foreground"></i>
           </div>
           <div>
-            <h3 class="font-semibold">D4 TRPL</h3>
-            <p class="text-sm text-muted-foreground">Teknologi Rekayasa Perangkat Lunak</p>
+            <h3 class="font-semibold">Kurikulum Merdeka</h3>
           </div>
         </div>
       </div>

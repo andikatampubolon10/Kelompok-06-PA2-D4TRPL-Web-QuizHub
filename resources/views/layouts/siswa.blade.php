@@ -66,14 +66,14 @@
       <nav class="flex-1 p-4">
         <ul class="space-y-2">
           <li>
-            <a href=""
+            <a href="{{ route('Siswa.Course.index') }}"
                class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors {{ request()->routeIs('dashboard.courses') ? 'nav-active' : '' }}">
               <i class="fas fa-book-open w-5 h-5"></i>
               <span>My Courses</span>
             </a>
           </li>
           <li>
-            <a href=""
+            <a href="{{ route('Siswa.latihansoal.index') }}"
                class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors {{ request()->routeIs('dashboard.practice') ? 'nav-active' : '' }}">
               <i class="fas fa-dumbbell w-5 h-5"></i>
               <span>Practice Questions</span>
