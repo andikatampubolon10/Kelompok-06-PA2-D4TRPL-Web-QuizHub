@@ -58,6 +58,7 @@ class CourseController extends Controller
                 $q->where('id_operator', $operator->id_operator);
             })
             ->get();
+            // dd($courses);
 
         // Kirimkan data ke view, termasuk id_mata_pelajaran
         return view('Role.Operator.Course.index', compact('courses', 'user', 'mata_pelajaran', 'id_mata_pelajaran'));
@@ -69,9 +70,12 @@ class CourseController extends Controller
         $operator = Operator::where('id_user', $user->id)->first();
 
         // Ambil data mata pelajaran terkait dengan operator
-        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)->get();
+        $mataPelajarans = mata_pelajaran::with('guru')
+    ->where('id_operator', $operator->id_operator)
+    ->get();
 
         $gurus = Guru::where('id_operator', $operator->id_operator)->get();
+        // dd($gurus);
 
         $tahunAjaranAktif = TahunAjaran::where('Status', 'Aktif')->first();
 
