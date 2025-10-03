@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ujian extends Model
 {
-    protected $table = 'ujian'; 
+    protected $table = 'ujian';
 
     protected $primaryKey = 'id_ujian';
 
@@ -28,9 +28,9 @@ class Ujian extends Model
 
     public function kursus()
     {
-        return $this->belongsTo(Kursus::class, 'id_kursus', 'id_kursus','id_kursus');
+        return $this->belongsTo(Kursus::class, 'id_kursus', 'id_kursus', 'id_kursus');
     }
-    
+
     public function guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru');
@@ -45,6 +45,12 @@ class Ujian extends Model
     {
         return $this->hasMany(Soal::class);
     }
+
+    public function bobot_tipe_soal()
+    {
+        return $this->hasMany(BobotTipeSoal::class, 'id_ujian');
+    }
+
 
     public function calculateDuration()
     {
