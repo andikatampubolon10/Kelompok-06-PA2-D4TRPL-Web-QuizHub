@@ -298,7 +298,7 @@
       }
       updateTimerUI();
     }, 1000);
-  }
+  } 
 
   function updateTimerUI(){
     const m = Math.floor(remaining/60).toString().padStart(2,'0');

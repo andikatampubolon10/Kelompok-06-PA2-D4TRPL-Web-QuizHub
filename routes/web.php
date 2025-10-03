@@ -30,6 +30,7 @@ use App\Http\Controllers\MateriController;
 use App\Http\Controllers\persentaseController;
 use App\Http\Controllers\ListSiswaController;
 use App\Http\Controllers\TahunAjaranController;
+use App\Http\Controllers\DashboardLatihanSoalController;
 use App\Models\mata_pelajaran;
 use App\Models\Guru;
 use App\Http\Middleware\CheckOperatorStatus;
@@ -139,6 +140,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian']) ->name('Course.tipeujian');
         Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian']) ->name('Course.ujian.enter');
         Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal']) ->name('Course.ujian.take');
+        Route::get('/latihan-soal', [DashboardLatihanSoalController::class, 'index']) ->name('latihansoal.index');
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
