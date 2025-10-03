@@ -137,20 +137,19 @@ public function soal($id_kursus, $id_ujian)
     }
 
     // Ambil semua soal + pilihan jawaban
-    $soals = Soal::with('jawaban_soal')
+    $soals = Soal::with(['jawaban_soal', 'tipe_soal'])
         ->where('id_ujian', $id_ujian)
         ->orderBy('id_soal')
         ->get();
 
-    // Susun payload ringkas untuk JS
     $questions = $soals->map(function ($s) {
         return [
-            'id'      => $s->id_soal,
-            'text'    => $s->soal,
-            // hanya kirim teks pilihan; JANGAN expose kunci jawaban di sisi client
-            'choices' => $s->jawaban_soal->pluck('jawaban')->values(),
+            'id'       => $s->id_soal,
+            'text'     => $s->soal,
+            'tipe_id'  => $s->id_tipe_soal,  // Pastikan mengirimkan tipe_id
+            'choices'  => ($s->id_tipe_soal !== 3) ? $s->jawaban_soal->pluck('jawaban')->values() : [], // Isian tidak butuh choices
         ];
-    })->values();
+    });
 
     // Durasi: pakai kolom 'durasi' kalau ada, default 30 menit (1800 detik)
     $durationSeconds = $ujian->durasi ? (int)$ujian->durasi * 60 : 1800;

@@ -85,20 +85,16 @@
 
   // Util: baca tipe dari objek question
   function getQType(q) {
-    if (q.type) {
-      const t = String(q.type).toLowerCase();
-      if (t === 'pg' || t === 'pilihan_ganda' || t === 'pilihan berganda') return 'pg';
-      if (t === 'tf' || t.includes('benar') || t.includes('salah')) return 'tf';
-      if (t === 'isian' || t === 'essay' || t === 'essai') return 'isian';
-    }
     if (q.tipe_id) {
-      if (q.tipe_id === TYPE.PG)    return 'pg';
-      if (q.tipe_id === TYPE.TF)    return 'tf';
-      if (q.tipe_id === TYPE.ISIAN) return 'isian';
+      // Cek berdasarkan id_tipe_soal dari database
+      if (q.tipe_id === 1) return 'pg'; // Pilihan Ganda
+      if (q.tipe_id === 2) return 'tf'; // Benar/Salah
+      if (q.tipe_id === 3) return 'isian'; // Isian (Essay)
     }
-    // default-kan ke PG
+    // Jika tipe tidak ditemukan, defaultkan ke Pilihan Ganda (PG)
     return 'pg';
   }
+
 </script>
 <script>
   // STATE
@@ -125,25 +121,25 @@
 
   function renderQuestion(idx){
     const q = QUESTIONS[idx];
-    const qType = getQType(q);
+    const qType = getQType(q); // Menentukan tipe soal
     qIndexEl.textContent = idx + 1;
     qTitleEl.textContent = q.text;
 
-    choicesEl.innerHTML = '';
+    choicesEl.innerHTML = '';  // Reset pilihan
 
+    // Tipe soal Pilihan Ganda (PG)
     if (qType === 'pg') {
-      // Pilihan Ganda: render A–E sesuai data
-      const letters = ['A','B','C','D','E','F','G']; // antisipasi kalau lebih banyak
-      const list = (q.choices && q.choices.length) ? q.choices : [];
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // antisipasi pilihan lebih dari 5
+      const list = q.choices || [];
       list.forEach((choiceText, i) => {
-        const optKey = letters[i] || String.fromCharCode(65 + i); // A,B,...
+        const optKey = letters[i] || String.fromCharCode(65 + i);  // A, B, C, ...
         const wrap = document.createElement('label');
         wrap.className = 'flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer';
 
         const input = document.createElement('input');
         input.type = 'radio';
         input.name = `q_${q.id}`;
-        input.value = optKey; // simpan huruf A/B/...
+        input.value = optKey; // Key untuk pilihan (A, B, C, D)
         input.className = 'form-radio';
         input.checked = (answers[idx] === optKey);
         input.addEventListener('change', () => {
@@ -163,13 +159,13 @@
         wrap.appendChild(text);
         choicesEl.appendChild(wrap);
       });
-
+      
     } else if (qType === 'tf') {
-      // Benar/Salah: render True/False
-      const tfChoices = q.choices && q.choices.length ? q.choices : ['True','False'];
+      // Benar/Salah (True/False)
+      const tfChoices = q.choices && q.choices.length ? q.choices : ['True', 'False'];
       const mapKey = (txt) => (/^t(rue)?|^b(enar)?|^ya/i.test(txt) ? 'T' : 'F');
 
-      tfChoices.slice(0,2).forEach((txt) => {
+      tfChoices.slice(0, 2).forEach((txt) => {
         const key = mapKey(String(txt).trim());
         const wrap = document.createElement('label');
         wrap.className = 'flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer';
@@ -199,18 +195,18 @@
       });
 
     } else if (qType === 'isian') {
-      // Isian: render textbox
+      // Isian (Essay): render textarea untuk input teks
       const wrap = document.createElement('div');
       wrap.className = 'space-y-2';
 
       const input = document.createElement('textarea');
       input.name = `q_${q.id}`;
-      input.rows = 3;
+      input.rows = 4;  // Bisa lebih tinggi agar teks lebih panjang
       input.placeholder = 'Ketik jawaban kamu di sini…';
       input.className = 'w-full rounded border border-border bg-white text-gray-900 placeholder-gray-500 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white dark:text-gray-900';
-      input.value = (answers[idx] ?? '');
+      input.value = (answers[idx] ?? '');  // Jika ada jawaban sebelumnya, tampilkan
       input.addEventListener('input', () => {
-        answers[idx] = input.value.trim();
+        answers[idx] = input.value.trim();  // Update jawaban di array answers
         renderNavigator();
       });
 
@@ -218,6 +214,7 @@
       choicesEl.appendChild(wrap);
     }
   }
+
 
     function renderNavigator(){
     navGridEl.innerHTML = '';
