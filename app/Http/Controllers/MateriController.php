@@ -12,79 +12,86 @@ use Illuminate\Support\Facades\Auth;
 
 class MateriController extends Controller
 {
-public function index(Request $request)
-{
-    $user = auth()->user();
+    public function index(Request $request)
+    {
+        $user = auth()->user();
 
-    // Mendapatkan kursus berdasarkan id_kursus dari query parameter
-    $id_kursus = $request->query('id_kursus');
-    $kursus = Kursus::where('id_kursus', $id_kursus)->first();
+        // Mendapatkan kursus berdasarkan id_kursus dari query parameter
+        $id_kursus = $request->query('id_kursus');
+        $kursus = Kursus::where('id_kursus', $id_kursus)->first();
 
-    // Jika kursus tidak ditemukan, kembalikan error
-    if (!$kursus) {
-        return redirect()->back()->withErrors(['error' => 'Kursus tidak ditemukan.']);
+        // Jika kursus tidak ditemukan, kembalikan error
+        if (!$kursus) {
+            return redirect()->back()->withErrors(['error' => 'Kursus tidak ditemukan.']);
+        }
+
+        // Mendapatkan data guru berdasarkan user yang login
+        $guru = Guru::where('id_user', $user->id)->first();
+        if (!$guru) {
+            return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
+        }
+
+        // Mendapatkan materi pertama berdasarkan kursus yang dipilih
+        $materi_pertama = Materi::where('id_kursus', $kursus->id_kursus)
+            ->orderBy('tanggal_materi', 'DESC')
+            ->first(); // Mengambil satu materi pertama
+
+        $id_materi = $materi_pertama ? $materi_pertama->id_materi : null;
+
+        // Mengambil semua materi yang diurutkan berdasarkan tanggal materi
+        $materi = Materi::where('id_kursus', $kursus->id_kursus)
+            ->orderBy('tanggal_materi', 'DESC')
+            ->get(); // Mengambil semua materi yang diurutkan
+
+        // Memastikan $course dipassing ke view
+        $course = $kursus;
+
+        return view('Role.Guru.Course.Materi.index', compact('materi', 'materi_pertama', 'user', 'kursus', 'id_kursus', 'id_materi', 'course'));
     }
 
-    // Mendapatkan data guru berdasarkan user yang login
-    $guru = Guru::where('id_user', $user->id)->first();
-    if (!$guru) {
-        return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
+    public function create(Request $request)
+    {
+        $guru = Guru::where('id_user', auth()->user()->id)->first();
+
+        if (!$guru) {
+            return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
+        }
+
+        $id_kursus = $request->query('id_kursus');
+
+        $kursus = Kursus::where('id_guru', $guru->id_guru)->get();
+
+        if ($kursus->isEmpty()) {
+            return redirect()->back()->with('error', 'Kursus tidak ditemukan.');
+        }
+
+        $courses = Kursus::with('guru')->get();
+
+        // Ambil kursus yang sesuai dengan id_kursus
+        $course = $courses->where('id_kursus', $id_kursus)->first();
+
+        $user = auth()->user();
+
+        return view('Role.Guru.Course.Materi.create', compact('kursus', 'courses', 'course', 'user', 'id_kursus'));
     }
-
-    // Mendapatkan materi pertama berdasarkan kursus yang dipilih
-    $materi_pertama = Materi::where('id_kursus', $kursus->id_kursus)
-        ->orderBy('tanggal_materi', 'DESC')
-        ->first(); // Mengambil satu materi pertama
-
-    $id_materi = $materi_pertama ? $materi_pertama->id_materi : null;
-
-    // Mengambil semua materi yang diurutkan berdasarkan tanggal materi
-    $materi = Materi::where('id_kursus', $kursus->id_kursus)
-        ->orderBy('tanggal_materi', 'DESC')
-        ->get(); // Mengambil semua materi yang diurutkan
-
-    // Memastikan $course dipassing ke view
-    $course = $kursus;
-
-    return view('Role.Guru.Course.Materi.index', compact('materi', 'materi_pertama', 'user', 'kursus', 'id_kursus', 'id_materi', 'course'));
-}
-
-public function create(Request $request)
-{
-    $guru = Guru::where('id_user', auth()->user()->id)->first();
-
-    if (!$guru) {
-        return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
-    }
-
-    $id_kursus = $request->query('id_kursus');
-
-    $kursus = Kursus::where('id_guru', $guru->id_guru)->get();
-
-    if ($kursus->isEmpty()) {
-        return redirect()->back()->with('error', 'Kursus tidak ditemukan.');
-    }
-
-    $courses = Kursus::with('guru')->get();
-
-    // Ambil kursus yang sesuai dengan id_kursus
-    $course = $courses->where('id_kursus', $id_kursus)->first();
-
-    $user = auth()->user();
-
-    return view('Role.Guru.Course.Materi.create', compact('kursus', 'courses', 'course', 'user', 'id_kursus'));
-}
 
 
     public function store(Request $request)
     {
         Log::info('Mulai validasi input.');
-        $request->validate([
-            'judul_materi' => 'required|string|max:30',
-            'deskripsi' => 'nullable|string',
-            'file' => 'required|mimes:pdf,docx,doc,ppt,pptx|max:10240', // Validasi file
-            'id_kursus' => 'required|exists:kursus,id_kursus', // Validasi kursus
-        ]);
+        // dd($request);
+        try {
+            Log::info('Data request yang diterima:', $request->all());
+            $request->validate([
+                'judul_materi' => 'required|string|max:30',
+                'deskripsi' => 'nullable|string',
+                'file' => 'required|mimes:pdf,docx,doc,ppt,pptx|max:10240'
+            ]);
+            Log::info('Validasi input berhasil.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validasi gagal:', $e->errors());
+            throw $e; // biar tetap redirect ke form
+        }
         Log::info('Validasi input berhasil.');
 
         Log::info('Mulai menyimpan file.');
@@ -161,7 +168,7 @@ public function create(Request $request)
             return redirect()->back()->with('error', 'Kursus tidak ditemukan.');
         }
 
-        return view('Role.Guru.Course.Materi.edit', compact('materi','course', 'guru', 'id_kursus', 'courses', 'user', 'id_materi'));
+        return view('Role.Guru.Course.Materi.edit', compact('materi', 'course', 'guru', 'id_kursus', 'courses', 'user', 'id_materi'));
     }
 
     public function update(Request $request, $id_materi)

@@ -24,7 +24,7 @@
     <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
       
 
-        <form action="{{ route('Guru.Materi.store') }}" " method="POST">
+        <form action="{{ route('Guru.Materi.store') }}" method="POST">
             @csrf
 
             <!-- Nama Sekolah Field -->
@@ -120,7 +120,7 @@
         // Form validation enhancement
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
-            const nameInput = document.getElementById('nama_kurikulum');
+            const nameInput = document.querySelector('input[name="judul_materi"]');
 
             nameInput.addEventListener('input', function() {
                 if (this.value.length > 0) {
