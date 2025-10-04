@@ -28,5 +28,11 @@ class kurikulum extends Model
 
     public function mata_pelajaran(){
         return $this->hasMany(mata_pelajaran::class);
-}
+    }
+
+    public function tahunAjaran()
+    {
+        return $this->hasMany(TahunAjaran::class, 'id_kurikulum', 'id_kurikulum');
+    }
+
 }

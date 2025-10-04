@@ -93,7 +93,7 @@
             </a>
           </li>
           <li>
-            <a href=""
+            <a href="{{ route('Siswa.enroll.kurikulum') }}"
                class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors {{ request()->routeIs('dashboard.category') ? 'nav-active' : '' }}">
               <i class="fas fa-th-large w-5 h-5"></i>
               <span>Course Category</span>

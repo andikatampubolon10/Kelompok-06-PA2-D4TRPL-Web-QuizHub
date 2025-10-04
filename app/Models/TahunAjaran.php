@@ -41,4 +41,9 @@ class TahunAjaran extends Model
     {
         return $this->hasMany(kursus::class, 'id_kursus', 'id_kursus');
     }
+
+    public function semesters()
+    {
+        return $this->hasMany(Semester::class, 'ID_Tahun_Ajaran', 'ID_Tahun_Ajaran');
+    }
 }

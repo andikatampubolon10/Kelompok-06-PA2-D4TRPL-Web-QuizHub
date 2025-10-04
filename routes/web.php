@@ -31,6 +31,7 @@ use App\Http\Controllers\persentaseController;
 use App\Http\Controllers\ListSiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\BobotTipeSoalController;
+use App\Http\Controllers\EnrollSiswaController;
 use App\Models\mata_pelajaran;
 use App\Models\Guru;
 use App\Http\Middleware\CheckOperatorStatus;
@@ -146,6 +147,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian'])->name('Course.tipeujian');
         Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian'])->name('Course.ujian.enter');
         Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
+        Route::get('/enroll/kurikulum', [EnrollSiswaController::class, 'kurikulum']) ->name('enroll.kurikulum');
+        Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran', [EnrollSiswaController::class, 'tahunAjaran']) ->name('enroll.tahunajaran');
+        Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [EnrollSiswaController::class, 'semester'])
+            ->name('enroll.semester');
+
+        // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
+        Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])
+            ->name('enroll.mapel');
+
+        // 5) Kursus (butuh id_kurikulum, id_tahun_ajaran, id_semester, id_mata_pelajaran)
+        Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kursus', [EnrollSiswaController::class, 'kursus'])
+            ->name('enroll.kursus');
+        Route::post('/enroll/kursus/enroll', [EnrollSiswaController::class, 'enroll']) ->name('kursus.enroll.password');
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);

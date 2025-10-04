@@ -10,6 +10,7 @@ class Semester extends Model
     use HasFactory;
 
     protected $table = 'semester';
+    protected $primaryKey = 'id_semester';
 
     protected $fillable = [
         'nama_semester',
