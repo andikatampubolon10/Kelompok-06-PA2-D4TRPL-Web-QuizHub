@@ -43,9 +43,17 @@ class LatihanSoalController extends Controller
         } else {
             $mapel = null;
         }
+        $idUser   = auth()->user()->id;
+    $guru = guru::where('id_user', $idUser)->first();
 
-        $mataPelajarans = mata_pelajaran::with(['operator', 'semester'])->get();
-
+        $mataPelajarans = mata_pelajaran::with(['operator', 'semester'])
+    ->whereIn('id_mata_pelajaran', function($query) use ($guru) {
+        $query->select('id_mata_pelajaran')
+              ->from('guru_mata_pelajaran')
+              ->where('id_guru', $guru->id_guru);
+    })
+    ->get();
+        // dd($mataPelajarans);
         // Return the view with the selected mata pelajaran and other data
         return view('Role.Guru.Latihan.create', compact('mataPelajarans', 'mapel', 'kurikulums', 'kelas', 'user'));
     }
