@@ -173,11 +173,12 @@
                 class="rounded border px-3 py-2 text-sm">
           Batal
         </button>
-        <button href="{{ route('Siswa.Course.ujian.take', ['id_kursus' => $kursus->id_kursus, 'id_ujian' => $u->id_ujian]) }}" type="submit"
+        <button type="submit"
                 class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
           Masuk
         </button>
       </div>
+
     </form>
   </div>
 </div>
