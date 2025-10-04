@@ -2,51 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\persentase;
+use App\Models\Persentase;
 use App\Models\Kursus;
-use App\Models\guru;
-use Illuminate\Support\Facades\Log;
+use App\Models\Guru;
+use App\Models\tipe_persentase;
 use App\Models\tipe_ujian;
-use App\Models\tipe_persentase;  // Menggunakan penulisan snake_case untuk model
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PersentaseController extends Controller
 {
-    // Menampilkan data persentase berdasarkan kursus
+    // Index: daftar persentase per kursus guru
     public function index()
     {
-        $user = auth()->user();
-
-        $guru = $user->guru; // This will automatically load the guru relationship
-
-        $courses = Kursus::where('id_guru', $guru->id_guru)->get();
-
-        $persentases = persentase::with(['kursus', 'tipeUjian'])->get();
-
-        // Kirim variabel 'courses' dan 'persentases' ke view
-        return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user', 'guru'));
-    }
-
-    // Menampilkan halaman create
-    public function create(Request $request)
-    {
-        $user = auth()->user();
-        $guru = guru::where('id_user', auth()->user()->id)->first();
+        $user = Auth::user();
+        $guru = $user->guru ?? null;
 
         if (!$guru) {
             return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
         }
 
-        $id_kursus = $request->query('id_kursus');
+        // Dapatkan kursus milik guru
+        $courses = Kursus::where('id_guru', $guru->id_guru)->get();
 
+        // Dapatkan persentase dengan eager load
+        $persentases = Persentase::with(['kursus', 'tipeUjian', 'tipePersentase'])
+            ->whereIn('id_kursus', $courses->pluck('id_kursus'))
+            ->get();
+
+        return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user', 'guru'));
+    }
+
+    // Create: tampilkan form create persentase untuk kursus
+    public function create(Request $request)
+    {
+        $user = Auth::user();
+        $guru = $user->guru ?? null;
+
+        if (!$guru) {
+            return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
+        }
+
+        $id_kursus = $request->query('id_kursus'); // bisa null
+
+        // Ambil kursus milik guru untuk dropdown
         $kursus = Kursus::where('id_guru', $guru->id_guru)->get();
 
         $tipeUjian = tipe_ujian::all();
         $tipePersentase = tipe_persentase::all();
 
-        return view('Role.Guru.Nilai.create', compact('id_kursus', 'kursus', 'tipeUjian', 'tipePersentase', 'user'));
+        // Validasi opsional id_kursus jika diberikan
+        if ($id_kursus !== null) {
+            $valid = Kursus::where('id_kursus', $id_kursus)
+                ->where('id_guru', $guru->id_guru)
+                ->exists();
+
+            if (!$valid) {
+                return redirect()->back()->withErrors(['error' => 'Kursus tidak ditemukan untuk guru ini.']);
+            }
+        }
+
+        return view('Role.Guru.Nilai.create', [
+            'id_kursus' => $id_kursus,
+            'kursus' => $kursus,
+            'tipeUjian' => $tipeUjian,
+            'tipePersentase' => $tipePersentase,
+            'user' => $user,
+        ]);
     }
 
+    // Store: simpan 3 persentase (Kuis, UTS, UAS)
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -56,136 +82,155 @@ class PersentaseController extends Controller
             'persentase_UAS' => 'required|numeric|min:0|max:100',
         ]);
 
-        // Cek apakah sudah ada persentase untuk kursus ini
-        $existingPersentase = persentase::where('id_kursus', $validated['id_kursus'])->exists();
-        if ($existingPersentase) {
-            return redirect()->back()->withErrors(['error' => 'Persentase sudah pernah diatur untuk kursus ini.']);
+        // Cek duplikasi: pastikan tidak ada entri untuk kursus dan tipe persentase/ujian sama
+        $existsKuis = Persentase::where('id_kursus', $validated['id_kursus'])
+            ->where('id_tipe_ujian', 1)
+            ->exists();
+        $existsUTS  = Persentase::where('id_kursus', $validated['id_kursus'])
+            ->where('id_tipe_ujian', 2)
+            ->exists();
+        $existsUAS  = Persentase::where('id_kursus', $validated['id_kursus'])
+            ->where('id_tipe_ujian', 3)
+            ->exists();
+
+        if ($existsKuis || $existsUTS || $existsUAS) {
+            return redirect()->back()->withErrors(['error' => 'Persentase untuk kursus ini telah diatur sebelumnya.']);
         }
 
-        // Mengecek apakah total persentase lebih dari 100
-        $totalPersentase = $validated['persentase_kuis'] + $validated['persentase_UTS'] + $validated['persentase_UAS'];
-        if ($totalPersentase > 100) {
+        // Total harus tidak melebihi 100
+        $total = $validated['persentase_kuis'] + $validated['persentase_UTS'] + $validated['persentase_UAS'];
+        if ($total > 100) {
             return redirect()->back()->withErrors(['error' => 'Jumlah persentase tidak boleh lebih dari 100.']);
         }
 
-        $tipeUjianKuis = 1;
-        $tipeUjianUTS = 2;
-        $tipeUjianUAS = 3;
+        DB::beginTransaction();
+        try {
+            // ID tipe persentase sesuai konvensi
+            Persentase::create([
+                'id_kursus' => $validated['id_kursus'],
+                'id_tipe_ujian' => 1,
+                'id_tipe_persentase' => 1,
+                'persentase' => $validated['persentase_kuis'],
+            ]);
 
-        $tipePersentaseKuis = 1;
-        $tipePersentaseUTS = 2;
-        $tipePersentaseUAS = 3;
+            Persentase::create([
+                'id_kursus' => $validated['id_kursus'],
+                'id_tipe_ujian' => 2,
+                'id_tipe_persentase' => 2,
+                'persentase' => $validated['persentase_UTS'],
+            ]);
 
-        // Create the persentase for Kuis, UTS, and UAS
-        persentase::create([
-            'id_kursus' => $validated['id_kursus'],
-            'id_tipe_ujian' => $tipeUjianKuis, // Menggunakan ID
-            'id_tipe_persentase' => $tipePersentaseKuis, // Menggunakan ID
-            'persentase' => $validated['persentase_kuis'],
-        ]);
+            Persentase::create([
+                'id_kursus' => $validated['id_kursus'],
+                'id_tipe_ujian' => 3,
+                'id_tipe_persentase' => 3,
+                'persentase' => $validated['persentase_UAS'],
+            ]);
 
-        persentase::create([
-            'id_kursus' => $validated['id_kursus'],
-            'id_tipe_ujian' => $tipeUjianUTS, // Menggunakan ID
-            'id_tipe_persentase' => $tipePersentaseUTS, // Menggunakan ID
-            'persentase' => $validated['persentase_UTS'],
-        ]);
-
-        persentase::create([
-            'id_kursus' => $validated['id_kursus'],
-            'id_tipe_ujian' => $tipeUjianUAS, // Menggunakan ID
-            'id_tipe_persentase' => $tipePersentaseUAS, // Menggunakan ID
-            'persentase' => $validated['persentase_UAS'],
-        ]);
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Gagal menyimpan persentase: ' . $e->getMessage()]);
+        }
 
         return redirect()->route('Guru.Persentase.index')->with('success', 'Persentase berhasil disimpan.');
     }
 
-
+    // Edit: tampilkan data persentase untuk id_kursus
     public function edit(Request $request, $id_kursus)
     {
-        $user = auth()->user();
-        $guru = guru::where('id_user', auth()->user()->id)->first();
-
+        $user = Auth::user();
+        $guru = $user->guru ?? null;
         if (!$guru) {
             return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
         }
 
-        // Mengambil data persentase berdasarkan id_kursus
-        $persentase = persentase::where('id_kursus', $id_kursus)->get();
+        // Ambil data persentase untuk kursus ini
+        $persentase = Persentase::where('id_kursus', $id_kursus)->get();
 
-        // Ambil data kursus, tipe ujian, dan tipe persentase yang diperlukan untuk dropdown
-        $kursus = kursus::where('id_guru', $guru->id_guru)->get();
+        $kursus = Kursus::where('id_guru', $guru->id_guru)->get();
         $tipeUjian = tipe_ujian::all();
         $tipePersentase = tipe_persentase::all();
 
-        // Pastikan Anda mengirimkan id_kursus ke view
         return view('Role.Guru.Nilai.edit', compact('persentase', 'user', 'kursus', 'tipeUjian', 'tipePersentase', 'id_kursus'));
     }
 
+    // Update: per kursus, per tipe ujian
     public function update(Request $request, $id_kursus)
     {
-        // Validasi input data
         $validated = $request->validate([
-            'id_kursus' => 'required|exists:kursus,id_kursus',
             'persentase_kuis' => 'required|numeric|min:0|max:100',
             'persentase_UTS' => 'required|numeric|min:0|max:100',
             'persentase_UAS' => 'required|numeric|min:0|max:100',
         ]);
 
-        // Mengecek apakah total persentase lebih dari 100
-        $totalPersentase = $validated['persentase_kuis'] + $validated['persentase_UTS'] + $validated['persentase_UAS'];
-        if ($totalPersentase > 100) {
+        $total = $validated['persentase_kuis'] + $validated['persentase_UTS'] + $validated['persentase_UAS'];
+        if ($total > 100) {
             return redirect()->back()->withErrors(['error' => 'Jumlah persentase tidak boleh lebih dari 100.']);
         }
 
-        // Mengupdate data berdasarkan id_kursus
-        $persentaseKuis = persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 1)->first();
-        $persentaseUTS = persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 2)->first();
-        $persentaseUAS = persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 3)->first();
+        DB::beginTransaction();
+        try {
+            // Kuis
+            $persKuis = Persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 1)->first();
+            if ($persKuis) {
+                $persKuis->update(['persentase' => $validated['persentase_kuis']]);
+            } else {
+                Persentase::create([
+                    'id_kursus' => $id_kursus,
+                    'id_tipe_ujian' => 1,
+                    'id_tipe_persentase' => 1,
+                    'persentase' => $validated['persentase_kuis'],
+                ]);
+            }
 
-        // Update atau buat record untuk Kuis
-        if ($persentaseKuis) {
-            $persentaseKuis->update(['persentase' => $validated['persentase_kuis']]);
-        } else {
-            persentase::create([
-                'id_kursus' => $id_kursus,
-                'id_tipe_ujian' => 1,
-                'persentase' => $validated['persentase_kuis'],
-            ]);
+            // UTS
+            $persUTS = Persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 2)->first();
+            if ($persUTS) {
+                $persUTS->update(['persentase' => $validated['persentase_UTS']]);
+            } else {
+                Persentase::create([
+                    'id_kursus' => $id_kursus,
+                    'id_tipe_ujian' => 2,
+                    'id_tipe_persentase' => 2,
+                    'persentase' => $validated['persentase_UTS'],
+                ]);
+            }
+
+            // UAS
+            $persUAS = Persentase::where('id_kursus', $id_kursus)->where('id_tipe_ujian', 3)->first();
+            if ($persUAS) {
+                $persUAS->update(['persentase' => $validated['persentase_UAS']]);
+            } else {
+                Persentase::create([
+                    'id_kursus' => $id_kursus,
+                    'id_tipe_ujian' => 3,
+                    'id_tipe_persentase' => 3,
+                    'persentase' => $validated['persentase_UAS'],
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Gagal memperbarui persentase: ' . $e->getMessage()]);
         }
 
-        // Update atau buat record untuk UTS
-        if ($persentaseUTS) {
-            $persentaseUTS->update(['persentase' => $validated['persentase_UTS']]);
-        } else {
-            persentase::create([
-                'id_kursus' => $id_kursus,
-                'id_tipe_ujian' => 2,
-                'persentase' => $validated['persentase_UTS'],
-            ]);
-        }
-
-        // Update atau buat record untuk UAS
-        if ($persentaseUAS) {
-            $persentaseUAS->update(['persentase' => $validated['persentase_UAS']]);
-        } else {
-            persentase::create([
-                'id_kursus' => $id_kursus,
-                'id_tipe_ujian' => 3,
-                'persentase' => $validated['persentase_UAS'],
-            ]);
-        }
-
-        // Redirect setelah sukses update
         return redirect()->route('Guru.Persentase.index')->with('success', 'Persentase berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    // Destroy: hapus semua persentase terkait kursus tertentu
+    public function destroy($id_kursus)
     {
-        $persentase = persentase::findOrFail($id);
-        $persentase->delete();
+        DB::beginTransaction();
+        try {
+            Persentase::where('id_kursus', $id_kursus)->delete();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Gagal menghapus persentase: ' . $e->getMessage()]);
+        }
 
-        return redirect()->route('Guru.Persentase.index')->with('success', 'Persentase berhasil dihapus.');
+        return redirect()->route('Guru.Persentase.index')->with('success', 'Persentase berhasil dihapus untuk kursus tersebut.');
     }
 }

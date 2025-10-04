@@ -59,8 +59,6 @@
                 Jumlah persentase tidak boleh lebih dari 100%.
             </div>
 
-
-        </form>
         <!-- Form Actions -->
         <div
             class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">

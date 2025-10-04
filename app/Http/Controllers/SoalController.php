@@ -167,12 +167,6 @@ class SoalController extends Controller
                 'id_latihan' => null,
             ]);
 
-            // Update nilai per soal ujian
-            $jumlahSoal = Soal::where('id_ujian', $idUjian)->count();
-            $nilaiPerSoal = $jumlahSoal > 0 ? round(100 / $jumlahSoal, 2) : 0;
-            $soal->update(['nilai_per_soal' => $nilaiPerSoal]);
-            Soal::where('id_ujian', $idUijan)->update(['nilai_per_soal' => $nilaiPerSoal]);
-
             Log::info('Soal ujian berhasil dibuat.', ['soal_id' => $soal->id_soal]);
         }
 
@@ -347,7 +341,6 @@ class SoalController extends Controller
             $nilaiPerSoal = $jumlahSoal > 0 ? $soal->ujian->grade / $jumlahSoal : 0;
             $soal->update(['nilai_per_soal' => $nilaiPerSoal]);
 
-            Soal::where('id_ujian', $soal->id_ujian)->update(['nilai_per_soal' => $nilaiPerSoal]);
         }
 
         return redirect()->route('Guru.Soal.index', [
