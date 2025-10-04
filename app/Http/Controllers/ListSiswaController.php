@@ -14,6 +14,8 @@ use App\Exports\NilaiExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Excel as ExcelFormat;
+
 
 class ListSiswaController extends Controller
 {
@@ -26,7 +28,7 @@ class ListSiswaController extends Controller
             ->get();
 
         if ($persentase->isEmpty()) {
-return redirect()->back()->with('error', 'Persentase belum didefinisikan. Silakan definisikan persentase terlebih dahulu pada bagian Nilai.');
+            return redirect()->back()->with('error', 'Persentase belum didefinisikan. Silakan definisikan persentase terlebih dahulu pada bagian Nilai.');
         }
 
         $kursus = Kursus::findOrFail($id_kursus);
@@ -53,12 +55,16 @@ return redirect()->back()->with('error', 'Persentase belum didefinisikan. Silaka
 
     public function exportNilai($id_kursus)
     {
-        $kursus = Kursus::findOrFail($id_kursus);
+        $kursus   = \App\Models\Kursus::findOrFail($id_kursus);
+        $fileName = str_replace(['/', '\\'], '_', $kursus->nama_kursus) . '_nilai.xlsx';
 
-        $fileName = $kursus->nama_kursus . '_nilai.xlsx';
-        $fileName = str_replace(['/', '\\'], '_', $fileName);
+        $content = Excel::raw(new \App\Exports\NilaiExport($id_kursus), ExcelFormat::XLSX);
 
-        return Excel::download(new NilaiExport($id_kursus), $fileName);
+        return response($content, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, max-age=0',
+        ]);
     }
 
     public function resetAndRecalculateNilai($id_kursus)

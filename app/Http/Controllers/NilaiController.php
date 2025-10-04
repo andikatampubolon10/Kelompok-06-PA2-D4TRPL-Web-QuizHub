@@ -320,7 +320,7 @@ class NilaiController extends Controller
                 $kunci = jawaban_soal::where('id_soal', $id_soal)
                     ->where(function ($q) {
                         $q->where('is_benar', 1)
-                          ->orWhere('benar', 1);
+                            ->orWhere('benar', 1);
                     })
                     ->first();
             }

@@ -98,85 +98,94 @@
     <style>
         /* highlight animasi untuk sel nilai yang berubah */
         @keyframes highlight {
-            0% {
-                background-color: #ffffff;
-            }
-
-            50% {
-                background-color: #c8e6c9;
-            }
-
-            100% {
-                background-color: #ffffff;
-            }
+            0% { background-color: #ffffff; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: #ffffff; }
         }
-
-        .highlight {
-            animation: highlight 2s ease;
-        }
+        .highlight { animation: highlight 2s ease; }
     </style>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const resetRecalculateBtn = document.getElementById('resetRecalculateBtn');
-            const loadingOverlay = document.getElementById('loadingOverlay');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const resetRecalculateBtn = document.getElementById('resetRecalculateBtn');
+    const loadingOverlay      = document.getElementById('loadingOverlay');
+    const csrf                = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
-            if (resetRecalculateBtn) {
-                resetRecalculateBtn.addEventListener('click', function() {
-                    const idKursus = this.getAttribute('data-id-kursus');
+    if (!resetRecalculateBtn) return;
 
-                    if (confirm('Apakah Anda yakin ingin reset dan menghitung ulang semua nilai?')) {
-                        loadingOverlay.classList.remove('hidden');
+    resetRecalculateBtn.addEventListener('click', function() {
+        const idKursus = this.getAttribute('data-id-kursus');
 
-                        this.disabled = true;
-                        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menghitung...';
+        if (!idKursus) {
+            alert('ID kursus tidak ditemukan.');
+            return;
+        }
+        if (!confirm('Apakah Anda yakin ingin reset dan menghitung ulang semua nilai?')) {
+            return;
+        }
 
-                        fetch(`/Guru/reset-recalculate-nilai/${idKursus}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token']
-                                    ')?.getAttribute('
-                                    content ') || '
-                                    {{ csrf_token() }} '
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                loadingOverlay.classList.add('hidden');
-                                resetRecalculateBtn.disabled = false;
-                                resetRecalculateBtn.innerHTML =
-                                    '<i class="fas fa-calculator mr-1"></i> Hitung Nilai';
+        // tampilkan loading
+        loadingOverlay.classList.remove('hidden');
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menghitung...';
 
-                                if (data.success) {
-                                    for (const siswaId in data.data.hasil) {
-                                        const nilaiCell = document.getElementById(`nilai-${siswaId}`);
-                                        if (nilaiCell) {
-                                            nilaiCell.textContent = parseFloat(data.data.hasil[siswaId]
-                                                .nilai_total).toFixed(2);
-                                            nilaiCell.classList.add('highlight');
-                                            setTimeout(() => nilaiCell.classList.remove('highlight'),
-                                                2000);
-                                        }
-                                    }
-                                    alert(
-                                        `Perhitungan nilai berhasil dilakukan untuk ${data.data.jumlah_siswa} siswa!`);
-                                } else {
-                                    alert('Terjadi kesalahan: ' + (data.message || 'Tidak diketahui'));
-                                }
-                            })
-                            .catch(error => {
-                                loadingOverlay.classList.add('hidden');
-                                resetRecalculateBtn.disabled = false;
-                                resetRecalculateBtn.innerHTML =
-                                    '<i class="fas fa-calculator mr-1"></i> Hitung Nilai';
-                                alert('Terjadi kesalahan: ' + error.message);
-                            });
-                    }
-                });
+        fetch(`{{ url('/Guru/reset-recalculate-nilai') }}/${idKursus}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({})
+        })
+        .then(async (res) => {
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `HTTP ${res.status}`);
+            }
+            return res.json();
+        })
+        .then((data) => {
+            loadingOverlay.classList.add('hidden');
+            resetRecalculateBtn.disabled = false;
+            resetRecalculateBtn.innerHTML = '<i class="fas fa-calculator mr-1"></i> Hitung Nilai';
+
+            if (!data || data.success !== true) {
+                const msg = data?.message || 'Terjadi kesalahan tidak diketahui.';
+                alert('Terjadi kesalahan: ' + msg);
+                return;
+            }
+
+            const hasil  = data.data?.hasil || {};
+            const jumlah = data.data?.jumlah_siswa ?? Object.keys(hasil).length;
+
+            for (const siswaId in hasil) {
+                const cell = document.getElementById(`nilai-${siswaId}`);
+                if (!cell) continue;
+
+                const n = parseFloat(hasil[siswaId]?.nilai_total ?? 0);
+                cell.textContent = isFinite(n) ? n.toFixed(2) : '-';
+                cell.classList.add('highlight');
+                setTimeout(() => cell.classList.remove('highlight'), 2000);
+            }
+
+            alert(`Perhitungan nilai berhasil dilakukan untuk ${jumlah} siswa!`);
+        })
+        .catch((error) => {
+            loadingOverlay.classList.add('hidden');
+            resetRecalculateBtn.disabled = false;
+            resetRecalculateBtn.innerHTML = '<i class="fas fa-calculator mr-1"></i> Hitung Nilai';
+
+            try {
+                const j = JSON.parse(error.message);
+                alert('Terjadi kesalahan: ' + (j.message || error.message));
+            } catch (_) {
+                alert('Terjadi kesalahan: ' + error.message);
             }
         });
-    </script>
+    });
+});
+</script>
 @endpush
