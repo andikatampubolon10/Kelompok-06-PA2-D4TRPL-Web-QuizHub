@@ -74,6 +74,7 @@
           </li>
           <li>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             <a href="#"
                class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors {{ request()->routeIs('dashboard.practice') ? 'nav-active' : '' }}">
               <i class="fas fa-dumbbell w-5 h-5"></i>
@@ -81,6 +82,8 @@
             </a>
           </li>
           <li>
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             <a href=""
