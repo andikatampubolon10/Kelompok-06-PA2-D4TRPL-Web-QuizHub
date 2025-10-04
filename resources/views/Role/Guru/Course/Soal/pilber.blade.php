@@ -50,7 +50,8 @@
             <!-- Jawaban 1-5 -->
             @for ($i = 1; $i <= 5; $i++)
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="jawaban_{{ $i }}">Jawaban {{ $i }}</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="jawaban_{{ $i }}">Jawaban
+                        {{ $i }}</label>
                     <input type="text" id="jawaban_{{ $i }}" name="jawaban_{{ $i }}"
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     @error('jawaban_' . $i)
@@ -74,51 +75,66 @@
                     <span class="alert-danger">{{ $message }}</span>
                 @enderror
             </div>
-            
-            
+
+            <div class="mb-4">
+                <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
+                    Bobot Soal <span class="text-gray-400 text-xs">(diantara 1 - 10)</span>
+                </label>
+                <input type="number" name="bobot" id="bobot" step="0.01" min="0"
+                    value="{{ old('bobot') }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    {{-- kalau ada id_ujian di URL, wajib diisi (sekadar hint di sisi client) --}} @if (request()->filled('id_ujian')) required @endif>
+                @error('bobot')
+                    <span class="alert-danger">{{ $message }}</span>
+                @enderror
+                <p class="text-xs text-gray-500 mt-1">
+                    Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
+                </p>
+            </div>
+
             <!-- Correct Answer Selection -->
             <div class="mb-4">
-                 <label class="block text-gray-700 text-sm font-bold mb-2" for="id_latihan">Latihan (Untuk
-                            Pembuatan Soal Latihan)</label>
-                        <select name="id_latihan" id="id_latihan"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="">Pilih Latihan (Opsional)</option>
-                            @foreach ($latihan as $latihans)
-                                <option value="{{ $latihans->id_latihan }}"
-                                    {{ old('id_latihan') == $latihans->id_latihan ? 'selected' : '' }}>
-                                    {{ $latihans->Topik }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    
-                        <!-- Form Actions -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Semua field yang bertanda (*) wajib diisi</span>
-                    </div>
-       
-                        
-                          <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <a href="{{ route('Guru.Soal.index', ['id_ujian' => request()->query('id_ujian')]) }}"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_latihan">Latihan (Untuk
+                    Pembuatan Soal Latihan)</label>
+                <select name="id_latihan" id="id_latihan"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">Pilih Latihan (Opsional)</option>
+                    @foreach ($latihan as $latihans)
+                        <option value="{{ $latihans->id_latihan }}"
+                            {{ old('id_latihan') == $latihans->id_latihan ? 'selected' : '' }}>
+                            {{ $latihans->Topik }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-               
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan 
-                        </button>
-                    </div>
+
+            <!-- Form Actions -->
+            <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Semua field yang bertanda (*) wajib diisi</span>
                 </div>
-            
-            
+
+
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <a href="{{ route('Guru.Soal.index', ['id_ujian' => request()->query('id_ujian')]) }}"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </div>
+
+
         </form>
     </div>
 

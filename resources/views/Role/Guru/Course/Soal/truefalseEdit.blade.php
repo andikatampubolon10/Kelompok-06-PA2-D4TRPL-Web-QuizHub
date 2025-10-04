@@ -31,38 +31,35 @@
             <input type="hidden" name="id_ujian" value="{{ request()->query('id_ujian') }}">
 
             <!-- Soal -->
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
-                    <div class="border p-2">
-                        <div class="flex space-x-2 mb-2">
-                            <button type="button" class="border p-1" id="list-button-soal"><i
-                                    class="fas fa-list"></i></button>
-                            <button type="button" class="border p-1" id="bold-button-soal"><i
-                                    class="fas fa-bold"></i></button>
-                            <button type="button" class="border p-1" id="image-button-soal"><i
-                                    class="fas fa-image"></i></button>
+            <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
+            <div class="border p-2">
+                <div class="flex space-x-2 mb-2">
+                    <button type="button" class="border p-1" id="list-button-soal"><i class="fas fa-list"></i></button>
+                    <button type="button" class="border p-1" id="bold-button-soal"><i class="fas fa-bold"></i></button>
+                    <button type="button" class="border p-1" id="image-button-soal"><i class="fas fa-image"></i></button>
+                </div>
+                <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ $soal->soal }}</textarea>
+                <div id="image-preview-soal" class="mt-2">
+                    @if ($soal->image)
+                        <div class="relative mt-2 inline-block">
+                            <img src="{{ $soal->image_url }}" alt="Soal Image"
+                                class="max-w-full h-auto max-h-40 border rounded">
+                            <span
+                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+                                onclick="removeImage('soal')">×</span>
                         </div>
-                        <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ $soal->soal }}</textarea>
-                        <div id="image-preview-soal" class="mt-2">
-                            @if ($soal->image)
-                                <div class="relative mt-2 inline-block">
-                                    <img src="{{ $soal->image_url }}" alt="Soal Image"
-                                        class="max-w-full h-auto max-h-40 border rounded">
-                                    <span
-                                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
-                                        onclick="removeImage('soal')">×</span>
-                                </div>
-                            @endif
-                        </div>
-                        <input type="file" id="image-input-soal" name="image" class="hidden" accept="image/*" />
-                        @error('soal')
-                            <span class="alert-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                    @endif
+                </div>
+                <input type="file" id="image-input-soal" name="image" class="hidden" accept="image/*" />
+                @error('soal')
+                    <span class="alert-danger">{{ $message }}</span>
+                @enderror
+            </div>
 
-           <!-- Get jawaban_soal data -->
-                    @php
-                        $jawaban = $soal->jawaban_soal->sortBy('id_jawaban_soal')->values();
-                    @endphp
+            <!-- Get jawaban_soal data -->
+            @php
+                $jawaban = $soal->jawaban_soal->sortBy('id_jawaban_soal')->values();
+            @endphp
 
             <!-- Jawaban 1 -->
             <div class="border p-2 mb-4 mt-4">
@@ -82,80 +79,96 @@
                     <button type="button" class="border p-1" id="list-button-2"><i class="fas fa-list"></i></button>
                     <button type="button" class="border p-1" id="bold-button-2"><i class="fas fa-bold"></i></button>
                 </div>
-                 <textarea id="jawaban-2-textarea" name="jawaban_2" placeholder="False" class="w-full border p-2" rows="2">{{ $jawaban[1]->jawaban ?? 'False' }}</textarea>
+                <textarea id="jawaban-2-textarea" name="jawaban_2" placeholder="False" class="w-full border p-2" rows="2">{{ $jawaban[1]->jawaban ?? 'False' }}</textarea>
                 @error('jawaban_2')
                     <span class="alert-danger">{{ $message }}</span>
                 @enderror
             </div>
 
-    
+
 
             <!-- Correct Answer Selection -->
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="correct_answer">Jawaban
-                            Benar</label>
-                        <select id="correct_answer" name="correct_answer"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            @php
-                                $correctIndex = 0;
-                                foreach ($jawaban as $index => $jwb) {
-                                    if ($jwb->benar) {
-                                        $correctIndex = $index;
-                                        break;
-                                    }
-                                }
-                            @endphp
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="correct_answer">Jawaban
+                    Benar</label>
+                <select id="correct_answer" name="correct_answer"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    @php
+                        $correctIndex = 0;
+                        foreach ($jawaban as $index => $jwb) {
+                            if ($jwb->benar) {
+                                $correctIndex = $index;
+                                break;
+                            }
+                        }
+                    @endphp
                     <option value="jawaban_1" {{ $correctIndex == 0 ? 'selected' : '' }}>True</option>
-                            <option value="jawaban_2" {{ $correctIndex == 1 ? 'selected' : '' }}>False</option>
-                        </select>
+                    <option value="jawaban_2" {{ $correctIndex == 1 ? 'selected' : '' }}>False</option>
+                </select>
 
                 @error('correct_answer')
                     <span class="alert-danger">{{ $message }}</span>
                 @enderror
             </div>
 
+            <div class="mb-4">
+                <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
+                    Bobot Soal <span class="text-gray-400 text-xs">(diantara 1 - 10)</span>
+                </label>
+                <input type="number" name="bobot" id="bobot" step="0.01" min="0"
+                    value="{{ old('bobot') }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    {{-- kalau ada id_ujian di URL, wajib diisi (sekadar hint di sisi client) --}} @if (request()->filled('id_ujian')) required @endif>
+                @error('bobot')
+                    <span class="alert-danger">{{ $message }}</span>
+                @enderror
+                <p class="text-xs text-gray-500 mt-1">
+                    Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
+                </p>
+            </div>
+
             <!-- Correct Answer Selection -->
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="id_latihan">Latihan</label>
-                        <select name="id_latihan" id="id_latihan"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="">Pilih Latihan (Opsional)</option>
-                            @foreach ($latihan as $latihans)
-                                <option value="{{ $latihans->id_latihan }}"
-                                    {{ $soal->id_latihan == $latihans->id_latihan ? 'selected' : '' }}>
-                                    {{ $latihans->Topik }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    
-                        <!-- Form Actions -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Semua field yang bertanda (*) wajib diisi</span>
-                    </div>
-       
-                        
-                          <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <a href="{{ route('Guru.Soal.index', ['id_ujian' => $soal->id_ujian]) }}"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
+                <select name="id_latihan" id="id_latihan"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">Pilih Latihan (Opsional)</option>
+                    @foreach ($latihan as $latihans)
+                        <option value="{{ $latihans->id_latihan }}"
+                            {{ $soal->id_latihan == $latihans->id_latihan ? 'selected' : '' }}>
+                            {{ $latihans->Topik }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-               
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan 
-                        </button>
-                    </div>
+
+            <!-- Form Actions -->
+            <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Semua field yang bertanda (*) wajib diisi</span>
                 </div>
-            
-            
+
+
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <a href="{{ route('Guru.Soal.index', ['id_ujian' => $soal->id_ujian]) }}"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </div>
+
+
         </form>
     </div>
 

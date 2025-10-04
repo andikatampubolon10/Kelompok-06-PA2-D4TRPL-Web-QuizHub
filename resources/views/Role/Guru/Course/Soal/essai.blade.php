@@ -50,6 +50,22 @@
                 @enderror
             </div>
 
+            <div class="mb-4">
+                <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
+                    Bobot Soal <span class="text-gray-400 text-xs">(diantara 1 - 10)</span>
+                </label>
+                <input type="number" name="bobot" id="bobot" step="0.01" min="0"
+                    value="{{ old('bobot') }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    {{-- kalau ada id_ujian di URL, wajib diisi (sekadar hint di sisi client) --}} @if (request()->filled('id_ujian')) required @endif>
+                @error('bobot')
+                    <span class="alert-danger">{{ $message }}</span>
+                @enderror
+                <p class="text-xs text-gray-500 mt-1">
+                    Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
+                </p>
+            </div>
+
             {{-- Latihan (Opsional) --}}
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="id_latihan">Latihan (Untuk Pembuatan Soal
@@ -90,8 +106,8 @@
 @push('scripts')
     <script>
         /* === Handler Dropdown di layout (opsional) ===
-       Kalau layout kamu sudah punya handler dropdown, bagian ini boleh di-skip.
-    */
+           Kalau layout kamu sudah punya handler dropdown, bagian ini boleh di-skip.
+        */
         function toggleDropdown() {
             const dropdown = document.getElementById("dropdown-menu");
             if (dropdown) dropdown.classList.toggle("show");
