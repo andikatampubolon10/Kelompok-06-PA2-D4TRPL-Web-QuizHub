@@ -16,17 +16,43 @@ use Illuminate\Support\Facades\Hash;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request) // Tambahkan parameter Request
     {
         $user = auth()->user();
-
         $guru = $user->guru;
 
-        $courses = kursus::where('id_guru', $guru->id_guru)->get(); // Use $guru->id_guru to filter courses
+        // Ambil ID mata pelajaran dari query string
+        $selectedMataPelajaran = $request->input('id_mata_pelajaran');
 
-        return view('Role.Guru.index', compact('courses', 'user', 'guru'));
+        Log::info('Guru ID: ' . $guru->id_guru); // Logging ID Guru
+        Log::info('Selected Mata Pelajaran ID: ' . ($selectedMataPelajaran ?? 'null')); // Logging ID Filter
+
+        // Buat query dasar
+        $query = Kursus::where('id_guru', $guru->id_guru);
+
+        // Tambahkan filter jika ID mata pelajaran dipilih
+        if ($selectedMataPelajaran) {
+            $query->where('id_mata_pelajaran', $selectedMataPelajaran);
+            Log::info('Filter Applied: id_mata_pelajaran = ' . $selectedMataPelajaran); // Logging Filter Applied
+        }
+
+        // Eksekusi query
+        $courses = $query->with('mataPelajaran')->get(); // Gunakan eager loading untuk efisiensi
+
+        Log::info('Number of Courses Found: ' . $courses->count()); // Logging Jumlah Kursus
+        foreach ($courses as $course) {
+            Log::info('Course ID: ' . $course->id_kursus . ', Name: ' . $course->nama_kursus . ', Mata Pelajaran ID: ' . $course->id_mata_pelajaran . ', Mata Pelajaran Name: ' . ($course->mataPelajaran ? $course->mataPelajaran->nama_mata_pelajaran : 'NULL'));
+        }
+
+        // Ambil daftar mata pelajaran yang terkait dengan guru ini untuk dropdown filter
+        $mataPelajaranOptions = mata_pelajaran::whereIn('id_mata_pelajaran',
+            Kursus::where('id_guru', $guru->id_guru)->pluck('id_mata_pelajaran')
+        )->get();
+
+        Log::info('Mata Pelajaran Options Count: ' . $mataPelajaranOptions->count()); // Logging Jumlah Opsi Mapel
+
+        return view('Role.Guru.index', compact('courses', 'user', 'guru', 'mataPelajaranOptions', 'selectedMataPelajaran'));
     }
-
 
     public function beranda(Request $request)
     {

@@ -66,14 +66,10 @@ class NilaiController extends Controller
                 $tipeUjianList = TipeNilai::where('id_siswa', $id_siswa)
                     ->select('id_tipe_ujian')
                     ->distinct()
-                    ->get()
                     ->pluck('id_tipe_ujian');
 
-                $nilai_per_tipe = [];
-
                 foreach ($tipeUjianList as $id_tipe_ujian) {
-                    $nilai_tipe = $this->calculateNilaiKursus($id_kursus, $id_siswa, $id_tipe_ujian);
-                    $nilai_per_tipe[$id_tipe_ujian] = $nilai_tipe;
+                    $this->calculateNilaiKursus($id_kursus, $id_siswa, $id_tipe_ujian);
                 }
 
                 $nilai_total = $this->calculateNilaiTotal($id_kursus, $id_siswa);
@@ -88,12 +84,14 @@ class NilaiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Perhitungan nilai berhasil dilakukan untuk semua siswa',
-                'data' => $results
+                'data' => [
+                    'hasil' => $results,
+                    'jumlah_siswa' => $siswaList->count(),
+                ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-
-            Log::error('Error saat menghitung nilai: ' . $e->getMessage());
+            Log::error('Error saat menghitung nilai: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
             return response()->json([
                 'success' => false,
