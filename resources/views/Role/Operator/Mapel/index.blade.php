@@ -108,7 +108,7 @@
                                             <div class="flex-1">
                                                 <div class="space-y-2">
                                                     <a href="{{ route('Operator.Course.beranda', ['id_mata_pelajaran' => $mapel->id_mata_pelajaran]) }}"
-                                                        class="block text-xl font-semibold text-gray-900 hover:text-blue-600">
+                                                        class="block text-xl font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">
                                                         {{ $mapel->nama_mata_pelajaran }}
                                                     </a>
                                                 </div>

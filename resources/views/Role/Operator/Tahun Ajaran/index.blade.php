@@ -94,8 +94,8 @@
                                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                     <div class="flex-1">
                                         <a
-                                            href="{{ route('Operator.semester.index', ['id_tahun_ajaran' => $tahun->ID_Tahun_Ajaran]) }}">
-                                            <h4 class="text-xl font-semibold text-gray-900 mb-2">
+                                            href="{{ route('Operator.semester.index', ['id_tahun_ajaran' => $tahun->ID_Tahun_Ajaran]) }}" class="block text-xl font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">
+                                            <h4 >
                                                 {{-- @dd($tahun->ID_Tahun_Ajaran) --}}
                                                 {{ $tahun->Nama_Tahun_Ajaran }}
                                             </h4>

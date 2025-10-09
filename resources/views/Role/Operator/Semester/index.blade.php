@@ -174,8 +174,8 @@
                                             </div>
                                             <div class="flex-1">
                                                 <a
-                                                        href="{{ route('Operator.MataPelajaran.index', ['id_semester' => $semester->id_semester]) }}">
-                                                        <h4 class="text-xl font-semibold text-gray-900 mb-2">
+                                                        href="{{ route('Operator.MataPelajaran.index', ['id_semester' => $semester->id_semester]) }}" class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">
+                                                        <h4 class="text-xl font-semibold">
                                                             Semester {{ $semester->nama_semester }}
                                                             {{ $semester->tahun_akademik }}
                                                         </h4>

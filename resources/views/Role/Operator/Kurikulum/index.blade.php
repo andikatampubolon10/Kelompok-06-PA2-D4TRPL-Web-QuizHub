@@ -84,10 +84,9 @@
                                 <div
                                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                     <div class="flex-1">
-                                        <a
-                                            href="{{ route('Operator.TahunAjaran.index', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}">
+                                        <a href="{{ route('Operator.TahunAjaran.index', ['id_kurikulum' => $kurikulum->id_kurikulum]) }}"
+                                            class="block text-xl font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">
                                             {{ $kurikulum->nama_kurikulum }}
-                                            {{-- @dd($kurikulum->id_kurikulum) --}}
                                         </a>
 
                                         <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
