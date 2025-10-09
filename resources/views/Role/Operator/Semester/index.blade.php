@@ -172,7 +172,7 @@
                                                 <i
                                                     class="fas {{ $semester->jenis_semester == 'Ganjil' ? 'fa-calendar-alt' : 'fa-calendar-check' }} text-white text-2xl"></i>
                                             </div>
-                                            <div class="flex-1">
+                                            <div class="">
                                                 <a
                                                         href="{{ route('Operator.MataPelajaran.index', ['id_semester' => $semester->id_semester]) }}" class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">
                                                         <h4 class="text-xl font-semibold">
@@ -180,7 +180,7 @@
                                                             {{ $semester->tahun_akademik }}
                                                         </h4>
                                                     </a>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                                                {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                                                     <span class="flex items-center">
                                                         <i class="fas fa-calendar mr-2 text-blue-600"></i>
                                                         Tahun Akademik: {{ $semester->tahun_akademik }}
@@ -202,11 +202,11 @@
                                                             class="fas fa-circle mr-2 {{ strtolower($semester->status) == 'aktif' ? 'text-green-600' : 'text-red-600' }}"></i>
                                                         Status: {{ $semester->status }}
                                                     </span>
-                                                </div>
+                                                </div> --}}
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center space-x-3">
+                                    {{-- <div class="flex items-center space-x-3">
                                         @if (strtolower($semester->status) != 'aktif')
                                             <button onclick="activateSemester({{ $semester->id_semester }})"
                                                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-lg hover:bg-green-200 transition-colors group">
@@ -228,7 +228,7 @@
                                                 Hapus
                                             </button>
                                         </form>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                         @endforeach

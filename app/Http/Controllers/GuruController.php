@@ -14,25 +14,41 @@ use Illuminate\Support\Facades\DB;
 
 class GuruController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Get the logged-in user (Operator)
         $user = auth()->user();
-
-        // Ensure the user is logged in
         if (!$user) {
             return redirect()->route('login');
         }
 
-        // Fetch the operator related to the logged-in user
-        $operator = Operator::where('id_user', $user->id)->first(); // Use 'id_user' or correct column for your case
+        $operator = Operator::where('id_user', $user->id)->first();
 
-        // Fetch the 'guru' (teachers) associated with the operator
-        $gurus = guru::where('id_operator', $operator->id_operator)->with('user')->get();
+        if (!$operator) {
+            return redirect()->back()->with('error', 'Data operator tidak ditemukan.');
+        }
 
-        // Pass the user data to the view
-        return view('Role.Operator.Guru.index', compact('gurus', 'user'));
+        $mataPelajarans = mata_pelajaran::where('id_operator', $operator->id_operator)->get();
+
+        $filterMapel = $request->input('mata_pelajaran');
+
+        $gurus = Guru::where('id_operator', $operator->id_operator)
+            ->with(['user', 'mataPelajarans'])
+            ->when($filterMapel, function ($query) use ($filterMapel) {
+                // Filter berdasarkan mata pelajaran dari tabel relasi
+                $query->whereHas('mataPelajarans', function ($q) use ($filterMapel) {
+                    $q->where('mata_pelajaran.id_mata_pelajaran', $filterMapel);
+                });
+            })
+            ->get();
+
+        return view('Role.Operator.Guru.index', compact(
+            'gurus',
+            'user',
+            'mataPelajarans',
+            'filterMapel'
+        ));
     }
+
 
     public function upload()
     {
@@ -75,7 +91,7 @@ class GuruController extends Controller
         if (!$user) {
             return redirect()->route('login');
         }
-        return view('Role.Operator.Guru.create', compact('user', 'mataPelajaran','operator'));
+        return view('Role.Operator.Guru.create', compact('user', 'mataPelajaran', 'operator'));
     }
 
 
@@ -106,11 +122,11 @@ class GuruController extends Controller
             }
 
             $guru = Guru::create([
-                'nama_guru'        => $request->name,
-                'nip'              => $request->nip,
-                'id_user'          => $user->id,
-                'id_operator'      => $operator->id_operator,
-                'status'           => $request->status ?? 'Aktif',
+                'nama_guru' => $request->name,
+                'nip' => $request->nip,
+                'id_user' => $user->id,
+                'id_operator' => $operator->id_operator,
+                'status' => $request->status ?? 'Aktif',
                 'id_mata_pelajaran' => $request->mata_pelajaran[0], // jika memang ada kolom ini
             ]);
 
