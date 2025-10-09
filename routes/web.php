@@ -32,6 +32,7 @@ use App\Http\Controllers\ListSiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\BobotTipeSoalController;
 use App\Http\Controllers\EnrollSiswaController;
+use App\Http\Controllers\PracticeQuestionController;
 use App\Models\mata_pelajaran;
 use App\Models\Guru;
 use App\Http\Middleware\CheckOperatorStatus;
@@ -160,6 +161,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kursus', [EnrollSiswaController::class, 'kursus'])
             ->name('enroll.kursus');
         Route::post('/enroll/kursus/enroll', [EnrollSiswaController::class, 'enroll']) ->name('kursus.enroll.password');
+        Route::post('courses/{id_kursus}/ujian/{id_ujian}/submit',[DashboardsiswaController::class, 'submitUjian'])->name('Ujian.submit');
+        Route::get('/latihan/kurikulum', [PracticeQuestionController::class, 'kurikulum']) ->name('latihan.kurikulum');
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran', [PracticeQuestionController::class, 'tahunAjaran']) ->name('latihan.tahunajaran');
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [PracticeQuestionController::class, 'semester'])
+            ->name('latihan.semester');
+        // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
+        
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [PracticeQuestionController::class, 'mataPelajaran'])
+            ->name('latihan.mapel');
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas', [PracticeQuestionController::class, 'kelas'])
+            ->name('latihan.kelas');
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik', [PracticeQuestionController::class, 'topikByKelas'])
+            ->name('latihan.kelas.topik');
+            Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
+            Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
+
+
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);

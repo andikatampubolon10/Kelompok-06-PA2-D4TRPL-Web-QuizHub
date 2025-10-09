@@ -26,7 +26,7 @@
 
                 {{-- gambar lebih pendek --}}
                 <div class="h-24 rounded-md mb-3 overflow-hidden">
-                    <img src="{{ $course->foto_url ?? 'https://placehold.co/600x400?text=Kursus' }}"
+                    <img src="{{ $course->image_url ?? 'https://placehold.co/600x400?text=Kursus' }}"
                         alt="{{ $course->nama_kursus }}" class="w-full h-full object-cover">
                 </div>
 

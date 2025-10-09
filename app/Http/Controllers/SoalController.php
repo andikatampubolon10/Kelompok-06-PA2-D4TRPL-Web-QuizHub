@@ -151,8 +151,8 @@ class SoalController extends Controller
             $jumlahSoalLatihan = Soal::where('id_latihan', $idLatihan)->count();
             $nilaiPerSoalLatihan = $jumlahSoalLatihan > 0 ? round(100 / $jumlahSoalLatihan, 2) : 0;
 
-            $soal->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
-            Soal::where('id_latihan', $idLatihan)->update(['nilai_per_soal' => $nilaiPerSoalLatihan]);
+            $soal->update(['bobot' => $nilaiPerSoalLatihan]);
+            Soal::where('id_latihan', $idLatihan)->update(['bobot' => $nilaiPerSoalLatihan]);
 
             Log::info('Soal latihan berhasil dibuat.', ['soal_id' => $soal->id_soal]);
         } else {

@@ -62,10 +62,11 @@ class Guru extends Model
         return $this->hasMany(Nilai::class,   'id_guru', 'id_guru');
     }
 
-    public function mataPelajaran()
+    public function mataPelajarans()
     {
-        return $this->belongsToMany(Mata_Pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
+        return $this->belongsToMany(mata_pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
     }
+
 
     public function guruMapel()
     {

@@ -6,8 +6,9 @@ use App\Models\mata_pelajaran;
 use App\Models\Kursus;
 use App\Models\siswa;
 use App\Models\Materi;
-use App\Models\Soal;
-use App\Models\Ujian;
+use App\Models\soal;
+use App\Models\ujian;
+use App\Models\jawaban_siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -59,7 +60,7 @@ class DashboardsiswaController extends Controller
         $kursus = Kursus::with(['guru', 'kelas', 'mataPelajaran'])->findOrFail($id_kursus);
 
         // Ambil ujian pada kursus ini, beserta tipe_ujian-nya
-        $ujians = Ujian::with('tipe_ujian')
+        $ujians = ujian::with('tipe_ujian')
             ->where('id_kursus', $id_kursus)
             ->orderBy('id_tipe_ujian')
             ->orderBy('waktu_mulai')
@@ -121,46 +122,108 @@ public function soal($id_kursus, $id_ujian)
     $user = auth()->user();
     if (!$user) return redirect()->route('login');
 
-    $siswa = Siswa::where('id_user', $user->id)->first();
+    $siswa = \App\Models\Siswa::where('id_user', $user->id)->first();
     if (!$siswa) return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
 
-    // Pastikan siswa memang terdaftar di kursus ini
+    // Pastikan siswa terdaftar di kursus ini
     $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
     if (!$enrolled) {
-        return redirect()->route('Role.Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
+        return redirect()->route('Role.Siswa.Course.index')
+            ->with('error', 'Kamu belum terdaftar di kursus ini.');
     }
 
-    // Ambil ujian (beserta kursus untuk header)
-    $ujian = Ujian::with(['kursus.mataPelajaran','kursus.kelas','kursus.guru'])->findOrFail($id_ujian);
-    if ($ujian->id_kursus != $id_kursus) {
+    // Ambil ujian + info kursus untuk header
+    $ujian = \App\Models\Ujian::with(['kursus.mataPelajaran','kursus.kelas','kursus.guru'])
+        ->findOrFail($id_ujian);
+
+    if ((int)$ujian->id_kursus !== (int)$id_kursus) {
         abort(404);
     }
 
-    // Ambil semua soal + pilihan jawaban
-    $soals = Soal::with(['jawaban_soal', 'tipe_soal'])
+    // Ambil soal + pilihan
+    $soals = \App\Models\Soal::with(['jawaban_soal','tipe_soal'])
         ->where('id_ujian', $id_ujian)
         ->orderBy('id_soal')
         ->get();
 
-    $questions = $soals->map(function ($s) {
-        return [
-            'id'       => $s->id_soal,
-            'text'     => $s->soal,
-            'tipe_id'  => $s->id_tipe_soal,  // Pastikan mengirimkan tipe_id
-            'choices'  => ($s->id_tipe_soal !== 3) ? $s->jawaban_soal->pluck('jawaban')->values() : [], // Isian tidak butuh choices
-        ];
-    });
+    $letters = ['A','B','C','D','E','F','G'];
 
-    // Durasi: pakai kolom 'durasi' kalau ada, default 30 menit (1800 detik)
-    $durationSeconds = $ujian->durasi ? (int)$ujian->durasi * 60 : 1800;
+    $questions = $soals->map(function ($s) use ($letters) {
+        $choices    = [];
+        $choiceIds  = [];
+
+        if ((int)$s->id_tipe_soal === 1) {
+            // Pilihan Ganda: pakai huruf A–E...
+            foreach ($s->jawaban_soal as $i => $jwb) {
+                $label = $letters[$i] ?? chr(65 + $i);
+                $choices[]              = $jwb->jawaban;
+                $choiceIds[$label]      = $jwb->id_jawaban_soal;
+            }
+        } elseif ((int)$s->id_tipe_soal === 2) {
+            // Benar/Salah: default True/False jika tidak ada di DB
+            if ($s->jawaban_soal->isNotEmpty()) {
+                $choices = $s->jawaban_soal->pluck('jawaban')->values()->all();
+                $t = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'True')  === 0 || strcasecmp($r->jawaban, 'Benar') === 0);
+                $f = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'False') === 0 || strcasecmp($r->jawaban, 'Salah') === 0);
+                $choiceIds = ['T' => optional($t)->id_jawaban_soal, 'F' => optional($f)->id_jawaban_soal];
+            } else {
+                $choices   = ['True','False'];
+                $choiceIds = ['T' => null, 'F' => null];
+            }
+        } // Isian (3): choices kosong
+
+        return [
+            'id'         => $s->id_soal,
+            'text'       => $s->soal,
+            'tipe_id'    => (int)$s->id_tipe_soal,  // 1=PG, 2=TF, 3=Isian
+            'choices'    => $choices,               // array teks
+            'choice_ids' => $choiceIds,             // map huruf/T/F -> id_jawaban_soal (opsional)
+        ];
+    })->values();
+
+    // Durasi (detik). Jika null, default 30 menit
+    $durationSeconds = $ujian->durasi ? ((int)$ujian->durasi * 60) : 1800;
 
     return view('Role.Siswa.Course.exam_take', [
-        'kursus'   => $ujian->kursus,
-        'ujian'    => $ujian,
-        'questions'=> $questions,
-        'total'    => $questions->count(),
-        'duration' => $durationSeconds,
+        'kursus'    => $ujian->kursus,
+        'ujian'     => $ujian,
+        'questions' => $questions,              // di Blade: const QUESTIONS = @json($questions);
+        'total'     => $questions->count(),
+        'duration'  => $durationSeconds,
     ]);
+}
+
+
+public function submitUjian(Request $request, $id_kursus, $id_ujian)
+{
+    $request->validate([
+        'answers_json' => 'required|string',
+    ]);
+
+    $user  = auth()->user();
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    $answers = json_decode($request->answers_json, true) ?? [];
+
+    foreach ($answers as $row) {
+        $idSoal  = $row['id_soal'] ?? null;
+        if (!$idSoal) continue;
+
+        jawaban_siswa::updateOrCreate(
+            [
+                'id_siswa' => $siswa->id_siswa,
+                'id_soal'  => $idSoal,
+            ],
+            [
+                'jawaban_siswa'  => $row['jawaban_siswa'] ?? null,     // teks / huruf
+                'id_jawaban_soal'=> $row['id_jawaban_soal'] ?? null,   // PG/TF (opsional)
+            ]
+        );
+    }
+
+    return redirect()
+        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
+        ->with('success', 'Jawaban berhasil dikumpulkan.');
 }
 
     public function materi(Request $request)

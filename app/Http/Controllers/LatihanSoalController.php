@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\latihan;
 use App\Models\kurikulum;
 use App\Models\mata_pelajaran;
+use App\Models\semester;
 use App\Models\soal;
 use App\Models\guru;
 use App\Models\kelas;
@@ -28,35 +29,18 @@ class LatihanSoalController extends Controller
         return view('Role.Guru.Latihan.index', compact('latihan', 'mataPelajarans', 'user', 'kurikulums', 'mapel', 'kelas', 'id_latihan'));
     }
 
-    public function create(Request $request)
-    {
-        $id_kurikulum = $request->input('id_kurikulum');
+public function create(Request $request)
+{
+    // Fetch the necessary data
+    $kurikulums = Kurikulum::all();  // Assuming this fetches all kurikulum data
+    $kelas = Kelas::all();           // Assuming this fetches all kelas data
+    $mataPelajarans = mata_pelajaran::all(); // Assuming this fetches all mata pelajaran data
 
-        // Get all kurikulum and classes
-        $kurikulums = kurikulum::all();
-        $kelas = kelas::all();
-        $user = auth()->user();
+    // Return the view with the selected mata pelajaran and other data
+    return view('Role.Guru.Latihan.create', compact('kurikulums', 'kelas', 'mataPelajarans'));
+}
 
-        // If a kurikulum is selected, get the first mata pelajaran that matches
-        if ($id_kurikulum) {
-            $mapel = mata_pelajaran::where('id_kurikulum', $id_kurikulum)->first();
-        } else {
-            $mapel = null;
-        }
-        $idUser   = auth()->user()->id;
-    $guru = guru::where('id_user', $idUser)->first();
 
-        $mataPelajarans = mata_pelajaran::with(['operator', 'semester'])
-    ->whereIn('id_mata_pelajaran', function($query) use ($guru) {
-        $query->select('id_mata_pelajaran')
-              ->from('guru_mata_pelajaran')
-              ->where('id_guru', $guru->id_guru);
-    })
-    ->get();
-        // dd($mataPelajarans);
-        // Return the view with the selected mata pelajaran and other data
-        return view('Role.Guru.Latihan.create', compact('mataPelajarans', 'mapel', 'kurikulums', 'kelas', 'user'));
-    }
 
 
 public function store(Request $request)

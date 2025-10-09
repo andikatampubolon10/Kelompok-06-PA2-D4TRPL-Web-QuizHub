@@ -26,7 +26,7 @@ class latihan extends Model
 
     public function guru()
     {
-        return $this->belongsTo(guru::class);
+        return $this->belongsTo(Guru::class, 'id_guru');
     }
 
     public function soal()
@@ -39,9 +39,9 @@ class latihan extends Model
         return $this->belongsTo(Kurikulum::class, 'id_kurikulum');
     }
 
-    public function Mata_Pelajaran()
+public function mataPelajaran()
     {
-        return $this->belongsTo(mata_pelajaran::class, 'id_nilai');
+        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran');
     }
 
     public function Kelas()
