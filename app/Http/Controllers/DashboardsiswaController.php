@@ -42,44 +42,64 @@ class DashboardsiswaController extends Controller
         ]);
     }
 
-    public function tipeujian($id_kursus, Request $request)
-    {
-        $user = auth()->user();
-        if (!$user) return redirect()->route('login');
+public function tipeujian($id_kursus, Request $request)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
 
-        $siswa = Siswa::where('id_user', $user->id)->first();
-        if (!$siswa) return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
+    $siswa = Siswa::where('id_user', $user->id)->first();
+    if (!$siswa) return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
 
-        // (Opsional tapi disarankan) Pastikan siswa memang enroll pada kursus ini
-        $isEnrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
-        if (!$isEnrolled) {
-            return redirect()->route('Role.Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
-        }
-
-        // Ambil kursus untuk header halaman
-        $kursus = Kursus::with(['guru', 'kelas', 'mataPelajaran'])->findOrFail($id_kursus);
-
-        // Ambil ujian pada kursus ini, beserta tipe_ujian-nya
-        $ujians = ujian::with('tipe_ujian')
-            ->where('id_kursus', $id_kursus)
-            ->orderBy('id_tipe_ujian')
-            ->orderBy('waktu_mulai')
-            ->get();
-
-        // Kelompokkan per tipe
-        $quiz = $ujians->where('id_tipe_ujian', 1); // Kuis
-        $uts  = $ujians->where('id_tipe_ujian', 2); // UTS
-        $uas  = $ujians->where('id_tipe_ujian', 3); // UAS
-
-        return view('Role.Siswa.Course.course_exam', [
-            'user'  => $user,
-            'siswa' => $siswa,
-            'kursus'=> $kursus,
-            'quiz'  => $quiz,
-            'uts'   => $uts,
-            'uas'   => $uas,
-        ]);
+    // Pastikan siswa terdaftar dalam kursus ini
+    $isEnrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$isEnrolled) {
+        return redirect()->route('Role.Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
     }
+
+    // Ambil kursus untuk header halaman
+    $kursus = Kursus::with(['guru', 'kelas', 'mataPelajaran'])->findOrFail($id_kursus);
+
+    // Ambil ujian berdasarkan kursus
+    $ujians = Ujian::with('tipe_ujian')
+        ->where('id_kursus', $id_kursus)
+        ->orderBy('id_tipe_ujian')
+        ->orderBy('waktu_mulai')
+        ->get();
+
+    // Kelompokkan ujian per tipe
+    $quiz = $ujians->where('id_tipe_ujian', 1); // Kuis
+    $uts  = $ujians->where('id_tipe_ujian', 2); // UTS
+    $uas  = $ujians->where('id_tipe_ujian', 3); // UAS
+
+    // Cek apakah ujian dapat dimulai atau tidak
+    foreach ($ujians as $ujian) {
+        $currentTime = \Carbon\Carbon::now();
+        $startTime = \Carbon\Carbon::parse($ujian->waktu_mulai);
+        $endTime = \Carbon\Carbon::parse($ujian->waktu_selesai);
+
+        if ($currentTime->isBefore($startTime)) {
+            // Jika sebelum waktu mulai, beri notifikasi bahwa ujian belum dimulai
+            $ujian->status = 'Belum dimulai';
+        } elseif ($currentTime->isAfter($endTime)) {
+            // Jika sudah lewat waktu selesai, beri notifikasi bahwa ujian sudah selesai
+            $ujian->status = 'Selesai';
+        } else {
+            // Ujian sedang berlangsung
+            $ujian->status = 'Berlangsung';
+        }
+    }
+
+    return view('Role.Siswa.Course.course_exam', [
+        'user'  => $user,
+        'siswa' => $siswa,
+        'kursus'=> $kursus,
+        'quiz'  => $quiz,
+        'uts'   => $uts,
+        'uas'   => $uas,
+        'ujians'=> $ujians, // Mengirimkan data ujian ke view
+    ]);
+}
+
 
     public function enterUjian(Request $request)
 {

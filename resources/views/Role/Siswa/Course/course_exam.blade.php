@@ -39,6 +39,7 @@
           data-ujian-id="{{ $u->id_ujian }}"
           data-kursus-id="{{ $kursus->id_kursus }}"
           data-ujian-nama="{{ $u->nama_ujian }}">
+          {{ $u->status == 'Belum dimulai' ? 'disabled' : '' }}>
           <div>
             <p class="text-sm font-medium">{{ $u->nama_ujian }}</p>
             <p class="text-xs text-muted-foreground">
@@ -73,6 +74,7 @@
           data-ujian-id="{{ $u->id_ujian }}"
           data-kursus-id="{{ $kursus->id_kursus }}"
           data-ujian-nama="{{ $u->nama_ujian }}">
+          {{ $u->status == 'Belum dimulai' ? 'disabled' : '' }}>
           <div>
             <p class="text-sm font-medium">{{ $u->nama_ujian }}</p>
             <p class="text-xs text-muted-foreground">
@@ -107,6 +109,7 @@
             data-ujian-id="{{ $u->id_ujian }}"
             data-kursus-id="{{ $kursus->id_kursus }}"
             data-ujian-nama="{{ $u->nama_ujian }}">
+            {{ $u->status == 'Belum dimulai' ? 'disabled' : '' }}>
             <div>
               <p class="text-sm font-medium">{{ $u->nama_ujian }}</p>
               <p class="text-xs text-muted-foreground">
@@ -125,6 +128,7 @@
   </div>
 
   {{-- Modal Password Ujian --}}
+{{-- Modal Password Ujian --}}
 <div id="modal-ujian" class="fixed inset-0 z-50 hidden">
   <div class="absolute inset-0 bg-black/50"></div>
 
@@ -133,6 +137,15 @@
       <h3 class="text-lg font-semibold">Masuk Ujian</h3>
       <p class="text-sm text-muted-foreground" id="modal-ujian-title">Masukkan password untuk memulai ujian.</p>
     </div>
+
+    {{-- Menampilkan pesan status ujian --}}
+    @foreach($ujians as $ujian)
+        @if($ujian->status == 'Belum dimulai')
+          <p class="text-red-500">Ujian belum dimulai. Silakan coba lagi setelah waktu mulai ujian.</p>
+        @elseif($ujian->status == 'Selesai')
+          <p class="text-red-500">Ujian sudah selesai. Kamu tidak bisa mengikuti ujian ini.</p>
+        @endif
+    @endforeach
 
     @if(session('error'))
       <div class="mb-2 rounded bg-red-100 px-3 py-2 text-sm text-red-700">
@@ -150,7 +163,7 @@
       <div class="relative">
         <input
           id="modal-password"
-          type="password"            {{-- akan ditoggle ke "text" --}}
+          type="password"
           name="password"
           class="w-full rounded border border-gray-300 pr-10 px-3 py-2 bg-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Ketik password…"
@@ -162,7 +175,6 @@
                 class="absolute inset-y-0 right-2 my-auto h-7 px-2 rounded text-gray-500 hover:text-gray-700 focus:outline-none"
                 aria-label="Tampilkan/sembunyikan password"
                 aria-pressed="false">
-          {{-- Pakai ikon Font Awesome kalau ada, fallback teks 👁 --}}
           <i class="far fa-eye" id="eye-open"></i>
           <i class="far fa-eye-slash hidden" id="eye-closed"></i>
         </button>
@@ -173,8 +185,10 @@
                 class="rounded border px-3 py-2 text-sm">
           Batal
         </button>
+        {{-- Tombol Masuk --}}
         <button type="submit"
-                class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                {{ $ujian->status != 'Berlangsung' ? 'disabled' : '' }}>
           Masuk
         </button>
       </div>
@@ -182,6 +196,7 @@
     </form>
   </div>
 </div>
+
 
 {{-- Script Modal --}}
 <script>
