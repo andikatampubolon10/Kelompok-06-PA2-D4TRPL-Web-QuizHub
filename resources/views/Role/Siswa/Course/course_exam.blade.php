@@ -20,6 +20,52 @@
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+      <div class="bg-card rounded-lg p-6 border border-border">
+    <div class="flex items-center space-x-4 mb-4">
+      <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+        <i class="fas fa-book-open text-white"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold">Materi</h3>
+        <p class="text-sm text-muted-foreground">Dokumen & tautan pembelajaran</p>
+      </div>
+    </div>
+
+    @forelse($materi as $m)
+      <div class="flex items-start justify-between rounded-lg px-3 py-3 hover:bg-secondary/40">
+        <div class="pr-4">
+          <p class="text-sm font-medium">{{ $m->judul_materi }}</p>
+          <p class="text-xs text-muted-foreground">
+            {{ $m->tanggal_materi ? \Carbon\Carbon::parse($m->tanggal_materi)->format('d M Y') : '—' }}
+          </p>
+          @if(!empty($m->deskripsi))
+            <p class="text-sm mt-1 text-muted-foreground line-clamp-2">{{ $m->deskripsi }}</p>
+          @endif
+        </div>
+
+        <div class="shrink-0 flex items-center gap-2">
+          @if(!empty($m->file_url))
+            <a href="{{ $m->file_url }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90">
+              <i class="fas fa-link"></i> Buka
+            </a>
+          @elseif(!empty($m->file))
+            {{-- Jika Anda juga menyimpan file lokal --}}
+            <a href="{{ Storage::url($m->file) }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90">
+              <i class="fas fa-download"></i> Unduh
+            </a>
+          @else
+            <span class="text-xs text-muted-foreground">Tidak ada tautan</span>
+          @endif
+        </div>
+      </div>
+    @empty
+      <div class="text-sm text-muted-foreground">Belum ada materi.</div>
+    @endforelse
+
+  </div>
+
     {{-- Card: Quiz --}}
     <div class="bg-card rounded-lg p-6 border border-border">
       <div class="flex items-center space-x-4 mb-4">

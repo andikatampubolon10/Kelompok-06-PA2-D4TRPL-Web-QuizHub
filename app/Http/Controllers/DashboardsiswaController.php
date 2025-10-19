@@ -89,6 +89,11 @@ public function tipeujian($id_kursus, Request $request)
         }
     }
 
+    $materi = Materi::where('id_kursus', $id_kursus)
+        ->orderByDesc('tanggal_materi')
+        ->orderByDesc('id_materi')
+        ->get();
+
     return view('Role.Siswa.Course.course_exam', [
         'user'  => $user,
         'siswa' => $siswa,
@@ -97,6 +102,7 @@ public function tipeujian($id_kursus, Request $request)
         'uts'   => $uts,
         'uas'   => $uas,
         'ujians'=> $ujians, // Mengirimkan data ujian ke view
+        'materi' => $materi,
     ]);
 }
 
@@ -216,6 +222,16 @@ public function soal($id_kursus, $id_ujian)
 
 public function submitUjian(Request $request, $id_kursus, $id_ujian)
 {
+
+        $ujian = Ujian::findOrFail($id_ujian);
+    $now = now();
+    if ($now->lt($ujian->waktu_mulai)) {
+        return back()->with('error', 'Ujian belum dimulai.');
+    }
+    if ($now->gt($ujian->waktu_selesai)) {
+        return back()->with('error', 'Waktu ujian telah berakhir.');
+    }
+    
     $request->validate([
         'answers_json' => 'required|string',
     ]);
