@@ -25,7 +25,7 @@
         <form action="{{ route('Guru.Soal.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="id_ujian" value="{{ request()->query('id_ujian') }}">
-
+            {{-- @dd( request()->query('id_ujian') ) --}}
             <!-- Tipe Soal -->
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="question_type">Tipe Soal</label>
@@ -75,6 +75,7 @@
                     <span class="alert-danger">{{ $message }}</span>
                 @enderror
             </div>
+            {{-- @dd($id_ujian) --}}
 
             <div class="mb-4">
                 <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
@@ -200,5 +201,34 @@
                 }
             });
         });
+    </script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+    
+    <script>
+       ClassicEditor
+    .create(document.querySelector('#soal-textarea'), {
+        ckfinder: {
+            uploadUrl: "{{ route('Guru.Soal.uploadImage') . '?_token=' . csrf_token() }}"
+        },
+        toolbar: [
+            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+            '|', 'insertTable', 'uploadImage', 'blockQuote', 'undo', 'redo'
+        ],
+        image: {
+            resizeOptions: [
+                { name: 'resizeImage:original', label: 'Asli', value: null },
+                { name: 'resizeImage:25', label: '25%', value: '25' },
+                { name: 'resizeImage:50', label: '50%', value: '50' },
+                { name: 'resizeImage:75', label: '75%', value: '75' }
+            ],
+            toolbar: [
+                'imageTextAlternative', 'toggleImageCaption', '|',
+                'imageStyle:inline', 'imageStyle:block', 'imageStyle:side'
+            ],
+            styles: ['full', 'side', 'alignLeft', 'alignCenter', 'alignRight']
+        }
+    })
+    .catch(error => console.error(error));
+
     </script>
 @endsection

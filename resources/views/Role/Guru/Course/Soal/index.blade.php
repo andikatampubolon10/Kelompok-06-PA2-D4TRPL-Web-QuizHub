@@ -40,6 +40,7 @@
                 <p class="text-xl font-bold text-gray-900">{{ $countPilgan }}</p>
             </div>
         </div>
+        {{-- @dd($idUjian) --}}
 
         <!-- True / False -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 flex items-center gap-3">
@@ -153,56 +154,166 @@
                 </div>
             </div>
 
-            <!-- Daftar Soal -->
-            <div class="space-y-4">
-                @forelse(($soals ?? collect()) as $soal)
-                    <div
-                        class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                        <div class="mb-4 md:mb-0 md:flex-1">
-                            <h3 class="text-lg font-semibold mb-2 break-words">{{ $soal->soal }}</h3>
+            <!-- ============================================ -->
+            <!-- Tabs Berdasarkan Jenis Soal -->
+            <!-- ============================================ -->
 
-                            <p class="text-sm text-gray-600">
-                                Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
-                            </p>
-                            <p class="text-sm text-gray-600 mt-1">
-                                Bobot: <span class="font-semibold">
-                                    {{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float) $soal->bobot, 2, '.', ''), '0'), '.') }}
-                                </span>
-                            </p>
+            <ul class="nav nav-tabs mb-4" id="soalTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pilgan-tab" data-bs-toggle="tab" data-bs-target="#pilgan"
+                        type="button" role="tab">
+                        Pilihan Ganda ({{ $countPilgan }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="truefalse-tab" data-bs-toggle="tab" data-bs-target="#truefalse"
+                        type="button" role="tab">
+                        True / False ({{ $countTrueFalse }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="essay-tab" data-bs-toggle="tab" data-bs-target="#essay" type="button"
+                        role="tab">
+                        Essay / Isian ({{ $countEssay }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="soalTabsContent">
+                <!-- Tab: Pilihan Ganda -->
+                <div class="tab-pane fade show active" id="pilgan" role="tabpanel">
+                    @php
+                        $pilgan = $soals->where('id_tipe_soal', 1);
+                    @endphp
+                    @forelse($pilgan as $soal)
+                        <div
+                            class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                            <div class="mb-4 md:mb-0 md:flex-1">
+                                <h3 class="text-lg font-semibold mb-2 break-words">{!! $soal->soal !!}</h3>
+                                <p class="text-sm text-gray-600">
+                                    Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
+                                </p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Bobot: <span class="font-semibold">
+                                        {{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float) $soal->bobot, 2, '.', ''), '0'), '.') }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex space-x-5 justify-end flex-wrap">
+                                <a href="{{ route('Guru.Soal.preview', $soal->id_soal) }}"
+                                    class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
+                                    <i class="fas fa-eye mr-1"></i> Lihat
+                                </a>
+                                <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');"
+                                    class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
+                                <a href="{{ route('Guru.Soal.edit', $soal->id_soal) }}"
+                                    class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                            </div>
                         </div>
+                    @empty
+                        <div class="text-center py-6 text-gray-500">Belum ada soal pilihan ganda.</div>
+                    @endforelse
+                </div>
 
-                        <div class="flex space-x-5 justify-end flex-wrap">
-                            <a href="{{ route('Guru.Soal.preview', $soal->id_soal) }}"
-                                class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
-                                <i class="fas fa-eye mr-1"></i> Lihat
-                            </a>
-
-                            <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
-                                    <i class="fas fa-trash-alt mr-1"></i> Hapus
-                                </button>
-                            </form>
-
-                            <a href="{{ route('Guru.Soal.edit', $soal->id_soal) }}"
-                                class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
-                                <i class="fas fa-edit mr-1"></i> Edit
-                            </a>
+                <!-- Tab: True False -->
+                <div class="tab-pane fade" id="truefalse" role="tabpanel">
+                    @php
+                        $truefalse = $soals->where('id_tipe_soal', 2);
+                    @endphp
+                    @forelse($truefalse as $soal)
+                        <div
+                            class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                            <div class="mb-4 md:mb-0 md:flex-1">
+                                <h3 class="text-lg font-semibold mb-2 break-words">{!! $soal->soal !!}</h3>
+                                <p class="text-sm text-gray-600">
+                                    Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
+                                </p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Bobot: <span class="font-semibold">
+                                        {{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float) $soal->bobot, 2, '.', ''), '0'), '.') }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex space-x-5 justify-end flex-wrap">
+                                <a href="{{ route('Guru.Soal.preview', $soal->id_soal) }}"
+                                    class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
+                                    <i class="fas fa-eye mr-1"></i> Lihat
+                                </a>
+                                <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');"
+                                    class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
+                                <a href="{{ route('Guru.Soal.edit', $soal->id_soal) }}"
+                                    class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">
-                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-file-alt text-gray-400 text-3xl"></i>
+                    @empty
+                        <div class="text-center py-6 text-gray-500">Belum ada soal true / false.</div>
+                    @endforelse
+                </div>
+
+                <!-- Tab: Essay -->
+                <div class="tab-pane fade" id="essay" role="tabpanel">
+                    @php
+                        $essay = $soals->where('id_tipe_soal', 3);
+                    @endphp
+                    @forelse($essay as $soal)
+                        <div
+                            class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                            <div class="mb-4 md:mb-0 md:flex-1">
+                                <h3 class="text-lg font-semibold mb-2 break-words">{{ $soal->soal }}</h3>
+                                <p class="text-sm text-gray-600">
+                                    Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
+                                </p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Bobot: <span class="font-semibold">
+                                        {{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float) $soal->bobot, 2, '.', ''), '0'), '.') }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex space-x-5 justify-end flex-wrap">
+                                <a href="{{ route('Guru.Soal.preview', $soal->id_soal) }}"
+                                    class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded">
+                                    <i class="fas fa-eye mr-1"></i> Lihat
+                                </a>
+                                <form action="{{ route('Guru.Soal.destroy', $soal->id_soal) }}" method="POST"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');"
+                                    class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="text-red-500 flex items-center hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
+                                <a href="{{ route('Guru.Soal.edit', $soal->id_soal) }}"
+                                    class="text-blue-500 flex items-center hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                            </div>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada Soal</h3>
-                        <p class="text-gray-600">Tambahkan soal baru untuk
-                            {{ $idUjian ? 'ujian ini' : ($idLatihan ? 'latihan ini' : 'kelas ini') }}.</p>
-                    </div>
-                @endforelse
+                    @empty
+                        <div class="text-center py-6 text-gray-500">Belum ada soal essay / isian.</div>
+                    @endforelse
+                </div>
             </div>
 
             <!-- Script -->
@@ -212,9 +323,6 @@
                 @if (session('success'))
                     var myModal = new bootstrap.Modal(document.getElementById('successModal'));
                     myModal.show();
-                    setTimeout(function() {
-                        myModal.hide();
-                    }, 3000);
                 @endif
 
                 function showTipeSoalModal() {
@@ -226,22 +334,16 @@
                 }
 
                 function pilihSoal(tipe) {
-                    Swal.fire({
-                        title: 'Anda memilih ' + (tipe === 'pilgan' ? 'Pilgan' : tipe === 'truefalse' ? 'True/False' :
-                            'Essay / Isian'),
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        closeTipeSoalModal();
-                        let url = `/Guru/Soal/create?type=${tipe}`;
-                        const idUjian = '{{ $idUjian ?? '' }}';
-                        const idLatihan = '{{ $idLatihan ?? '' }}';
-                        if (idUjian) url += `&id_ujian=${idUjian}`;
-                        if (idLatihan) url += `&id_latihan=${idLatihan}`;
-                        window.location.href = url;
-                    });
+                    const idUjian = "{{ $idUjian }}"; // dari Blade
+                    let url = '';
+
+                    // Gunakan route yang benar sesuai parameter dinamis {type}
+                    url = `{{ url('/Guru/Soal/create') }}/${tipe}?id_ujian=${idUjian}`;
+
+                    window.location.href = url;
                 }
             </script>
+
         </div>
     </div>
 @endsection

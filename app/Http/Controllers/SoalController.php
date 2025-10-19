@@ -19,11 +19,12 @@ class SoalController extends Controller
 {
     public function index(Request $request)
     {
+
         $idUjian = $request->get('id_ujian');
         $idLatihan = $request->get('id_latihan');
 
         $soals = null;
-
+        // dd($idUjian);
         if ($idUjian) {
             $soals = Soal::where('id_ujian', $idUjian)
                 ->with(['ujian', 'latihan', 'tipe_soal'])
@@ -49,32 +50,56 @@ class SoalController extends Controller
         return view('Role.Guru.Course.Soal.index', compact('soals', 'user', 'idUjian', 'idLatihan'));
     }
 
-    public function create(Request $request)
+    public function create($type, Request $request)
     {
-        $type = $request->query('type');
         $users = auth()->user();
         $latihan = Latihan::all();
 
+        // Ambil id ujian dan id kursus dari query string
+        $id_ujian = $request->query('id_ujian');
         $id_kursus = $request->query('id_kursus');
 
-        $courses = Kursus::with('guru')->get(); // Ambil semua kursus
-
+        // Ambil data kursus
+        $courses = Kursus::with('guru')->get();
         $course = $courses->where('id_kursus', $id_kursus)->first();
 
         switch ($type) {
             case 'pilgan':
-                return view('Role.Guru.Course.Soal.pilber', compact('users', 'latihan', 'id_kursus', 'courses', 'course'));
+                return view('Role.Guru.Course.Soal.pilber', compact(
+                    'users',
+                    'latihan',
+                    'id_kursus',
+                    'courses',
+                    'course',
+                    'id_ujian'
+                ));
             case 'truefalse':
-                return view('Role.Guru.Course.Soal.truefalse', compact('users', 'latihan', 'id_kursus', 'courses', 'course'));
+                return view('Role.Guru.Course.Soal.truefalse', compact(
+                    'users',
+                    'latihan',
+                    'id_kursus',
+                    'courses',
+                    'course',
+                    'id_ujian'
+                ));
             case 'essay':
-                return view('Role.Guru.Course.Soal.essai', compact('users', 'latihan', 'id_kursus', 'courses', 'course'));
+                return view('Role.Guru.Course.Soal.essai', compact(
+                    'users',
+                    'latihan',
+                    'id_kursus',
+                    'courses',
+                    'course',
+                    'id_ujian'
+                ));
             default:
                 return redirect()->route('Guru.Soal.index')->with('error', 'Tipe soal tidak valid.');
         }
     }
 
+
     public function store(Request $request)
     {
+        // dd($request);
         Log::info('Menerima request untuk membuat soal.');
 
         // Validasi input
@@ -95,7 +120,8 @@ class SoalController extends Controller
         Log::info('Validasi berhasil untuk soal.', ['validated_data' => $validated]);
 
         // Ambil id_ujian dan id_latihan dari URL atau request
-        $idUjian = $request->input('id_ujian'); // Ambil id_ujian dari URL jika ada
+        $idUjian = $request->input('id_ujian');
+        // dd($idUjian ); // Ambil id_ujian dari URL jika ada
         $idLatihan = $validated['id_latihan']; // Ambil id_latihan dari request
 
         // Pastikan id_ujian atau id_latihan valid
@@ -201,6 +227,28 @@ class SoalController extends Controller
 
         return redirect()->route('Guru.Latihan.index')->with('success', 'Soal latihan berhasil dibuat.');
     }
+public function uploadImage(Request $request)
+{
+    if ($request->hasFile('upload')) {
+        $file = $request->file('upload');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('uploads/soal'), $filename);
+
+        $url = asset('uploads/soal/' . $filename);
+
+        // Respons harus mengikuti format CKEditor
+        return response()->json([
+            'uploaded' => true,
+            'url' => $url
+        ]);
+    }
+
+    return response()->json([
+        'uploaded' => false,
+        'error' => ['message' => 'Upload gagal.']
+    ], 400);
+}
+
 
     public function show(Soal $soal)
     {
