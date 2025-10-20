@@ -10,6 +10,8 @@ use App\Models\soal;
 use App\Models\ujian;
 use App\Models\jawaban_siswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
@@ -107,41 +109,89 @@ public function tipeujian($id_kursus, Request $request)
 }
 
 
-    public function enterUjian(Request $request)
+public function enterUjian(Request $request)
 {
     $request->validate([
-        'id_ujian'  => 'required|integer|exists:ujian,id_ujian',
+        'id_ujian'  => 'required|integer',
+        'id_kursus' => 'required|integer',
         'password'  => 'required|string',
-        'id_kursus' => 'required|integer|exists:kursus,id_kursus',
     ]);
 
-    $user  = auth()->user();
-    if (!$user) return redirect()->route('login');
+    $ujian  = Ujian::findOrFail($request->id_ujian);
+    $kursus = Kursus::findOrFail($request->id_kursus);
 
-    $siswa = Siswa::where('id_user', $user->id)->first();
-    if (!$siswa) return back()->with('error', 'Siswa tidak ditemukan');
+    // Validasi waktu ujian
+    $now   = Carbon::now();
+    $start = $ujian->waktu_mulai ? Carbon::parse($ujian->waktu_mulai) : null;
+    $end   = $ujian->waktu_selesai ? Carbon::parse($ujian->waktu_selesai) : null;
 
-    // (Opsional) pastikan siswa enroll pada kursus terkait
-    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $request->id_kursus)->exists();
-    if (!$enrolled) {
-        return back()->with('error', 'Kamu belum terdaftar di kursus ini.');
+    if ($start && $now->lt($start)) {
+        return back()->with('error', 'Ujian belum dimulai.');
+    }
+    if ($end && $now->gt($end)) {
+        return back()->with('error', 'Waktu ujian telah berakhir.');
     }
 
-    $ujian = Ujian::where('id_ujian', $request->id_ujian)
-        ->where('id_kursus', $request->id_kursus)
-        ->firstOrFail();
+    // ==== VALIDASI PASSWORD ====
+    // Normalisasi: hapus spasi/pemisah tak terlihat di kiri/kanan
+    $input  = preg_replace('/^\s+|\s+$/u', '', (string) $request->password);
+    $stored = preg_replace('/^\s+|\s+$/u', '', (string) ($ujian->password_masuk ?? ''));
 
-    if (!password_verify($request->password, $ujian->password_masuk)) {
-        return back()->with('error', 'Password ujian salah.')->withInput();
+    if ($stored === '') {
+        return back()->with('error', 'Password ujian belum diset oleh guru/admin.');
     }
 
-    // TODO: arahkan ke halaman mulai ujian milikmu
-    // Misal: route('Role.Siswa.Ujian.start', ['id_ujian' => $ujian->id_ujian])
-    return redirect()->route('Siswa.Course.ujian.take', [
-    'id_kursus' => $request->id_kursus,
-    'id_ujian'  => $ujian->id_ujian,
-    ])->with('success', 'Password benar. Silakan mulai ujian.');
+    // Deteksi apakah yg tersimpan berupa hash umum (bcrypt/argon)
+    $isHashed = Str::startsWith($stored, ['$2y$', '$2a$', '$argon2i$', '$argon2id$']);
+
+    $valid = $isHashed ? Hash::check($input, $stored)
+                       : hash_equals($stored, $input);
+
+    if (!$valid) {
+        return back()->with('error', 'Password ujian salah.');
+    }
+    // ============================
+
+    // (Opsional) token sesi ujian
+    $token = bin2hex(random_bytes(16));
+    session([
+        'exam_token' => $token,
+        'exam_start' => now()->toISOString(),
+    ]);
+
+    return redirect()->route('Siswa.Course.ujian.take', [$kursus->id_kursus, $ujian->id_ujian]);
 }
+
+
+public function gate($id_kursus, $id_ujian, Request $request)
+    {
+        $user = auth()->user();
+        $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+        // pastikan terdaftar di kursus
+        $isEnrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+        if (!$isEnrolled) {
+            return redirect()->route('Siswa.Course.index')->with('error', 'Kamu belum terdaftar di kursus ini.');
+        }
+
+        $kursus = Kursus::with(['guru','kelas','mataPelajaran'])->findOrFail($id_kursus);
+        $ujian  = Ujian::findOrFail($id_ujian);
+
+        // status waktu (untuk info di gate; penegakan utamanya saat enter)
+        $now   = Carbon::now();
+        $start = $ujian->waktu_mulai ? Carbon::parse($ujian->waktu_mulai) : null;
+        $end   = $ujian->waktu_selesai ? Carbon::parse($ujian->waktu_selesai) : null;
+
+        $status = 'Berlangsung';
+        if ($start && $now->lt($start)) $status = 'Belum dimulai';
+        if ($end && $now->gt($end))     $status = 'Selesai';
+
+        return view('Role.Siswa.Course.gate', [
+            'kursus' => $kursus,
+            'ujian'  => $ujian,
+            'status' => $status,
+        ]);
+    }
 
 public function soal($id_kursus, $id_ujian)
 {
@@ -231,7 +281,7 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian)
     if ($now->gt($ujian->waktu_selesai)) {
         return back()->with('error', 'Waktu ujian telah berakhir.');
     }
-    
+
     $request->validate([
         'answers_json' => 'required|string',
     ]);
