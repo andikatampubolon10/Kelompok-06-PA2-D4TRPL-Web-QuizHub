@@ -426,4 +426,57 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian)
 
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
+<<<<<<< Updated upstream
+=======
+
+    public function submitUjian(Request $request, $id_kursus, $id_ujian)
+    {
+        $user    = auth()->user();
+        $siswa   = $user->siswa;
+        if (!$siswa) {
+            return back()->with('error', 'Profil siswa tidak ditemukan.');
+        }
+        $id_siswa = (int) $siswa->id_siswa;
+
+        // Contoh: $request->answers = [
+        //   ['id_soal'=>123, 'id_jawaban_soal'=>456, 'jawaban_siswa'=>'teks optional'],
+        //   ...
+        // ];
+        $answers = $request->input('answers_json', []);
+        
+        DB::beginTransaction();
+        try {
+            foreach ($answers as $a) {
+                if (empty($a['id_soal'])) continue;
+
+                jawaban_siswa::updateOrCreate(
+                    [
+                        'id_soal' => (int) $a['id_soal'],
+                        'id_siswa' => $id_siswa,
+                    ],
+                    [
+                        'id_jawaban_soal' => $a['id_jawaban_soal'] ?? null,
+                        'jawaban_siswa' => $a['jawaban_siswa'] ?? null,
+                    ]
+                );
+            }
+
+            DB::commit();
+            DB::afterCommit(function () use ($id_ujian, $id_siswa) {
+                app(NilaiController::class)->recalcNow((int)$id_ujian, (int)$id_siswa);
+            });
+
+            return redirect()->route('Siswa.Course.ujian.nilai', [
+                'id_kursus' => $id_kursus,
+                'id_ujian' => $id_ujian,
+            ])->with('success', 'Jawaban berhasil dikirim. Nilai otomatis telah dihitung.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->with('error', 'Gagal submit ujian: '.$e->getMessage());
+        }
+
+    }
+>>>>>>> Stashed changes
 }
