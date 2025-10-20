@@ -16,11 +16,26 @@
                 </select>
             </div>
 
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Soal Essay</h4>
+                        <ul class="text-xs text-blue-700 space-y-1">
+                            <li>• Masukkan Pertanyaan atau Topik Essay</li>
+                            <li>• Tentukan Kriteria Penilaian atau Poin Utama yang Harus Diajukan</li>
+                           <li>• Pilih Latihan Soal digunakan ketika ingin membuat Soal Latihan</li>
+                    </div>
+                </div>
+            </div>
+
             {{-- Soal --}}
             <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
             <div class="border p-2">
-                
-                 <input type="hidden" name="id_ujian" value="{{ request()->query('id_ujian') }}">
+
+                <input type="hidden" name="id_ujian" value="{{ request()->query('id_ujian') }}">
 
                 <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ old('soal') }}</textarea>
 
@@ -99,8 +114,8 @@
 @push('scripts')
     <script>
         /* === Handler Dropdown di layout (opsional) ===
-           Kalau layout kamu sudah punya handler dropdown, bagian ini boleh di-skip.
-        */
+                   Kalau layout kamu sudah punya handler dropdown, bagian ini boleh di-skip.
+                */
         function toggleDropdown() {
             const dropdown = document.getElementById("dropdown-menu");
             if (dropdown) dropdown.classList.toggle("show");

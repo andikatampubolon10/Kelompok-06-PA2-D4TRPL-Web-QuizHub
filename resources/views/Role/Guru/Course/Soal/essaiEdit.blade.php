@@ -6,6 +6,21 @@
     <div class="w-full bg-white p-6 rounded-lg shadow-md h-full">
         <h2 class="text-2xl font-bold mb-6">Edit Soal Essay</h2>
 
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Soal Essay</h4>
+                    <ul class="text-xs text-blue-700 space-y-1">
+                        <li>• Masukkan Pertanyaan atau Topik Essay</li>
+                        <li>• Tentukan Kriteria Penilaian atau Poin Utama yang Harus Diajukan</li>
+                        <li>• Pilih Latihan Soal digunakan ketika ingin membuat Soal Latihan</li>
+                </div>
+            </div>
+        </div>
+
         <form action="{{ route('Guru.Soal.update', $soal->id_soal) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -62,7 +77,7 @@
                     Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
                 </p>
             </div>
-            
+
             {{-- Correct Answer (essay selalu jawaban_1) --}}
             <input type="hidden" name="correct_answer" value="jawaban_1">
 

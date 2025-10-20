@@ -191,6 +191,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/Profil', ProfilController::class);
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/nilai',[NilaiController::class, 'gradeUjianSiswaSelf'])->name('Course.ujian.nilai');
     });
 });
 
