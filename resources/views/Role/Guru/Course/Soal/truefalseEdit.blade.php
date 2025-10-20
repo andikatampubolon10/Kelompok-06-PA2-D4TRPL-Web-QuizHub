@@ -10,11 +10,11 @@
                 <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
             </div>
             <div>
-                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Soal</h4>
+                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Soal True/False</h4>
                 <ul class="text-xs text-blue-700 space-y-1">
-                    <li>• Masukkan Soal</li>
-                    <li>• Pilih Jawaban</li>
-                    <li>• Pilih Latihan Soal</li>
+                    <li>• Masukkan Pernyataan yang Benar atau Salah</li>
+                    <li>• Tentukan Jawaban Benar (True atau False)</li>
+                     <li>• Pilih Latihan Soal digunakan ketika ingin membuat Soal Latihan</li>
                 </ul>
             </div>
         </div>
@@ -109,22 +109,6 @@
                 @error('correct_answer')
                     <span class="alert-danger">{{ $message }}</span>
                 @enderror
-            </div>
-
-            <div class="mb-4">
-                <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
-                    Bobot Soal <span class="text-gray-400 text-xs">(diantara 1 - 10)</span>
-                </label>
-                <input type="number" name="bobot" id="bobot" step="0.01" min="0"
-                    value="{{ old('bobot') }}"
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    {{-- kalau ada id_ujian di URL, wajib diisi (sekadar hint di sisi client) --}} @if (request()->filled('id_ujian')) required @endif>
-                @error('bobot')
-                    <span class="alert-danger">{{ $message }}</span>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">
-                    Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
-                </p>
             </div>
 
             <!-- Correct Answer Selection -->

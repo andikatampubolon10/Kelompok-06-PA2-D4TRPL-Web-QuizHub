@@ -44,6 +44,7 @@
             </a>
         </div>
 
+<<<<<<< Updated upstream
       @foreach ($ujians->sortBy('tanggal_ujian') as $exam)
     <div class="border-b border-gray-200 pb-4 mb-4">
         <div class="flex justify-between items-start">
@@ -53,6 +54,45 @@
                    class="block text-xl font-semibold text-gray-800 hover:text-blue-800 hover:underline transition-colors">
                     {{ $exam->tipe_ujian->nama_tipe_ujian }} : {{ $exam->nama_ujian }}
                 </a>
+=======
+        @foreach ($ujians->sortBy('tanggal_ujian') as $exam)
+            <h4 class="text-lg font-semibold mb-2">
+                {{ \Carbon\Carbon::parse($exam->tanggal_ujian)->format('d M Y') }}
+            </h4>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex-grow">
+                    <div class="exam-container">
+                        <a href="{{ url('/Guru/Soal') }}?id_ujian={{ $exam->id_ujian }}" class="exam-link">
+                            <h2 class="exam-title">{{ $exam->tipe_ujian->nama_tipe_ujian }} : {{ $exam->nama_ujian }}</h2>
+                        </a>
+
+                        <style>
+                            .exam-link {
+                                text-decoration: none;
+                                /* Menghilangkan garis bawah default */
+                                color: #007bff;
+                                /* Menentukan warna link (biru standar) */
+                                transition: color 0.3s ease, text-decoration 0.3s ease;
+                                /* Efek transisi saat hover */
+                            }
+
+                            .exam-link:hover {
+                                color: #0056b3;
+                                /* Warna saat hover */
+                                text-decoration: underline;
+                                /* Menambahkan garis bawah saat hover */
+                            }
+
+                            .exam-title {
+                                font-size: 1rem;
+                                /* Ukuran font */
+                                font-weight: 600;
+                                /* Membuat teks lebih tebal */
+                            }
+                        </style>
+                    </div>
+                </div>
+>>>>>>> Stashed changes
 
                 <!-- Tanggal di bawah judul -->
                 <p class="text-sm text-gray-500 mt-1">

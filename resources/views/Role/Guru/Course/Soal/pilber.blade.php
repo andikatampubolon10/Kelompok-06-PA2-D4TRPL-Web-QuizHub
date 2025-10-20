@@ -10,11 +10,12 @@
                 <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
             </div>
             <div>
-                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Materi</h4>
+                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Soal Pilihan Berganda</h4>
                 <ul class="text-xs text-blue-700 space-y-1">
-                    <li>• Masukkan Topik Materi</li>
-                    <li>• Masukkan Deskripsi Materi dan Link Vidio Pembelajaran</li>
-                    <li>• Masukkan Materi dalam bentuk pdf</li>
+                    <li>• Masukkan Pertanyaan Soal</li>
+                    <li>• Masukkan Pilihan Jawaban (A, B, C, D, dll.)</li>
+                    <li>• Tentukan Jawaban yang Benar</li>
+                    <li>• Pilih Latihan Soal digunakan ketika ingin membuat Soal Latihan</li>
                 </ul>
             </div>
         </div>
@@ -76,22 +77,6 @@
                 @enderror
             </div>
             {{-- @dd($id_ujian) --}}
-
-            <div class="mb-4">
-                <label for="bobot" class="block text-gray-700 text-sm font-bold mb-2">
-                    Bobot Soal <span class="text-gray-400 text-xs">(diantara 1 - 10)</span>
-                </label>
-                <input type="number" name="bobot" id="bobot" step="0.01" min="0"
-                    value="{{ old('bobot') }}"
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    {{-- kalau ada id_ujian di URL, wajib diisi (sekadar hint di sisi client) --}} @if (request()->filled('id_ujian')) required @endif>
-                @error('bobot')
-                    <span class="alert-danger">{{ $message }}</span>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">
-                    Catatan: untuk ujian, bobot biasanya wajib; untuk latihan bisa opsional.
-                </p>
-            </div>
 
             <!-- Correct Answer Selection -->
             <div class="mb-4">
@@ -203,32 +188,46 @@
         });
     </script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-    
-    <script>
-       ClassicEditor
-    .create(document.querySelector('#soal-textarea'), {
-        ckfinder: {
-            uploadUrl: "{{ route('Guru.Soal.uploadImage') . '?_token=' . csrf_token() }}"
-        },
-        toolbar: [
-            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
-            '|', 'insertTable', 'uploadImage', 'blockQuote', 'undo', 'redo'
-        ],
-        image: {
-            resizeOptions: [
-                { name: 'resizeImage:original', label: 'Asli', value: null },
-                { name: 'resizeImage:25', label: '25%', value: '25' },
-                { name: 'resizeImage:50', label: '50%', value: '50' },
-                { name: 'resizeImage:75', label: '75%', value: '75' }
-            ],
-            toolbar: [
-                'imageTextAlternative', 'toggleImageCaption', '|',
-                'imageStyle:inline', 'imageStyle:block', 'imageStyle:side'
-            ],
-            styles: ['full', 'side', 'alignLeft', 'alignCenter', 'alignRight']
-        }
-    })
-    .catch(error => console.error(error));
 
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#soal-textarea'), {
+                ckfinder: {
+                    uploadUrl: "{{ route('Guru.Soal.uploadImage') . '?_token=' . csrf_token() }}"
+                },
+                toolbar: [
+                    'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+                    '|', 'insertTable', 'uploadImage', 'blockQuote', 'undo', 'redo'
+                ],
+                image: {
+                    resizeOptions: [{
+                            name: 'resizeImage:original',
+                            label: 'Asli',
+                            value: null
+                        },
+                        {
+                            name: 'resizeImage:25',
+                            label: '25%',
+                            value: '25'
+                        },
+                        {
+                            name: 'resizeImage:50',
+                            label: '50%',
+                            value: '50'
+                        },
+                        {
+                            name: 'resizeImage:75',
+                            label: '75%',
+                            value: '75'
+                        }
+                    ],
+                    toolbar: [
+                        'imageTextAlternative', 'toggleImageCaption', '|',
+                        'imageStyle:inline', 'imageStyle:block', 'imageStyle:side'
+                    ],
+                    styles: ['full', 'side', 'alignLeft', 'alignCenter', 'alignRight']
+                }
+            })
+            .catch(error => console.error(error));
     </script>
 @endsection
