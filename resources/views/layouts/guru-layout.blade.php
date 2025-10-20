@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -20,7 +20,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        
+
         /* Sidebar Styles */
         .sidebar-container {
             min-height: 100vh;
@@ -32,21 +32,21 @@
             box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
             z-index: 50;
         }
-        
+
         /* Custom scrollbar for sidebar */
         .sidebar-scroll::-webkit-scrollbar {
             width: 4px;
         }
-        
+
         .sidebar-scroll::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
-        
+
         .sidebar-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 2px;
         }
-        
+
         .sidebar-scroll::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -62,7 +62,7 @@
             height: 100vh;
             overflow-y: auto;
         }
-        
+
         /* Optional: Space adjustments for mobile screen sizes */
         @media screen and (max-width: 1024px) {
             main {
@@ -78,20 +78,20 @@
             /* Ensure sidebar remains visible in mobile */
             .sidebar-content {
                 overflow-y: scroll;
-                max-height: calc(100vh - 4rem); /* To leave space for header */
+                max-height: calc(100vh - 4rem);
+                /* To leave space for header */
             }
         }
 
-       
-    .soal-content img {
-        max-width: 75%;
-        max-height: 100px;
-        object-fit: contain;
-        height: auto;
-        border-radius: 6px;
-        margin: 6px 0;
-    }
 
+        .soal-content img {
+            max-width: 75%;
+            max-height: 100px;
+            object-fit: contain;
+            height: auto;
+            border-radius: 6px;
+            margin: 6px 0;
+        }
     </style>
 </head>
 
@@ -106,7 +106,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold text-green-700">SMK Negeri 2 Balige</h1>
-                   
+
                 </div>
             </div>
         </div>
@@ -129,15 +129,15 @@
                         <h2 class="text-2xl font-semibold text-gray-800">@yield('page-title', 'Dashboard Guru')</h2>
                     </div>
                     <div class="flex items-center space-x-4">
-                       <div class="flex items-center space-x-3">
-       <div class="hidden sm:block text-right">
-        <p class="text-sm font-medium text-gray-800">Guru</p>
+                        <div class="flex items-center space-x-3">
+                            <div class="hidden sm:block text-right">
+                                <p class="text-sm font-medium text-gray-800">Guru</p>
                             </div>
-       <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-           <i class="fas fa-user text-green-600 text-sm"></i>
-       </div>
-   </div>
-   
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-green-600 text-sm"></i>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -151,11 +151,17 @@
         </div>
     </main>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+
+    <!-- Kirim route Laravel ke JS -->
+    <script>
+        window.uploadImageUrl = "{{ route('Guru.Soal.uploadImage') . '?_token=' . csrf_token() }}";
+    </script>
+
     <script src="{{ asset('js/ckeditor-config.js') }}"></script>
 
     <script>
         // Optional: Handle sidebar toggle for mobile (if you still want mobile support)
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -186,7 +192,7 @@
             }
 
             // Close sidebar on window resize to desktop
-            window.addEventListener('resize', function () {
+            window.addEventListener('resize', function() {
                 if (window.innerWidth >= 1024) {
                     closeSidebar();
                 }

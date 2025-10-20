@@ -34,7 +34,7 @@
             <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
             <div class="border p-2">
              {{-- @dd($soal->soal --}}
-                <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{!! $soal->soal !!}</textarea>
+                <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ $soal->soal }}</textarea>
                
                 <input type="file" id="image-input-soal" name="image" class="hidden" accept="image/*" />
                 @error('soal')

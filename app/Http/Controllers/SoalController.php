@@ -192,17 +192,22 @@ class SoalController extends Controller
     }
 
     public function uploadImage(Request $request)
-    {
-        if ($request->hasFile('upload')) {
-            $file = $request->file('upload');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/soal'), $filename);
-            $url = asset('uploads/soal/' . $filename);
+{
+    if ($request->hasFile('upload')) {
+        $file = $request->file('upload');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('uploads/soal'), $filename);
+        $url = asset('uploads/soal/' . $filename);
 
-            return response()->json(['uploaded' => true, 'url' => $url]);
-        }
-        return response()->json(['uploaded' => false, 'error' => ['message' => 'Upload gagal.']], 400);
+        return response()->json([
+            'uploaded' => true,
+            'url' => $url
+        ]);
     }
+
+    return response()->json(['uploaded' => false]);
+}
+
 
     public function show(Soal $soal)
     {
