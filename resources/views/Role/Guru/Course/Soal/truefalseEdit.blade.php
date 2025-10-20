@@ -32,29 +32,11 @@
 
             <!-- Soal -->
             <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
-            <div class="border p-2">
-                <div class="flex space-x-2 mb-2">
-                    <button type="button" class="border p-1" id="list-button-soal"><i class="fas fa-list"></i></button>
-                    <button type="button" class="border p-1" id="bold-button-soal"><i class="fas fa-bold"></i></button>
-                    <button type="button" class="border p-1" id="image-button-soal"><i class="fas fa-image"></i></button>
-                </div>
-                <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ $soal->soal }}</textarea>
-                <div id="image-preview-soal" class="mt-2">
-                    @if ($soal->image)
-                        <div class="relative mt-2 inline-block">
-                            <img src="{{ $soal->image_url }}" alt="Soal Image"
-                                class="max-w-full h-auto max-h-40 border rounded">
-                            <span
-                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
-                                onclick="removeImage('soal')">×</span>
-                        </div>
-                    @endif
-                </div>
-                <input type="file" id="image-input-soal" name="image" class="hidden" accept="image/*" />
-                @error('soal')
-                    <span class="alert-danger">{{ $message }}</span>
-                @enderror
-            </div>
+
+                <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{!!  $soal->soal !!}</textarea>
+                
+       
+            
 
             <!-- Get jawaban_soal data -->
             @php
@@ -63,10 +45,7 @@
 
             <!-- Jawaban 1 -->
             <div class="border p-2 mb-4 mt-4">
-                <div class="flex space-x-2 mb-2">
-                    <button type="button" class="border p-1" id="list-button-1"><i class="fas fa-list"></i></button>
-                    <button type="button" class="border p-1" id="bold-button-1"><i class="fas fa-bold"></i></button>
-                </div>
+                <p>opsi 1</p>
                 <textarea id="jawaban-1-textarea" name="jawaban_1" placeholder="True" class="w-full border p-2" rows="2">{{ $jawaban[0]->jawaban ?? 'True' }}</textarea>
                 @error('jawaban_1')
                     <span class="alert-danger">{{ $message }}</span>
@@ -75,10 +54,7 @@
 
             <!-- Jawaban 2 -->
             <div class="border p-2 mb-4">
-                <div class="flex space-x-2 mb-2">
-                    <button type="button" class="border p-1" id="list-button-2"><i class="fas fa-list"></i></button>
-                    <button type="button" class="border p-1" id="bold-button-2"><i class="fas fa-bold"></i></button>
-                </div>
+                <p>opsi 2</p>
                 <textarea id="jawaban-2-textarea" name="jawaban_2" placeholder="False" class="w-full border p-2" rows="2">{{ $jawaban[1]->jawaban ?? 'False' }}</textarea>
                 @error('jawaban_2')
                     <span class="alert-danger">{{ $message }}</span>

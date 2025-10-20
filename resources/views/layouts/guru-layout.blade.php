@@ -81,6 +81,17 @@
                 max-height: calc(100vh - 4rem); /* To leave space for header */
             }
         }
+
+       
+    .soal-content img {
+        max-width: 75%;
+        max-height: 100px;
+        object-fit: contain;
+        height: auto;
+        border-radius: 6px;
+        margin: 6px 0;
+    }
+
     </style>
 </head>
 
@@ -139,6 +150,8 @@
             </div>
         </div>
     </main>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+    <script src="{{ asset('js/ckeditor-config.js') }}"></script>
 
     <script>
         // Optional: Handle sidebar toggle for mobile (if you still want mobile support)

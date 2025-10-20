@@ -189,7 +189,9 @@
                         <div
                             class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <div class="mb-4 md:mb-0 md:flex-1">
-                                <h3 class="text-lg font-semibold mb-2 break-words">{!! $soal->soal !!}</h3>
+                                <h3 class="text-lg font-semibold mb-2 break-words soal-content">
+                                    {!! $soal->soal !!}
+                                </h3>
                                 <p class="text-sm text-gray-600">
                                     Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
                                 </p>
@@ -234,7 +236,7 @@
                         <div
                             class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <div class="mb-4 md:mb-0 md:flex-1">
-                                <h3 class="text-lg font-semibold mb-2 break-words">{!! $soal->soal !!}</h3>
+                                <h3 class="text-lg font-semibold mb-2 break-words soal-content">{!! $soal->soal !!}</h3>
                                 <p class="text-sm text-gray-600">
                                     Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
                                 </p>
@@ -279,7 +281,7 @@
                         <div
                             class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <div class="mb-4 md:mb-0 md:flex-1">
-                                <h3 class="text-lg font-semibold mb-2 break-words">{{ $soal->soal }}</h3>
+                                <h3 class="text-lg font-semibold mb-2 break-words soal-content">{!! $soal->soal !!}</h3>
                                 <p class="text-sm text-gray-600">
                                     Jenis: {{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}
                                 </p>

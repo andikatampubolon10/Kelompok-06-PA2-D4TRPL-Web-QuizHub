@@ -15,32 +15,10 @@
             {{-- Soal --}}
             <label class="block text-gray-700 text-sm font-bold mb-2">Soal</label>
             <div class="border p-2">
-                <div class="flex space-x-2 mb-2">
-                    <button type="button" class="border p-1" id="list-button-soal" title="Bullet List">
-                        <i class="fas fa-list"></i>
-                    </button>
-                    <button type="button" class="border p-1" id="bold-button-soal" title="Bold">
-                        <i class="fas fa-bold"></i>
-                    </button>
-                    <button type="button" class="border p-1" id="image-button-soal" title="Tambahkan Gambar">
-                        <i class="fas fa-image"></i>
-                    </button>
-                </div>
-
+                
                 <textarea id="soal-textarea" name="soal" class="w-full border p-2" rows="4">{{ $soal->soal }}</textarea>
 
-                <div id="image-preview-soal" class="mt-2">
-                    @if ($soal->image)
-                        <div class="relative mt-2 inline-block">
-                            <img src="{{ $soal->image_url }}" alt="Soal Image"
-                                class="max-w-full h-auto max-h-40 border rounded">
-                            <span
-                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
-                                onclick="removeImage('soal')">×</span>
-                        </div>
-                    @endif
-                </div>
-
+                
                 <input type="file" id="image-input-soal" name="image" class="hidden" accept="image/*" />
 
                 @error('soal')
@@ -196,4 +174,5 @@
             if (input) input.value = '';
         }
     </script>
+     
 @endpush
