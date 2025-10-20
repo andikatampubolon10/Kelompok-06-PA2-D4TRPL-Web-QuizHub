@@ -1,21 +1,24 @@
+{{-- ========================================= --}}
+{{-- resources/views/Role/Siswa/Ujian/take_exam.blade.php --}}
+{{-- ========================================= --}}
 @extends('layouts.ujian')
 
-@section('title')
+@section('title', 'Take Exam')
 
 @section('breadcrumb')
-  <li><a href="" class="hover:text-foreground">My Courses</a></li>
+  <li><a href="{{ route('Siswa.Course.index') }}" class="hover:text-foreground">My Courses</a></li>
   <li><span class="mx-2">/</span></li>
-  <li><a href="" class="hover:text-foreground">Exams</a></li>
+  <li><a href="{{ route('Siswa.Course.tipeujian', $kursus->id_kursus) }}" class="hover:text-foreground">Exams</a></li>
   <li><span class="mx-2">/</span></li>
   <li class="text-foreground">Take Exam</li>
 @endsection
 
 @section('content')
   <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold mb-1">{{ $kursus->nama_kursus }}</h1>
-        <p class="text-muted-foreground text-white">{{ $ujian->nama_ujian }}</p>
-      </div>
+    <div>
+      <h1 class="text-2xl font-bold mb-1">{{ $kursus->nama_kursus }}</h1>
+      <p class="text-muted-foreground text-white">{{ $ujian->nama_ujian }}</p>
+    </div>
 
     <div class="flex items-center space-x-4">
       <div class="bg-card border border-border rounded-lg px-4 py-2">
@@ -39,9 +42,7 @@
           </div>
         </div>
 
-        <div id="choices" class="space-y-3">
-          {{-- Pilihan jawaban akan dirender oleh JS dari array questions --}}
-        </div>
+        <div id="choices" class="space-y-3"></div>
 
         <div class="mt-6 flex items-center justify-between">
           <button id="prevBtn" class="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted disabled:opacity-50">
@@ -58,54 +59,49 @@
     <div class="lg:col-span-1">
       <div class="bg-card border border-border rounded-lg p-6">
         <h3 class="font-semibold mb-3">Question Navigator</h3>
-        <div id="navGrid" class="grid grid-cols-5 gap-2">
-          {{-- Button nomor soal dirender JS --}}
-        </div>
+        <div id="navGrid" class="grid grid-cols-5 gap-2"></div>
         <div class="mt-4 text-xs text-muted-foreground">
           <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 inline-block bg-primary rounded-sm"></span>
-          <span class="text-white">Current</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 inline-block bg-green-600 rounded-sm"></span>
-          <span class="text-white">Answered</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 inline-block bg-border rounded-sm"></span>
-          <span class="text-white">Unanswered</span>
-        </div>
+            <span class="w-3 h-3 inline-block bg-primary rounded-sm"></span>
+            <span class="text-white">Current</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 inline-block bg-green-600 rounded-sm"></span>
+            <span class="text-white">Answered</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 inline-block bg-border rounded-sm"></span>
+            <span class="text-white">Unanswered</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- Data ujian dikirim ke JS --}}
-<form id="submitForm" method="POST"
-      action="{{ route('Siswa.Ujian.submit', [$kursus->id_kursus, $ujian->id_ujian]) }}">
-  @csrf
-  <input type="hidden" id="answers_json" name="answers_json">
-</form>
-
+  {{-- Form submit --}}
+  <form id="submitForm" method="POST"
+        action="{{ route('Siswa.Ujian.submit', [$kursus->id_kursus, $ujian->id_ujian]) }}">
+    @csrf
+    <input type="hidden" id="answers_json" name="answers_json">
+  </form>
 @endsection
-
-
 
 @push('scripts')
 <script>
 /* =========================
-   PARAM DARI SERVER (Blade)
+   PARAM DARI SERVER
 ========================= */
 const QUESTIONS = @json($questions);          // [{id,text,tipe_id,choices?,choice_ids?}, ...]
-const TOTAL     = {{ $total }};               // jumlah soal
+const TOTAL     = {{ $total }};
 const DURATION  = {{ $duration }};            // detik
-const EXAM_ID   = {{ $ujian->id_ujian }};     // id ujian
-const STUDENT_ID= {{ auth()->user()->id }};   // id user
-const COURSE_ID = {{ $kursus->id_kursus }};   // id kursus
+const EXAM_ID   = {{ $ujian->id_ujian }};
+const STUDENT_ID= {{ auth()->user()->id }};
+const COURSE_ID = {{ $kursus->id_kursus }};
 
 const GUARD_POLICY = {
   requireFullscreen: true,
   requireWakeLock: true,
-  maxViolations: 2,          // setelah 2 pelanggaran → auto-submit
+  maxViolations: 2,
   warnOnFirst: true,
   autoSubmitOnLimit: true
 };
@@ -114,13 +110,11 @@ const GUARD_POLICY = {
    STATE GLOBAL / NAMESPACE
 ========================= */
 window.EXAM = {
-  // ujian
   answers: Array(TOTAL).fill(null),
   current: 0,
   remaining: DURATION,
   timerId: null,
 
-  // guard
   guardActive: false,
   isSubmitting: false,
   isAutoSubmit: false,
@@ -145,7 +139,7 @@ const submitBtn = document.getElementById('submitBtn');
 const timerEl   = document.getElementById('timer');
 
 /* =========================
-   BEFOREUNLOAD UTIL
+   BEFOREUNLOAD
 ========================= */
 function attachBeforeUnload() {
   if (window.EXAM.beforeUnloadHandler) return;
@@ -174,18 +168,17 @@ function getQType(q) {
   return 'pg';
 }
 function updateSubmitAvailability() {
-  // jika ingin submit meski kosong, tinggal set: submitBtn.disabled = false;
   const anyAnswered = window.EXAM.answers.some(v => v !== null && String(v).trim() !== '');
   submitBtn.disabled = !anyAnswered;
 }
 function renderQuestion(idx) {
   const q = QUESTIONS[idx];
-  const qType = getQType(q);
+  const t = getQType(q);
   qIndexEl.textContent = idx + 1;
   qTitleEl.textContent = q.text;
   choicesEl.innerHTML = '';
 
-  if (qType === 'pg') {
+  if (t === 'pg') {
     const letters = ['A','B','C','D','E','F','G'];
     (q.choices || []).forEach((choiceText, i) => {
       const optKey = letters[i] || String.fromCharCode(65+i);
@@ -205,7 +198,7 @@ function renderQuestion(idx) {
       wrap.append(input,badge,text);
       choicesEl.appendChild(wrap);
     });
-  } else if (qType === 'tf') {
+  } else if (t === 'tf') {
     const list = (q.choices && q.choices.length) ? q.choices.slice(0,2) : ['True','False'];
     const mapKey = (txt)=> (/^t(rue)?|^b(enar)?|^ya/i.test(txt)?'T':'F');
     list.forEach((txt)=>{
@@ -273,7 +266,7 @@ function startTimer() {
     if (window.EXAM.remaining <= 0) {
       window.EXAM.remaining = 0;
       clearInterval(window.EXAM.timerId);
-      window.doSubmit(true); // auto submit tanpa confirm saat waktu habis
+      window.doSubmit(true); // auto submit saat waktu habis
       return;
     }
     updateTimerUI();
@@ -327,7 +320,6 @@ window.doSubmit = function(skipConfirm=false){
   document.body.appendChild(warnBanner);
   function showWarn(msg){ warnBanner.innerText = msg || 'Peringatan: Tetap berada di tampilan ujian.'; warnBanner.style.display='block'; setTimeout(()=>warnBanner.style.display='none',3000); }
 
-  // Fullscreen & WakeLock
   async function requestFullscreenLoop(){
     if (!GUARD_POLICY.requireFullscreen) return true;
     try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen({navigationUI:'hide'}); return true; }
@@ -335,7 +327,6 @@ window.doSubmit = function(skipConfirm=false){
   }
   async function requestWakeLock(){ if ('wakeLock' in navigator && GUARD_POLICY.requireWakeLock) { try { window.EXAM.wakeLock = await navigator.wakeLock.request('screen'); } catch {} } }
 
-  // Multi-tab lock
   function notifyChannel(type,data={}){ if(window.EXAM.bc) window.EXAM.bc.postMessage({type,data}); }
   function claimExamLock(){
     const now = Date.now();
@@ -372,10 +363,10 @@ window.doSubmit = function(skipConfirm=false){
     }
   }, {capture:true});
 
-  // Pelanggaran
   function violation(reason){
     if (!window.EXAM.guardActive || window.EXAM.isSubmitting) return;
-    if (window.EXAM.violationCooldown) return;        // debounce
+    // debounce
+    if (window.EXAM.violationCooldown) return;
     window.EXAM.violationCooldown = true; setTimeout(()=>window.EXAM.violationCooldown=false, 800);
 
     window.EXAM.violationCount++;
@@ -389,18 +380,17 @@ window.doSubmit = function(skipConfirm=false){
         return;
       }
       window.EXAM.isSubmitting = true;
-      cleanup().finally(()=> window.location.href = "{{ route('Siswa.Course.index') }}");
+      cleanup().finally(() => window.location.href = "{{ route('Siswa.Course.index') }}");
     }
   }
 
-  // Deteksi keluar fokus/tab/halaman & Alt+Tab
+  // Deteksi Alt+Tab / pindah tab / sembunyi halaman
   document.addEventListener('visibilitychange', ()=>{ if (window.EXAM.guardActive && document.hidden) violation('Berpindah dari tab/jendela.'); });
   window.addEventListener('blur', ()=>{ if (window.EXAM.guardActive) violation('Fokus keluar dari jendela ujian.'); });
   window.addEventListener('pagehide', ()=>{ if (window.EXAM.guardActive && !window.EXAM.isSubmitting) violation('Halaman disembunyikan / pindah konteks.'); });
   setInterval(()=>{ if (window.EXAM.guardActive && !window.EXAM.isSubmitting && !document.hasFocus()) violation('Jendela kehilangan fokus (Alt+Tab / pindah aplikasi).'); }, 800);
   document.addEventListener('fullscreenchange', ()=>{ if (window.EXAM.guardActive && GUARD_POLICY.requireFullscreen && !document.fullscreenElement){ showWarn('Tetap dalam mode layar penuh.'); violation('Keluar fullscreen.'); requestFullscreenLoop(); } });
 
-  // Cleanup guard
   async function cleanup(){
     window.EXAM.guardActive = false;
     detachBeforeUnload();
@@ -410,12 +400,11 @@ window.doSubmit = function(skipConfirm=false){
     if (window.EXAM.bc) window.EXAM.bc.postMessage({type:'leaving'});
   }
 
-  // Start guard
   async function startGuard(){
     if (!claimExamLock()) { alert('Terdeteksi lebih dari satu tab ujian. Menutup halaman.'); window.close(); return; }
     if (GUARD_POLICY.requireFullscreen) {
       const ok = await requestFullscreenLoop();
-      if (!ok) alert('Izinkan layar penuh (fullscreen) untuk memulai ujian.');
+      if (!ok) alert('Izinkan fullscreen untuk memulai ujian.');
     }
     await requestWakeLock();
     attachBeforeUnload();
@@ -433,8 +422,8 @@ window.doSubmit = function(skipConfirm=false){
 renderQuestion(window.EXAM.current);
 renderNavigator();
 updatePrevNext();
-updateSubmitAvailability();      // aktifkan submit sesuai jawaban
-submitBtn.type = 'button';       // pastikan bukan submit default form
+updateSubmitAvailability();
+submitBtn.type = 'button';
 submitBtn.addEventListener('click', ()=> window.doSubmit(false));
 prevBtn.addEventListener('click', ()=>{
   if (window.EXAM.current>0){
@@ -452,5 +441,4 @@ nextBtn.addEventListener('click', ()=>{
 });
 startTimer();
 </script>
-
 @endpush

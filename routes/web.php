@@ -154,6 +154,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran', [EnrollSiswaController::class, 'tahunAjaran'])->name('enroll.tahunajaran');
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [EnrollSiswaController::class, 'semester'])
             ->name('enroll.semester');
+        Route::get('/siswa/kursus/{kursus}/ujian/{ujian}/gate', [DashboardsiswaController::class, 'gate'])
+        ->name('ujian.gate');
 
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])
