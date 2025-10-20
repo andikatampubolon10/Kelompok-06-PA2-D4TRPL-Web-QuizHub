@@ -127,13 +127,15 @@ class GuruController extends Controller
                 'id_user' => $user->id,
                 'id_operator' => $operator->id_operator,
                 'status' => $request->status ?? 'Aktif',
-                'id_mata_pelajaran' => $request->mata_pelajaran[0], // jika memang ada kolom ini
             ]);
 
-            // Simpan ke tabel pivot guru_mata_pelajaran
-            foreach ($request->mata_pelajaran as $id_mapel) {
-                \App\Models\Guru_Mata_Pelajaran::create([
-                    'id_guru' => $guru->id_guru,
+            $ids = array_values(array_unique($request->mata_pelajaran)); // buang duplikat
+            $guru->mataPelajarans()->sync($ids); // JANGAN ada loop create() ke pivot lagi
+
+            foreach (array_unique($request->mata_pelajaran) as $id_mapel) {
+                $guru->guruMapel()->firstOrCreate([
+                    'id_mata_pelajaran' => $id_mapel,
+                ], [
                     'id_mata_pelajaran' => $id_mapel,
                 ]);
             }
