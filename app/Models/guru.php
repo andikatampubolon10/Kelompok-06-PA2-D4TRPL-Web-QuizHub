@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Guru extends Model
 {
     protected $table = 'guru';
-
     protected $primaryKey = 'id_guru';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
-        'id_guru',
         'nama_guru',
         'nip',
         'status',
-        'id_mata_pelajaran',
         'id_user',
         'id_operator',
+        // JANGAN masukkan 'id_guru' dan 'id_mata_pelajaran' di sini
     ];
 
     public function user()
@@ -30,21 +30,14 @@ class Guru extends Model
         return $this->belongsTo(Operator::class, 'id_operator', 'id_operator');
     }
 
-
     public function kursus()
     {
         return $this->hasMany(Kursus::class, 'id_guru', 'id_guru');
     }
 
-
     public function latihan()
     {
         return $this->hasMany(Latihan::class, 'id_guru', 'id_guru');
-    }
-
-    public function guru_mata_pelajaran()
-    {
-        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru_mata_pelajaran');
     }
 
     public function ujian()
@@ -54,22 +47,23 @@ class Guru extends Model
 
     public function materi()
     {
-        return $this->hasMany(Materi::class,  'id_guru', 'id_guru');
+        return $this->hasMany(Materi::class, 'id_guru', 'id_guru');
     }
 
-    public function nilai()
-    {
-        return $this->hasMany(Nilai::class,   'id_guru', 'id_guru');
-    }
-
+    // many-to-many ke mata_pelajaran via pivot
     public function mataPelajarans()
     {
-        return $this->belongsToMany(mata_pelajaran::class, 'guru_mata_pelajaran', 'id_guru', 'id_mata_pelajaran');
+        return $this->belongsToMany(
+            mata_pelajaran::class,
+            'guru_mata_pelajaran',
+            'id_guru',
+            'id_mata_pelajaran'
+        );
     }
 
-
+    // kalau mau akses baris pivot sebagai model
     public function guruMapel()
     {
-        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru');
+        return $this->hasMany(Guru_Mata_Pelajaran::class, 'id_guru', 'id_guru');
     }
 }

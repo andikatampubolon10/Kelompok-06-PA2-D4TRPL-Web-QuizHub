@@ -166,17 +166,29 @@ class OperatorController extends Controller
         }
     }    
 
-    public function destroy(string $id)
-    {
-        $operator = Operator::findOrFail($id);
+  public function destroy(string $id)
+{
+    $operator = Operator::findOrFail($id);
 
-                // Cek apakah status siswa aktif
-        if ($operator->status === 'Aktif') {
-            return redirect()->route('Admin.Akun.index')->with('error', 'Operator dengan status Aktif tidak dapat dihapus.');
-        }
-
-        $operator->delete(); 
-        $users->delete();
-        return redirect()->route('Admin.Akun.index')->with('success', 'Akun operator berhasil dihapus.');
+    // Cek apakah status operator aktif
+    if ($operator->status === 'Aktif') {
+        return redirect()->route('Admin.Akun.index')
+            ->with('error', 'Operator dengan status Aktif tidak dapat dihapus.');
     }
+
+    // Ambil user yang terkait dengan operator
+    $user = User::find($operator->id_user);
+
+    // Hapus operator
+    $operator->delete();
+
+    // Jika user ditemukan, hapus juga user-nya
+    if ($user) {
+        $user->delete();
+    }
+
+    return redirect()->route('Admin.Akun.index')
+        ->with('success', 'Akun operator berhasil dihapus.');
+}
+
 }
