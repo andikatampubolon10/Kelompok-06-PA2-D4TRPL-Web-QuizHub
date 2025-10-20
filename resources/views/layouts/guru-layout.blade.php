@@ -149,7 +149,7 @@
                 @yield('content')
             </div>
         </div>
-    </main>
+    </main> 
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
 
     <!-- Kirim route Laravel ke JS -->
