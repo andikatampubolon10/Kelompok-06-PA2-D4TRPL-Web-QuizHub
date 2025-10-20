@@ -19,6 +19,10 @@ class Operator extends Model
         'id_user',
     ];
 
+public $incrementing = true;
+protected $keyType = 'int';
+
+
 
     public function user()
     {

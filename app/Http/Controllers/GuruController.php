@@ -55,27 +55,42 @@ class GuruController extends Controller
         return view('Role.Operator.Guru.index');
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls',
-        ], [
-            'file.required' => 'File harus diupload.',
-            'file.mimes' => 'File harus bertipe .xlsx atau .xls.',
-        ]);
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:xlsx,xls',
+    ], [
+        'file.required' => 'File harus diupload.',
+        'file.mimes' => 'File harus bertipe .xlsx atau .xls.',
+    ]);
 
-        if ($request->hasFile('file') && $request->file('file')->isValid()) {
-            try {
-                Excel::import(new GuruImport, $request->file('file'));
-                return redirect()->route('Operator.Guru.index')->with('success', 'Data guru berhasil diupload.');
-            } catch (\Exception $e) {
-                \Log::error('Error during import: ' . $e->getMessage());
-                return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
-            }
-        } else {
-            return redirect()->back()->with('error', 'File tidak valid atau gagal diupload.');
+    // Ambil operator dari user login
+    $user = auth()->user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    $operator = Operator::where('id_user', $user->id)->first();
+    if (!$operator) {
+        return redirect()->back()->with('error', 'Operator untuk user ini tidak ditemukan.');
+    }
+
+    if ($request->hasFile('file') && $request->file('file')->isValid()) {
+        try {
+            // Pass id_operator ke Import class via constructor
+            Excel::import(new \App\Imports\GuruImport($operator->id_operator), $request->file('file'));
+
+            return redirect()
+                ->route('Operator.Guru.index')
+                ->with('success', 'Data guru berhasil diupload.');
+        } catch (\Throwable $e) {
+            \Log::error('Error during import: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
         }
     }
+
+    return redirect()->back()->with('error', 'File tidak valid atau gagal diupload.');
+}
 
     public function create()
     {
