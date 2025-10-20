@@ -1,9 +1,9 @@
 @extends('layouts.guru-layout')
 
-@section('title', 'Tambah Akun')
+@section('title', 'Tambah Ujian')
 
 @section('content')
-    <!-- Additional Info Section -->
+    {{-- Tips --}}
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
         <div class="flex items-start space-x-3">
             <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -15,248 +15,167 @@
                     <li>• Masukkan Nama Ujian</li>
                     <li>• Masukkan Password Masuk dan Keluar Ujian</li>
                     <li>• Pilih Tipe Ujian</li>
-                    <li>• Pilih Waktu Mulai dan Selesan Ujian
+                    <li>• Pilih Waktu Mulai dan Selesai Ujian</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Form Container -->
-    <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
+    {{-- Tampilkan error validasi --}}
+    @if ($errors->any())
+      <div class="mb-6 p-4 border border-red-300 bg-red-50 rounded text-sm text-red-700">
+        <ul class="list-disc pl-5 space-y-1">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
+    <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
         <form action="{{ route('Guru.Ujian.store') }}" method="POST">
             @csrf
 
-            <!-- Nama Sekolah Field -->
+            {{-- Judul Ujian --}}
             <div class="mb-6">
-                       <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
-                        <input type="text" name="nama_ujian" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
+                <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
+                <input type="text" id="nama_ujian" name="nama_ujian"
+                       class="block w-full p-2 border border-gray-300 rounded-md"
+                       value="{{ old('nama_ujian') }}" required>
+                @error('nama_ujian')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-
-            <!-- Email Field -->
+            {{-- Password Masuk --}}
             <div class="mb-6">
-                 <label for="password_masuk" class="block font-bold mb-2">Password Masuk</label>
-                        <input type="password" name="password_masuk" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
-            <!-- Password Field -->
+                <label for="password_masuk" class="block font-bold mb-2">Password Masuk</label>
+                <input type="password" id="password_masuk" name="password_masuk"
+                       class="block w-full p-2 border border-gray-300 rounded-md" required>
+                @error('password_masuk')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Password Keluar --}}
             <div class="mb-6">
-                     <label for="password_keluar" class="block font-bold mb-2">Password Keluar</label>
-                        <input type="password" name="password_keluar" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
+                <label for="password_keluar" class="block font-bold mb-2">Password Keluar</label>
+                <input type="password" id="password_keluar" name="password_keluar"
+                       class="block w-full p-2 border border-gray-300 rounded-md" required>
+                @error('password_keluar')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                    <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
+            {{-- id_kursus wajib dikirim --}}
+            <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
 
-                    <div class="mb-6">
-                        <label for="tipe_ujian" class="block font-bold mb-2">Tipe Ujian</label>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="1" class="form-radio text-green-500" required>
-                                <span class="ml-2">Kuis</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="2" class="form-radio text-green-500" required>
-                                <span class="ml-2">Ujian Tengah Semester</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="3" class="form-radio text-green-500" required>
-                                <span class="ml-2">Ujian Akhir Semester</span>
-                            </label>
-                        </div>
-                    </div>
-
-                      {{-- <div class="mb-4">
-                        <label for="acak" class="block font-bold mb-2">Acak Soal dan Pilihan</label>
-                        <input type="text" name="acak" value="100" class="block w-full p-2 border border-gray-300 rounded-md" readonly>
-                            <option value="" disabled selected>Pilih opsi</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
-                        </select>
-                    </div> --}}
-{{-- 
-                    <div class="mb-4">
-                        <label for="status_jawaban" class="block font-bold mb-2">Tampilan Nilai</label>
-                        <input type="text" name="status_jawaban" value="Aktif" class="block w-full p-2 border border-gray-300 rounded-md" readonly>
-                    </div> --}}
-{{-- 
-                    <div class="mb-4">
-                        <label for="grade" class="block font-bold mb-2">Grade</label>
-                        <input type="number" name="grade" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div> --}}
-
-                     <div class="mb-6">
-                      <label for="Waktu_Mulai" class="block font-bold mb-2">Waktu Mulai</label>
-    <input type="datetime-local" name="waktu_mulai" class="block w-full p-2 border border-gray-300 rounded-md" required id="waktu_mulai">
-</div>
-
- <div class="mb-6">
-            <label for="Waktu_Selesai" class="block font-bold mb-2">Waktu Selesai</label>
-    <input type="datetime-local" name="waktu_selesai" class="block w-full p-2 border border-gray-300 rounded-md" required id="waktu_selesai">
-</div>
-
-
-
-
-
-
-          
-              
-                <!-- Form Actions -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Semua field yang bertanda (*) wajib diisi</span>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
-
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan 
-                        </button>
-                    </div>
+            {{-- Tipe Ujian --}}
+            <div class="mb-6">
+                <label class="block font-bold mb-2">Tipe Ujian</label>
+                <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="1" class="form-radio"
+                               {{ old('id_tipe_ujian') == 1 ? 'checked' : '' }} required>
+                        <span class="ml-2">Kuis</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="2" class="form-radio"
+                               {{ old('id_tipe_ujian') == 2 ? 'checked' : '' }} required>
+                        <span class="ml-2">Ujian Tengah Semester</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="3" class="form-radio"
+                               {{ old('id_tipe_ujian') == 3 ? 'checked' : '' }} required>
+                        <span class="ml-2">Ujian Akhir Semester</span>
+                    </label>
                 </div>
-            </form>
-        </div>
+                @error('id_tipe_ujian')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Waktu Mulai --}}
+            <div class="mb-6">
+                <label for="waktu_mulai" class="block font-bold mb-2">Waktu Mulai</label>
+                <input type="datetime-local" id="waktu_mulai" name="waktu_mulai"
+                       class="block w-full p-2 border border-gray-300 rounded-md"
+                       value="{{ old('waktu_mulai') }}" required>
+                @error('waktu_mulai')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Waktu Selesai --}}
+            <div class="mb-6">
+                <label for="waktu_selesai" class="block font-bold mb-2">Waktu Selesai</label>
+                <input type="datetime-local" id="waktu_selesai" name="waktu_selesai"
+                       class="block w-full p-2 border border-gray-300 rounded-md"
+                       value="{{ old('waktu_selesai') }}" required>
+                @error('waktu_selesai')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Actions --}}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-gray-100 mt-8">
+                <div class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Semua field yang bertanda (*) wajib diisi</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:space-x-3 mt-4 sm:mt-0">
+                    <a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
+                       class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <!-- Success/Error Messages -->
-    @if (session('success'))
-        <div id="successAlert"
-            class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
-            <i class="fas fa-check-circle text-xl"></i>
-            <div>
-                <p class="font-semibold">Berhasil!</p>
-                <p class="text-sm">{{ session('success') }}</p>
-            </div>
-            <button onclick="closeAlert('successAlert')" class="ml-4 text-white hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div id="errorAlert"
-            class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3">
-            <i class="fas fa-exclamation-circle text-xl"></i>
-            <div>
-                <p class="font-semibold">Error!</p>
-                <p class="text-sm">{{ session('error') }}</p>
-            </div>
-            <button onclick="closeAlert('errorAlert')" class="ml-4 text-white hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    @endif
+    {{-- Flash messages tetap --}}
+    @if (session('success')) ... @endif
+    @if (session('error')) ... @endif
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const waktuMulai = document.getElementById('waktu_mulai');
+    const waktuSelesai = document.getElementById('waktu_selesai');
 
-         document.addEventListener('DOMContentLoaded', function() {
-        const waktuMulaiInput = document.getElementById('waktu_mulai');
-        const waktuSelesaiInput = document.getElementById('waktu_selesai');
+    // Ambil waktu sekarang (local time)
+    const now = new Date();
+    const timezoneOffset = now.getTimezoneOffset() * 60000; // ubah offset timezone ke ms
+    const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
 
-        // Set waktu minimal untuk waktu mulai
-        const now = new Date();
-        const nowString = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
-        waktuMulaiInput.min = nowString;
+    // Set agar tanggal sebelum hari ini tidak bisa dipilih
+    waktuMulai.min = localISOTime;
+    waktuSelesai.min = localISOTime;
 
-        // Set waktu minimal untuk waktu selesai (harus setelah waktu mulai)
-        waktuMulaiInput.addEventListener('change', function() {
-            waktuSelesaiInput.min = this.value;
-        });
-
-        // Optionally, set waktu selesai minimal saat halaman dimuat
-        waktuSelesaiInput.min = nowString;
+    // Jika waktu mulai diubah, waktu selesai minimal harus >= waktu mulai
+    waktuMulai.addEventListener('change', function() {
+        waktuSelesai.min = this.value;
     });
-        // Dropdown toggle script
-        function toggleDropdown() {
-            const dropdown = document.getElementById("dropdown-menu");
-            dropdown.classList.toggle("show");
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-                var startDateInput = document.getElementById('start_date');
-                var endDateInput = document.getElementById('end_date');
+});
+        
+      // Batasi minimal waktu dari client
+      document.addEventListener('DOMContentLoaded', function() {
+        const waktuMulai = document.getElementById('waktu_mulai');
+        const waktuSelesai = document.getElementById('waktu_selesai');
+        const now = new Date().toISOString().slice(0,16);
+        if (!waktuMulai.value) waktuMulai.min = now;
+        if (!waktuSelesai.value) waktuSelesai.min = now;
 
-                var today = new Date();
-                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
-
-                // Set tanggal mulai tidak bisa lebih awal dari hari ini
-                if (startDateInput) {
-                    startDateInput.min = todayString;
-                }
-
-                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                if (startDateInput && endDateInput) {
-                    startDateInput.addEventListener('change', function() {
-                        var startDate = startDateInput.value;
-                        endDateInput.min =
-                        startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                    });
-                }
-            });
-              function toggleDropdown() {
-                const dropdown = document.getElementById("dropdown-menu");
-                dropdown.classList.toggle("show");
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                var startDateInput = document.getElementById('start_date');
-                var endDateInput = document.getElementById('end_date');
-
-                var today = new Date();
-                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
-
-                // Set tanggal mulai tidak bisa lebih awal dari hari ini
-                if (startDateInput) {
-                    startDateInput.min = todayString;
-                }
-
-                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                if (startDateInput && endDateInput) {
-                    startDateInput.addEventListener('change', function() {
-                        var startDate = startDateInput.value;
-                        endDateInput.min =
-                            startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                    });
-                }
-            });
-        function closeAlert(alertId) {
-            document.getElementById(alertId).style.display = 'none';
-        }
-
-        // Auto close alerts after 5 seconds
-        setTimeout(() => {
-            const successAlert = document.getElementById('successAlert');
-            const errorAlert = document.getElementById('errorAlert');
-            if (successAlert) successAlert.style.display = 'none';
-            if (errorAlert) errorAlert.style.display = 'none';
-        }, 5000);
-
-        // Form validation enhancement
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const nameInput = document.getElementById('nama_kurikulum');
-
-            nameInput.addEventListener('input', function() {
-                if (this.value.length > 0) {
-                    this.classList.remove('border-red-500');
-                    this.classList.add('border-green-500');
-                }
-            });
-
-            form.addEventListener('submit', function(e) {
-                if (nameInput.value.trim() === '') {
-                    e.preventDefault();
-                    nameInput.classList.add('border-red-500');
-                    nameInput.focus();
-                }
-            });
+        waktuMulai.addEventListener('change', function(){
+          waktuSelesai.min = this.value;
         });
+      });
     </script>
 @endsection

@@ -79,25 +79,27 @@ class UjianController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Received data for ujian creation:', $request->all());
+        Log::info('Received data for ujian creation:', context: $request->all());
 
         $validated = $request->validate([
             'nama_ujian' => 'required|string|max:255',
             'password_masuk' => 'required|string|min:6',
             'password_keluar' => 'required|string|min:6',
-            'id_kursus' => 'required|exists:kursus,id_kursus', // Validasi id_kursus
+            'id_kursus' => 'required|exists:kursus,id_kursus',
             'id_tipe_ujian' => 'required|in:1,2,3',
-            'acak' => 'nullable|in:Aktif,Tidak Aktif',
-            'status_jawaban' => 'nullable|in:Aktif,Tidak Aktif',
-            'grade' => 'nullable|numeric|min:0|max:100',
-            'waktu_mulai' => 'required|date|after:now',
+            'waktu_mulai' => 'required|date|after_or_equal:now',
             'waktu_selesai' => 'required|date|after:waktu_mulai',
+        ], [
+            // 👇 pesan custom di sini
+            'waktu_mulai.after_or_equal' => 'Waktu mulai diisi sesuai.',
+            'waktu_selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
         ]);
+
         $request->merge([
-    'acak' => $request->input('acak', 'Aktif'), // Default 'Aktif' jika tidak diberikan
-    'grade' => $request->input('grade', 100),   // Default 100 jika tidak diberikan
-    'status_jawaban' => $request->input('status_jawaban', 'Aktif'), // Default 'Aktif' jika tidak diberikan
-]);
+            'acak' => $request->input('acak', 'Aktif'), // Default 'Aktif' jika tidak diberikan
+            'grade' => $request->input('grade', 100),   // Default 100 jika tidak diberikan
+            'status_jawaban' => $request->input('status_jawaban', 'Aktif'), // Default 'Aktif' jika tidak diberikan
+        ]);
 
         try {
             Log::info('Validated data:', $validated);
@@ -159,7 +161,7 @@ class UjianController extends Controller
         }
 
         $courses = kursus::where('id_guru', $guru->id_guru)->get();
-        
+
         $courses = kursus::with('guru')->get();
 
         $course = $courses->where('id_kursus', $id_kursus)->first();
@@ -168,7 +170,7 @@ class UjianController extends Controller
             return redirect()->back()->with('error', 'Kursus tidak ditemukan.');
         }
 
-        return view('Role.Guru.Course.edit', compact('ujian','course','courses', 'guru', 'id_kursus', 'courses', 'user', 'id_ujian'));
+        return view('Role.Guru.Course.edit', compact('ujian', 'course', 'courses', 'guru', 'id_kursus', 'courses', 'user', 'id_ujian'));
     }
 
     public function update(Request $request, $id_ujian)
@@ -237,7 +239,7 @@ class UjianController extends Controller
     }
 
 
-    public function destroy(String $id_ujian)
+    public function destroy(string $id_ujian)
     {
         try {
             $ujian = ujian::findOrFail($id_ujian);
