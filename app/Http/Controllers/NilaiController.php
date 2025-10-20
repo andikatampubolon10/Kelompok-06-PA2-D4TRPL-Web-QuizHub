@@ -9,6 +9,12 @@ use App\Models\TipeNilai;
 use App\Models\NilaiKursus;
 use App\Models\Persentase;
 use App\Models\BobotTipeSoal;
+use App\Models\jawaban_siswa;
+use App\Models\jawaban_soal;
+use App\Models\Ujian;
+use App\Models\Soal;
+use App\Models\JawabanSiswa;
+use App\Models\JawabanSoal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,9 +24,8 @@ class NilaiController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $guru = $user->guru; // Automatically load the guru relationship
+        $guru = $user->guru;
 
-        // Filter courses by the authenticated guru's id_guru
         $courses = Kursus::where('id_guru', $guru->id_guru)->get();
 
         return view('Role.Guru.Nilai.index', compact('courses', 'user'));
@@ -173,16 +178,150 @@ class NilaiController extends Controller
     }
 
     /**
+     * Helper normalisasi teks (lowercase + trim)
+     */
+    private function norm(?string $s): string
+    {
+        return trim(mb_strtolower((string) $s));
+    }
+
+    /**
+     * HITUNG OTOMATIS di CONTROLLER (tanpa trigger/SQL):
+     * - Cek jawaban siswa vs jawaban soal (PG & BS saja).
+     * - Jika id_jawaban_soal NULL, cocokkan teks jawaban_siswa dengan jawaban opsi.
+     * - Hitung skor per tipe berdasarkan bobot soal, bobotkan dengan bobot_tipe_soal.
+     * - Simpan (upsert) ke tipe_nilai.
+     *
+     * @return int Nilai akhir dibulatkan (0..100)
+     */
+    private function recalcTipeNilaiFromAnswers(int $id_ujian, int $id_siswa): int
+    {
+        // Pastikan bobot tipe = 100
+        $sum = (int) BobotTipeSoal::where('id_ujian', $id_ujian)->sum('bobot');
+        if ($sum !== 100) {
+            Log::warning('Bobot tipe soal tidak 100; skip hitung.', ['id_ujian' => $id_ujian, 'total_bobot' => $sum]);
+            return 0;
+        }
+
+        // Ambil semua soal PG & BS untuk ujian ini
+        $soalList = Soal::where('id_ujian', $id_ujian)
+            ->whereHas('tipe_soal', function ($q) {
+                $q->whereIn(DB::raw('LOWER(nama_tipe_soal)'), ['pilihan berganda', 'benar salah']);
+            })
+            ->get(['id_soal', 'id_tipe_soal', 'bobot']);
+
+        if ($soalList->isEmpty()) {
+            // Tidak ada PG/BS → nilai 0
+            return 0;
+        }
+
+        // Kumpulkan id_soal, dan jawaban siswa untuk soal-soal itu
+        $idsSoal   = $soalList->pluck('id_soal')->all();
+        $jawabMap  = jawaban_siswa::whereIn('id_soal', $idsSoal)
+            ->where('id_siswa', $id_siswa)
+            ->get(['id_soal', 'id_jawaban_soal', 'jawaban_siswa'])
+            ->keyBy('id_soal');
+
+        // Ambil bobot per tipe soal (%)
+        $bobotTipe = BobotTipeSoal::where('id_ujian', $id_ujian)
+            ->pluck('bobot', 'id_tipe_soal'); // [id_tipe_soal => bobot%]
+
+        // Ambil jawaban benar per soal (map: id_soal => set opsi benar)
+        $kunciPerSoal = jawaban_soal::whereIn('id_soal', $idsSoal)
+            ->where(function ($q) {
+                $q->where('benar', 1)->orWhere('is_benar', 1);
+            })
+            ->get(['id_soal', 'id_jawaban_soal', 'jawaban'])
+            ->groupBy('id_soal');
+
+        // Akumulasi per tipe soal
+        $agg = []; // id_tipe_soal => ['total' => xx, 'benar' => yy]
+        foreach ($soalList as $soal) {
+            $idSoal  = (int) $soal->id_soal;
+            $idTipe  = (int) $soal->id_tipe_soal;
+            $bobot   = (float) ($soal->bobot ?? 0);
+
+            if (!isset($agg[$idTipe])) {
+                $agg[$idTipe] = ['total' => 0.0, 'benar' => 0.0];
+            }
+            $agg[$idTipe]['total'] += $bobot;
+
+            $jawab = $jawabMap->get($idSoal);
+            if (!$jawab) {
+                continue; // belum menjawab → tidak menambah benar
+            }
+
+            $isCorrect = false;
+
+            // 1) Jika id_jawaban_soal terisi, cek flag benar pada opsi tsb
+            if (!empty($jawab->id_jawaban_soal)) {
+                $opt = jawaban_soal::find($jawab->id_jawaban_soal);
+                if ($opt) {
+                    $flag = $opt->benar ?? $opt->is_benar ?? 0;
+                    $isCorrect = ($flag == 1 || $flag === true || $flag === '1');
+                }
+            }
+
+            // 2) Jika belum terkonfirmasi benar & ada jawaban teks, cocokkan teks dengan jawaban opsi yang benar
+            if (!$isCorrect && !empty($jawab->jawaban_siswa)) {
+                $jawabNorm = $this->norm($jawab->jawaban_siswa);
+                $kunciSet  = $kunciPerSoal->get($idSoal) ?? collect();
+
+                foreach ($kunciSet as $kunci) {
+                    if ($this->norm($kunci->jawaban) === $jawabNorm) {
+                        $isCorrect = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($isCorrect) {
+                $agg[$idTipe]['benar'] += $bobot;
+            }
+        }
+
+        // Hitung skor akhir tertimbang
+        $totalWeighted = 0.0;
+        foreach ($agg as $idTipe => $row) {
+            $totalBobotTipeSoal = (float) $row['total']; // total bobot soal di tipe ini
+            $benarBobot         = (float) $row['benar']; // total bobot soal yang benar di tipe ini
+            $score0_100         = $totalBobotTipeSoal > 0 ? ($benarBobot / $totalBobotTipeSoal) * 100.0 : 0.0;
+
+            $bobotPersenTipe    = (float) ($bobotTipe[$idTipe] ?? 0);
+            $weighted           = $score0_100 * $bobotPersenTipe / 100.0;
+
+            $totalWeighted     += $weighted;
+        }
+
+        // Simpan ke tipe_nilai (upsert)
+        $ujian = Ujian::find($id_ujian);
+        $id_tipe_ujian = $ujian?->id_tipe_ujian;
+
+        if ($id_tipe_ujian) {
+            TipeNilai::updateOrCreate(
+                [
+                    'id_siswa'      => $id_siswa,
+                    'id_ujian'      => $id_ujian,
+                    'id_tipe_ujian' => $id_tipe_ujian,
+                ],
+                [
+                    'nilai' => (int) round($totalWeighted),
+                ]
+            );
+        }
+
+        return (int) round($totalWeighted);
+    }
+
+    /**
      * ENDPOINT untuk route:
      * GET /Siswa/courses/{id_kursus}/ujian/{id_ujian}/nilai
      *
-     * Mengambil total nilai (PB & BS) dari tabel tipe_nilai untuk siswa yang sedang login.
-     * - Trigger/procedure sudah menghitung otomatis saat submit/ubah jawaban_siswa.
-     * - Isian/Essay diabaikan dari perhitungan otomatis.
+     * Sekarang endpoint ini menghitung ulang di controller (tanpa trigger) lalu mengembalikan nilai total PB & BS.
      */
     public function gradeUjianSiswaSelf($id_kursus, $id_ujian)
     {
-        $user = auth()->user();
+        $user  = auth()->user();
         $siswa = $user->siswa ?? null;
 
         if (!$siswa) {
@@ -194,33 +333,32 @@ class NilaiController extends Controller
 
         $id_siswa = (int) $siswa->id_siswa;
 
-        // Safety: pastikan bobot_tipe_soal = 100 agar prosedur/trigger memang menghitung
-        $sum = (int) BobotTipeSoal::where('id_ujian', $id_ujian)->sum('bobot');
-        if ($sum !== 100) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Total bobot_tipe_soal harus 100% untuk ujian ini. Saat ini: ' . $sum . '%.',
-            ], 422);
-        }
+        // Hitung & simpan (controller-based)
+        $nilaiTerbaru = $this->recalcTipeNilaiFromAnswers((int) $id_ujian, $id_siswa);
 
-        // Ambil nilai akhir dari tipe_nilai (sudah diisi trigger/procedure)
+        // Baca kembali dari tipe_nilai (opsional, untuk timestamp)
         $row = TipeNilai::where('id_ujian', $id_ujian)
             ->where('id_siswa', $id_siswa)
             ->first(['nilai', 'id_tipe_ujian', 'updated_at']);
 
-        $total = (int) ($row->nilai ?? 0);
-
         return response()->json([
             'success' => true,
-            'message' => 'Nilai ujian (otomatis PB & BS) berhasil diambil.',
+            'message' => 'Nilai ujian (PB & BS) berhasil dihitung & diambil.',
             'data' => [
-                'id_kursus'        => (int) $id_kursus,
-                'id_ujian'         => (int) $id_ujian,
-                'id_siswa'         => $id_siswa,
-                'nilai_ujian_total'=> $total,
-                'id_tipe_ujian'    => $row->id_tipe_ujian ?? null,
-                'updated_at'       => $row->updated_at ?? null,
+                'id_kursus'         => (int) $id_kursus,
+                'id_ujian'          => (int) $id_ujian,
+                'id_siswa'          => $id_siswa,
+                'nilai_ujian_total' => (int) ($row->nilai ?? $nilaiTerbaru ?? 0),
+                'id_tipe_ujian'     => $row->id_tipe_ujian ?? (Ujian::find($id_ujian)->id_tipe_ujian ?? null),
+                'updated_at'        => $row->updated_at ?? now(),
             ],
         ]);
     }
+
+public function recalcNow(int $id_ujian, int $id_siswa): int
+{
+    // pakai helper perhitungan controller-only yang sudah kita buat sebelumnya
+    return $this->recalcTipeNilaiFromAnswers($id_ujian, $id_siswa);
+}
+
 }

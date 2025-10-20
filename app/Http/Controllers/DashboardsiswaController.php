@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\NilaiController;
 
 
 class DashboardsiswaController extends Controller
@@ -269,49 +271,6 @@ public function soal($id_kursus, $id_ujian)
     ]);
 }
 
-
-public function submitUjian(Request $request, $id_kursus, $id_ujian)
-{
-
-        $ujian = Ujian::findOrFail($id_ujian);
-    $now = now();
-    if ($now->lt($ujian->waktu_mulai)) {
-        return back()->with('error', 'Ujian belum dimulai.');
-    }
-    if ($now->gt($ujian->waktu_selesai)) {
-        return back()->with('error', 'Waktu ujian telah berakhir.');
-    }
-
-    $request->validate([
-        'answers_json' => 'required|string',
-    ]);
-
-    $user  = auth()->user();
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
-
-    $answers = json_decode($request->answers_json, true) ?? [];
-
-    foreach ($answers as $row) {
-        $idSoal  = $row['id_soal'] ?? null;
-        if (!$idSoal) continue;
-
-        jawaban_siswa::updateOrCreate(
-            [
-                'id_siswa' => $siswa->id_siswa,
-                'id_soal'  => $idSoal,
-            ],
-            [
-                'jawaban_siswa'  => $row['jawaban_siswa'] ?? null,     // teks / huruf
-                'id_jawaban_soal'=> $row['id_jawaban_soal'] ?? null,   // PG/TF (opsional)
-            ]
-        );
-    }
-
-    return redirect()
-        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
-        ->with('success', 'Jawaban berhasil dikumpulkan.');
-}
-
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -425,5 +384,58 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian)
         }
 
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
+    }
+
+    public function submitUjian(Request $request, $id_kursus, $id_ujian)
+    {
+        $user    = auth()->user();
+        $siswa   = $user->siswa;
+        if (!$siswa) {
+            return back()->with('error', 'Profil siswa tidak ditemukan.');
+        }
+        $id_siswa = (int) $siswa->id_siswa;
+
+        // Contoh: $request->answers = [
+        //   ['id_soal'=>123, 'id_jawaban_soal'=>456, 'jawaban_siswa'=>'teks optional'],
+        //   ...
+        // ];
+        $answers = $request->input('answers', []);
+
+        DB::beginTransaction();
+        try {
+            // ⬇️ simpan/replace jawaban siswa (contoh simple; sesuaikan dgn struktur kamu)
+            foreach ($answers as $a) {
+                if (empty($a['id_soal'])) continue;
+
+                jawaban_siswa::updateOrCreate(
+                    [
+                        'id_soal'          => (int)$a['id_soal'],
+                        'id_siswa'         => $id_siswa,
+                    ],
+                    [
+                        'id_jawaban_soal'  => $a['id_jawaban_soal'] ?? null,      // untuk PG/BS biasanya diisi
+                        'jawaban_siswa'    => $a['jawaban_siswa']   ?? null,      // fallback: cocokkan teks di controller
+                    ]
+                );
+            }
+
+            // Pastikan commit dulu sebelum hitung nilai
+            DB::commit();
+
+            // 🔹 setelah COMMIT, hitung nilai otomatis di server (controller-only, tanpa trigger SQL)
+            DB::afterCommit(function () use ($id_ujian, $id_siswa) {
+                app(NilaiController::class)->recalcNow((int)$id_ujian, (int)$id_siswa);
+            });
+
+            // Redirect ke halaman nilai / ringkasan
+            return redirect()->route('Siswa.Course.ujian.nilai', [
+                'id_kursus' => $id_kursus,
+                'id_ujian'  => $id_ujian,
+            ])->with('success', 'Jawaban berhasil dikirim. Nilai otomatis telah dihitung.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->with('error', 'Gagal submit ujian: '.$e->getMessage());
+        }
     }
 }
