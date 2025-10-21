@@ -11,18 +11,12 @@ use App\Models\jawaban_soal;
 use App\Models\TipeNilai;
 use App\Models\Nilai;
 use App\Models\ujian;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-use App\Models\Nilai;
-use App\Models\TipeNilai;
-=======
+
+
 use Illuminate\Support\Facades\DB;
->>>>>>> Stashed changes
-=======
-use Illuminate\Support\Facades\DB;
->>>>>>> Stashed changes
+
 use App\Models\jawaban_siswa;
-use App\Models\jawaban_soal;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -252,8 +246,6 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
     ]);
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $ujian = Ujian::findOrFail($id_ujian);
@@ -368,10 +360,7 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
 }
 
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -487,126 +476,6 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
 
-    public function submitUjian(Request $request, $id_kursus, $id_ujian) {
-    $id_ujian_from_url = $request->route('id_ujian');
-    $ujian = Ujian::find($id_ujian_from_url);
-    $now = now();
-
-    if ($now->lt($ujian->waktu_mulai)) {
-        return back()->with('error', 'Ujian belum dimulai.');
-    }
-
-    if ($now->gt($ujian->waktu_selesai)) {
-        return back()->with('error', 'Waktu ujian telah berakhir.');
-    }
-
-    $request->validate([
-        'answers_json' => 'required|string',
-    ]);
-
-    $user = auth()->user();
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
-
-    $answers = json_decode($request->answers_json, true) ?? [];
-
-    $totalNilai = 0;
-    $totalBobot = 0;
-
-    // Loop untuk setiap jawaban siswa
-    foreach ($answers as $row) {
-        $idSoal = $row['id_soal'] ?? null;
-        if (!$idSoal) continue;
-
-        // Update atau buat entri baru jawaban siswa
-        jawaban_siswa::updateOrCreate(
-            [
-                'id_siswa' => $siswa->id_siswa,
-                'id_soal' => $idSoal,
-            ],
-            [
-                'jawaban_siswa' => $row['jawaban_siswa'] ?? null,
-                'id_jawaban_soal' => $row['id_jawaban_soal'] ?? null,
-            ]
-        );
-
-        // Ambil soal untuk pengecekan
-        $soal = Soal::find($idSoal);
-        if (!$soal) continue;
-
-        // Cek hanya soal tipe PG dan BS
-        if (!in_array($soal->tipe_soal->nama_tipe_soal, ['Pilihan Berganda', 'Benar Salah'])) {
-            continue;
-        }
-
-        // Bobot soal
-        $bobotSoal = $soal->bobot ?? 0;
-
-        $isCorrect = false;
-        if ($soal->tipe_soal->nama_tipe_soal === 'Pilihan Berganda') {
-            // Cek untuk soal Pilihan Ganda (PG)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar && $row['id_jawaban_soal'] == $jawabanBenar->id_jawaban_soal) {
-                $isCorrect = true;
-            }
-        } elseif ($soal->tipe_soal->nama_tipe_soal === 'Benar Salah') {
-            // Cek untuk soal Benar Salah (BS)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar) {
-                if (($row['jawaban_siswa'] == 'benar' && $jawabanBenar->benar) || 
-                    ($row['jawaban_siswa'] == 'salah' && !$jawabanBenar->benar)) {
-                    $isCorrect = true;
-                }
-            }
-        }
-
-        // Jika jawaban benar, tambahkan bobot soal ke nilai total
-        if ($isCorrect) {
-            $totalNilai += $bobotSoal;
-        }
-        $totalBobot += $bobotSoal;
-    }
-
-    // Hitung persentase nilai
-    $nilaiAkhir = $totalBobot > 0 ? ($totalNilai / $totalBobot) * 100 : 0;
-    $id_tipe_ujian = $ujian->id_tipe_ujian;
-
-
-TipeNilai::updateOrCreate(
-    [
-        'id_siswa' => $siswa->id_siswa,
-        'id_ujian' => $id_ujian_from_url,  // Use id_ujian from route
-    ],
-    [
-        'nilai' => $nilaiAkhir,
-        'id_tipe_ujian' => $id_tipe_ujian,
-    ]
-);
-
-
-    // Setelah perhitungan nilai per tipe, hitung nilai total di tabel Nilai
-    $nilaiTotal = TipeNilai::where('id_siswa', $siswa->id_siswa)
-        ->where('id_ujian', $id_ujian)
-        ->sum('nilai');
-
-    // Simpan nilai total ke tabel Nilai
-    Nilai::updateOrCreate(
-        [
-            'id_siswa' => $siswa->id_siswa,
-            'id_kursus' => $id_kursus,
-        ],
-        [
-            'nilai_total' => $nilaiTotal,
-        ]
-    );
-
-    return redirect()
-        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
-        ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-}
 
 public function exitExam($kursus_id, $ujian_id, Request $request)
 {

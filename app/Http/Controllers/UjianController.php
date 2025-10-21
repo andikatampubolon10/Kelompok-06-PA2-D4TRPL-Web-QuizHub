@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use App\Models\jawaban_siswa;
 use App\Models\Siswa;
 use App\Models\soal;
+use App\Models\Materi;
 use Illuminate\Support\Facades\DB;
 
 class UjianController extends Controller
@@ -25,10 +26,10 @@ class UjianController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            return redirect()->route('login'); // Redirect jika user tidak ditemukan
+            return redirect()->route('login');
         }
 
-        $guru = guru::where('id_user', $user->id)->first();
+        $guru = Guru::where('id_user', $user->id)->first();
 
         if (!$guru) {
             return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
@@ -36,15 +37,14 @@ class UjianController extends Controller
 
         $id_kursus = $request->query('id_kursus');
 
-        $courses = Kursus::with('guru')->get(); // Ambil semua kursus
-
+        $courses = Kursus::with('guru')->get();
         $course = $courses->where('id_kursus', $id_kursus)->first();
 
         if (!$course) {
             return redirect()->back()->withErrors(['error' => 'Kursus yang dipilih tidak valid.']);
         }
 
-        $kursus = kursus::where('id_kursus', $id_kursus)
+        $kursus = Kursus::where('id_kursus', $id_kursus)
             ->where('id_guru', $guru->id_guru)
             ->first();
 
@@ -52,12 +52,31 @@ class UjianController extends Controller
             return redirect()->back()->withErrors(['error' => 'Kursus yang dipilih tidak valid.']);
         }
 
-        $ujians = Ujian::where('id_kursus', $kursus->id_kursus)
+        // 🔹 Ambil semua ujian berdasarkan kursus
+        $ujian = Ujian::where('id_kursus', $kursus->id_kursus)
             ->orderBy('tanggal_ujian', 'DESC')
             ->get();
 
-        return view('Role.Guru.Course.index', compact('user', 'course', 'ujians', 'kursus', 'id_kursus', 'courses'));
+        // 🔹 Ambil semua materi berdasarkan kursus
+        $materi = Materi::where('id_kursus', $kursus->id_kursus)
+            ->orderBy('tanggal_materi', 'DESC')
+            ->get();
+
+        // 🔹 Ambil materi terbaru (jika diperlukan di view)
+        $materi_pertama = $materi->first();
+
+        return view('Role.Guru.Course.index', compact(
+            'user',
+            'course',
+            'ujian',
+            'materi',
+            'materi_pertama',
+            'kursus',
+            'id_kursus',
+            'courses'
+        ));
     }
+
 
     public function create(Request $request)
     {
@@ -310,32 +329,34 @@ class UjianController extends Controller
         ];
     }
     public function selesai($id_ujian)
-{
-    $ujian = ujian::findOrFail($id_ujian);
+    {
+        $ujian = ujian::findOrFail($id_ujian);
 
-    $siswaSelesai = siswa::whereHas('jawaban_siswa', function ($q) use ($id_ujian) {
+        $siswaSelesai = siswa::whereHas('jawaban_siswa', function ($q) use ($id_ujian) {
             $q->whereHas('soal', fn($s) => $s->where('id_ujian', $id_ujian));
         })
-        ->withCount(['jawaban_siswa as total_jawaban' => function ($q) use ($id_ujian) {
-            $q->whereHas('soal', fn($s) => $s->where('id_ujian', $id_ujian));
-        }])
-        ->get();
+            ->withCount([
+                'jawaban_siswa as total_jawaban' => function ($q) use ($id_ujian) {
+                    $q->whereHas('soal', fn($s) => $s->where('id_ujian', $id_ujian));
+                }
+            ])
+            ->get();
 
-    return view('Role.Guru.Course.selesai', compact('ujian', 'siswaSelesai'));
-}
-public function detailJawabanSiswa($id_ujian, $id_siswa)
-{
-    $ujian  = ujian::findOrFail($id_ujian);
-    $siswa  = siswa::findOrFail($id_siswa);
+        return view('Role.Guru.Course.selesai', compact('ujian', 'siswaSelesai'));
+    }
+    public function detailJawabanSiswa($id_ujian, $id_siswa)
+    {
+        $ujian = ujian::findOrFail($id_ujian);
+        $siswa = siswa::findOrFail($id_siswa);
 
-    // Ambil semua jawaban siswa ini untuk soal yang termasuk ujian tsb
-    $jawaban = jawaban_siswa::with(['soal', 'jawaban_soal'])
-        ->where('id_siswa', $id_siswa)
-        ->whereHas('soal', fn($q) => $q->where('id_ujian', $id_ujian))
-        ->orderBy('id_soal')
-        ->get();
+        // Ambil semua jawaban siswa ini untuk soal yang termasuk ujian tsb
+        $jawaban = jawaban_siswa::with(['soal', 'jawaban_soal'])
+            ->where('id_siswa', $id_siswa)
+            ->whereHas('soal', fn($q) => $q->where('id_ujian', $id_ujian))
+            ->orderBy('id_soal')
+            ->get();
 
-    return view('Role.Guru.Course.detail-jawaban-siswa', compact('ujian','siswa','jawaban'));
-}
+        return view('Role.Guru.Course.detail-jawaban-siswa', compact('ujian', 'siswa', 'jawaban'));
+    }
 
 }

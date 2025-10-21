@@ -43,7 +43,7 @@
                     <i class="fas fa-plus mr-2"></i> Tambahkan
                 </a>
             </div>
-
+{{-- @dd($kursus) --}}
             @foreach ($materi->sortByDesc('tanggal_materi') as $exam)
             {{-- @dd($exam) --}}
                 <div class="mb-4 pb-3 border-b border-gray-200">
