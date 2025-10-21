@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('/LatihanSoalSoal', LatihanSoalSoalController::class);
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
+        Route::get('/Ujian/{id_ujian}/selesai', [UjianController::class, 'selesai'])
+        ->name('Ujian.selesai');
+        Route::get('/Ujian/{id_ujian}/siswa/{id_siswa}', [UjianController::class, 'detailJawabanSiswa'])
+        ->name('Ujian.jawabanSiswa');
         Route::resource('/Ujian', UjianController::class);
         Route::get('/ListSiswa/{id_kursus}', [ListSiswaController::class, 'index'])->name('ListSiswa');
         Route::get('/nilai/export/{id_kursus}', [ListSiswaController::class, 'exportNilai'])->name('nilai.export');
@@ -94,6 +98,7 @@ Route::middleware('auth')->group(function () {
         Route::get('bobot-tipe-soal/{id_bobot_tipe_soal}/edit', [BobotTipeSoalController::class, 'edit'])->name('BobotTipeSoal.edit');
         Route::put('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'update'])->name('BobotTipeSoal.update');
         Route::delete('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'destroy'])->name('BobotTipeSoal.destroy');
+        
     });
 
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {

@@ -43,8 +43,9 @@ class Ujian extends Model
 
     public function soal()
     {
-        return $this->hasMany(Soal::class);
+        return $this->hasMany(Soal::class, 'id_ujian', 'id_ujian');
     }
+
 
     public function bobot_tipe_soal()
     {

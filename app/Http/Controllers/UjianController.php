@@ -13,6 +13,10 @@ use App\Exports\NilaiExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\jawaban_siswa;
+use App\Models\Siswa;
+use App\Models\soal;
+use Illuminate\Support\Facades\DB;
 
 class UjianController extends Controller
 {
@@ -305,4 +309,33 @@ class UjianController extends Controller
             'nilai_uas' => rand(0, 100),    // Nilai acak untuk UAS
         ];
     }
+    public function selesai($id_ujian)
+{
+    $ujian = ujian::findOrFail($id_ujian);
+
+    $siswaSelesai = siswa::whereHas('jawaban_siswa', function ($q) use ($id_ujian) {
+            $q->whereHas('soal', fn($s) => $s->where('id_ujian', $id_ujian));
+        })
+        ->withCount(['jawaban_siswa as total_jawaban' => function ($q) use ($id_ujian) {
+            $q->whereHas('soal', fn($s) => $s->where('id_ujian', $id_ujian));
+        }])
+        ->get();
+
+    return view('Role.Guru.Course.selesai', compact('ujian', 'siswaSelesai'));
+}
+public function detailJawabanSiswa($id_ujian, $id_siswa)
+{
+    $ujian  = ujian::findOrFail($id_ujian);
+    $siswa  = siswa::findOrFail($id_siswa);
+
+    // Ambil semua jawaban siswa ini untuk soal yang termasuk ujian tsb
+    $jawaban = jawaban_siswa::with(['soal', 'jawaban_soal'])
+        ->where('id_siswa', $id_siswa)
+        ->whereHas('soal', fn($q) => $q->where('id_ujian', $id_ujian))
+        ->orderBy('id_soal')
+        ->get();
+
+    return view('Role.Guru.Course.detail-jawaban-siswa', compact('ujian','siswa','jawaban'));
+}
+
 }

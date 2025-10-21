@@ -48,8 +48,9 @@ class siswa extends Model
 
     public function jawaban_siswa()
     {
-        return $this->hasMany(jawaban_siswa::class);
+        return $this->hasMany(jawaban_siswa::class, 'id_siswa', 'id_siswa');
     }
+
 
     public function kurikulum_siswa()
     {
@@ -62,13 +63,13 @@ class siswa extends Model
     }
 
     public function kursus()
-{
-    return $this->belongsToMany(
-        \App\Models\Kursus::class,
-        'kursus_siswa',   // pivot table
-        'id_siswa',       // FK ke tabel pivot dari sisi Siswa
-        'id_kursus'       // FK ke tabel pivot menuju tabel Kursus
-    );
-}
+    {
+        return $this->belongsToMany(
+            \App\Models\Kursus::class,
+            'kursus_siswa',   // pivot table
+            'id_siswa',       // FK ke tabel pivot dari sisi Siswa
+            'id_kursus'       // FK ke tabel pivot menuju tabel Kursus
+        );
+    }
 
 }

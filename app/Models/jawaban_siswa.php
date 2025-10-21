@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class jawaban_siswa extends Model
 {
 
-    protected $table = 'jawaban_siswa'; 
+    protected $table = 'jawaban_siswa';
 
     protected $primaryKey = 'id_jawaban_siswa';
 
@@ -19,15 +19,17 @@ class jawaban_siswa extends Model
         'id_jawaban_soal',
     ];
 
-    public function soal(){
-        return $this->belongsTo(soal::class);
+    public function soal()
+    {
+        return $this->belongsTo(soal::class, 'id_soal', 'id_soal');
+    }
+    public function siswa()
+    {
+        return $this->belongsTo(siswa::class, 'id_siswa', 'id_siswa');
+    }
+    public function jawaban_soal()
+    {
+        return $this->belongsTo(jawaban_soal::class, 'id_jawaban_soal', 'id_jawaban_soal');
     }
 
-    public function siswa(){
-        return $this->belongsTo(siswa::class);
-    }
-
-    public function jawaban_soal(){
-        return $this->belongsTo(jawaban_soal::class);
-    }
 }

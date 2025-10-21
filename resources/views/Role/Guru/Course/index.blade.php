@@ -71,6 +71,13 @@
                             <i class="fas fa-balance-scale mr-1"></i>
                             <span>Bobot</span>
                         </a>
+                        <!-- Tombol Selesai -->
+                        <a href="{{ route('Guru.Ujian.selesai', ['id_ujian' => $exam->id_ujian]) }}"
+                            class="inline-flex items-center text-green-600 hover:text-green-700 transition-colors">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span>Selesai</span>
+                        </a>
+
 
                         <!-- Tombol Edit -->
                         <form action="{{ route('Guru.Ujian.edit', $exam->id_ujian) }}" method="GET" class="inline-block">
