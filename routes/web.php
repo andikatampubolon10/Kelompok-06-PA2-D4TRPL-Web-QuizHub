@@ -162,13 +162,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses', [DashboardsiswaController::class, 'dashboard'])->name('Course.index');
         Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian'])->name('Course.tipeujian');
         Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian'])->name('Course.ujian.enter');
-        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
+        // routes/web.php atau routes/api.php
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/{id_tipe_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
         Route::get('/enroll/kurikulum', [EnrollSiswaController::class, 'kurikulum'])->name('enroll.kurikulum');
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran', [EnrollSiswaController::class, 'tahunAjaran'])->name('enroll.tahunajaran');
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [EnrollSiswaController::class, 'semester'])
             ->name('enroll.semester');
         Route::get('/siswa/kursus/{kursus}/ujian/{ujian}/gate', [DashboardsiswaController::class, 'gate'])
             ->name('ujian.gate');
+
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
 
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])

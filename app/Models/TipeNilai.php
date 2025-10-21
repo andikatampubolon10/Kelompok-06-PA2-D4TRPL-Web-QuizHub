@@ -28,4 +28,10 @@ class TipeNilai extends Model
     {
         return $this->belongsTo(Siswa::class, 'id_siswa','id_siswa');
     }
+
+    public function ujian()
+    {
+        return $this->belongsTo(Ujian::class, 'id_ujian');
+    }
+
 }

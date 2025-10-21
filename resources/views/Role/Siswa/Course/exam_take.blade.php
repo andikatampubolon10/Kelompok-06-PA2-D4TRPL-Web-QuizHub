@@ -1,6 +1,3 @@
-{{-- ========================================= --}}
-{{-- resources/views/Role/Siswa/Ujian/take_exam.blade.php --}}
-{{-- ========================================= --}}
 @extends('layouts.ujian')
 
 @section('title', 'Take Exam')
@@ -25,6 +22,10 @@
         <span class="text-sm text-white">Time Left</span>
         <div id="timer" class="text-2xl font-bold tracking-widest">--:--</div>
       </div>
+      <!-- Added exit button on the right side of header -->
+      <button id="exitExamBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+        <i class="fas fa-sign-out-alt mr-2"></i>Exit
+      </button>
       <button id="submitBtn" class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90" disabled>
         Submit
       </button>
@@ -37,7 +38,7 @@
       <div class="bg-card border border-border rounded-lg p-6">
         <div class="flex items-start justify-between mb-4">
           <div>
-            <p class="text-sm text-muted-foreground">Question <span id="qIndex">1</span> / </p>
+            <p class="text-sm text-muted-foreground">Question <span id="qIndex">1</span> / {{ $total }}</p>
             <h2 id="qTitle" class="text-lg font-semibold"></h2>
           </div>
         </div>
@@ -110,6 +111,35 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal untuk password keluar ujian -->
+  <div id="exitPasswordModal" class="fixed inset-0 z-[100001] hidden items-center justify-center">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <!-- Card -->
+    <div role="dialog" aria-modal="true" aria-labelledby="exitTitle"
+         class="relative w-[95%] max-w-md rounded-2xl border border-border bg-card text-foreground shadow-xl">
+      <div class="px-5 pt-5">
+        <h4 id="exitTitle" class="text-lg font-semibold">Keluar dari Ujian</h4>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Masukkan password keluar untuk meninggalkan ujian. Jawaban Anda akan disimpan sementara.
+        </p>
+        <input type="password" id="exitPassword" placeholder="Masukkan password keluar" 
+               class="w-full mt-4 px-3 py-2 rounded-lg border border-border bg-secondary text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+        <div id="exitPasswordError" class="mt-2 text-sm text-red-500 hidden"></div>
+      </div>
+      <div class="p-5 flex items-center justify-end gap-3">
+        <button id="cancelExit"
+                class="px-4 py-2 rounded-lg border border-border hover:bg-secondary">
+          Batal
+        </button>
+        <button id="confirmExit"
+                class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+          Keluar
+        </button>
+      </div>
+    </div>
+  </div>
 @endsection
 
 @push('scripts')
@@ -117,22 +147,23 @@
 /* =========================
    PARAM DARI SERVER
 ========================= */
-const QUESTIONS  = @json($questions);     // [{id,text,tipe_id,choices?,choice_ids?}, ...]
+const QUESTIONS  = @json($questions);
 const TOTAL      = {{ $total }};
-const DURATION   = {{ $duration }};       // detik
+const DURATION   = {{ $duration }};
 const EXAM_ID    = {{ $ujian->id_ujian }};
 const STUDENT_ID = {{ auth()->user()->id }};
 const COURSE_ID  = {{ $kursus->id_kursus }};
 const INDEX_URL  = @json(route('Siswa.Course.index'));
 const SUBMIT_URL = @json(route('Siswa.Ujian.submit', [$kursus->id_kursus, $ujian->id_ujian]));
+const EXIT_URL   = @json(route('Siswa.Ujian.exit', [$kursus->id_kursus, $ujian->id_ujian]));
 const CSRF_TOKEN = @json(csrf_token());
 
 const GUARD_POLICY = {
   requireFullscreen: true,
   requireWakeLock: true,
-  maxViolations: 2,
+  maxViolations: 10,
   warnOnFirst: true,
-  autoSubmitOnLimit: false // jangan auto-submit; kita pakai lock UI
+  autoSubmitOnLimit: false
 };
 
 /* =========================
@@ -150,7 +181,8 @@ window.EXAM = {
   violationCount: 0,
   violationCooldown: false,
   beforeUnloadHandler: null,
-  wakeLock: null
+  wakeLock: null,
+  isUILocked: false
 };
 
 /* =========================
@@ -164,20 +196,97 @@ const prevBtn   = document.getElementById('prevBtn');
 const nextBtn   = document.getElementById('nextBtn');
 const submitBtn = document.getElementById('submitBtn');
 const timerEl   = document.getElementById('timer');
+const exitExamBtn = document.getElementById('exitExamBtn');
+const exitPasswordModal = document.getElementById('exitPasswordModal');
+const exitPasswordInput = document.getElementById('exitPassword');
+const exitPasswordError = document.getElementById('exitPasswordError');
+const cancelExitBtn = document.getElementById('cancelExit');
+const confirmExitBtn = document.getElementById('confirmExit');
+
+
+/* =========================
+   TIMER STORAGE FUNCTIONS
+========================= */
+function saveTimerToStorage() {
+  const storageKey = `exam_timer_${EXAM_ID}_${STUDENT_ID}`;
+  localStorage.setItem(storageKey, JSON.stringify({
+    remaining: window.EXAM.remaining,
+    savedAt: Date.now()
+  }));
+}
+
+function restoreTimerFromStorage() {
+  const storageKey = `exam_timer_${EXAM_ID}_${STUDENT_ID}`;
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const elapsed = Math.floor((Date.now() - data.savedAt) / 1000);
+      const newRemaining = Math.max(0, data.remaining - elapsed);
+      window.EXAM.remaining = newRemaining;
+      console.log('[v0] Timer restored from localStorage:', newRemaining);
+      return true;
+    } catch (e) {
+      console.error('[v0] Error restoring timer:', e);
+      return false;
+    }
+  }
+  return false;
+}
+
+function clearTimerFromStorage() {
+  const storageKey = `exam_timer_${EXAM_ID}_${STUDENT_ID}`;
+  localStorage.removeItem(storageKey);
+  console.log('[v0] Timer cleared from localStorage');
+}
+
+/* =========================
+   STORAGE FUNCTIONS
+========================= */
+function saveAnswersToStorage() {
+  const storageKey = `exam_answers_${EXAM_ID}_${STUDENT_ID}`;
+  localStorage.setItem(storageKey, JSON.stringify(window.EXAM.answers));
+  console.log('[v0] Answers saved to localStorage');
+}
+
+function restoreAnswersFromStorage() {
+  const storageKey = `exam_answers_${EXAM_ID}_${STUDENT_ID}`;
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try {
+      window.EXAM.answers = JSON.parse(saved);
+      console.log('[v0] Answers restored from localStorage');
+      return true;
+    } catch (e) {
+      console.error('[v0] Error restoring answers:', e);
+      return false;
+    }
+  }
+  return false;
+}
+
+function clearAnswersFromStorage() {
+  const storageKey = `exam_answers_${EXAM_ID}_${STUDENT_ID}`;
+  localStorage.removeItem(storageKey);
+  console.log('[v0] Answers cleared from localStorage');
+}
 
 /* =========================
    BEFOREUNLOAD
 ========================= */
+
 function attachBeforeUnload() {
   if (window.EXAM.beforeUnloadHandler) return;
   window.EXAM.beforeUnloadHandler = function (e) {
     if (window.EXAM.isSubmitting) return;
+    saveAnswersToStorage();
     e.preventDefault();
-    e.returnValue = 'Ujian sedang berlangsung. Yakin ingin keluar? Jawabanmu bisa hilang.';
+    e.returnValue = 'Ujian sedang berlangsung. Jawaban Anda akan disimpan sementara.';
     return e.returnValue;
   };
   window.addEventListener('beforeunload', window.EXAM.beforeUnloadHandler);
 }
+
 function detachBeforeUnload() {
   if (!window.EXAM.beforeUnloadHandler) return;
   window.removeEventListener('beforeunload', window.EXAM.beforeUnloadHandler);
@@ -216,7 +325,7 @@ function renderQuestion(idx) {
       input.name = `q_${q.id}`;
       input.value = optKey;
       input.checked = (window.EXAM.answers[idx] === optKey);
-      input.addEventListener('change', () => { window.EXAM.answers[idx] = optKey; renderNavigator(); updateSubmitAvailability(); });
+      input.addEventListener('change', () => { window.EXAM.answers[idx] = optKey; renderNavigator(); updateSubmitAvailability(); saveAnswersToStorage(); });
       const badge = document.createElement('span');
       badge.className = 'inline-flex items-center justify-center w-8 h-8 rounded-md border border-border text-sm font-semibold';
       badge.textContent = optKey;
@@ -237,7 +346,7 @@ function renderQuestion(idx) {
       input.name = `q_${q.id}`;
       input.value = key;
       input.checked = (window.EXAM.answers[idx] === key);
-      input.addEventListener('change', () => { window.EXAM.answers[idx] = key; renderNavigator(); updateSubmitAvailability(); });
+      input.addEventListener('change', () => { window.EXAM.answers[idx] = key; renderNavigator(); updateSubmitAvailability(); saveAnswersToStorage(); });
       const badge = document.createElement('span');
       badge.className = 'inline-flex items-center justify-center w-10 h-8 rounded-md border border-border text-sm font-semibold';
       badge.textContent = key;
@@ -252,7 +361,7 @@ function renderQuestion(idx) {
     area.placeholder = 'Type your answer here…';
     area.className = 'w-full rounded border border-border bg-white text-gray-900 placeholder-gray-500 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500';
     area.value = (window.EXAM.answers[idx] ?? '');
-    area.addEventListener('input', () => { window.EXAM.answers[idx] = area.value.trim(); renderNavigator(); updateSubmitAvailability(); });
+    area.addEventListener('input', () => { window.EXAM.answers[idx] = area.value.trim(); renderNavigator(); updateSubmitAvailability(); saveAnswersToStorage(); });
     choicesEl.appendChild(area);
   }
 }
@@ -286,14 +395,19 @@ function updateTimerUI() {
   const s = (window.EXAM.remaining%60).toString().padStart(2,'0');
   timerEl.textContent = `${m}:${s}`;
 }
+
 function startTimer() {
   updateTimerUI();
   window.EXAM.timerId = setInterval(()=>{
     window.EXAM.remaining--;
+    // <CHANGE> Save timer to localStorage every second
+    saveTimerToStorage();
+    
     if (window.EXAM.remaining <= 0) {
       window.EXAM.remaining = 0;
       clearInterval(window.EXAM.timerId);
-      window.doSubmit(true); // auto submit saat waktu habis (tanpa modal)
+      clearTimerFromStorage();
+      window.doSubmit(true);
       return;
     }
     updateTimerUI();
@@ -318,24 +432,114 @@ function closeConfirmModal() {
 confirmModal.addEventListener('click', (e) => {
   if (e.target === confirmModal) closeConfirmModal();
 });
+
 cancelSubmitEl.addEventListener('click', () => closeConfirmModal());
 confirmSubmitEl.addEventListener('click', async () => {
   closeConfirmModal();
-  await window.doSubmit(true); // jalankan submit tanpa confirm native
+  await window.doSubmit(true);
 });
 
 /* =========================
-   SUBMIT (via fetch + fallback), TANPA confirm()
+   EXIT MODAL FUNCTIONS
+========================= */
+function openExitPasswordModal() {
+  exitPasswordInput.value = '';
+  exitPasswordError.classList.add('hidden');
+  exitPasswordModal.classList.remove('hidden');
+  exitPasswordModal.classList.add('flex');
+  exitPasswordInput.focus();
+}
+
+function closeExitPasswordModal() {
+  exitPasswordModal.classList.add('hidden');
+  exitPasswordModal.classList.remove('flex');
+  exitPasswordInput.value = '';
+  exitPasswordError.classList.add('hidden');
+}
+
+async function handleExitPassword() {
+  const enteredPassword = exitPasswordInput.value.trim();
+  
+  if (!enteredPassword) {
+    exitPasswordError.textContent = 'Password tidak boleh kosong';
+    exitPasswordError.classList.remove('hidden');
+    return;
+  }
+
+  // Save answers before sending request
+  saveAnswersToStorage();
+
+  try {
+    const response = await fetch(EXIT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': CSRF_TOKEN,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        password_keluar: enteredPassword
+      }),
+      credentials: 'same-origin'
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'success') {
+      // Password benar - redirect ke course index
+      window.EXAM.isSubmitting = true;
+      window.EXAM.guardActive = false;
+      detachBeforeUnload();
+      closeExitPasswordModal();
+      window.location.href = data.redirect;
+    } else {
+      // Password salah - tampilkan error
+      exitPasswordError.textContent = data.message || 'Password salah. Coba lagi.';
+      exitPasswordError.classList.remove('hidden');
+      exitPasswordInput.value = '';
+      exitPasswordInput.focus();
+    }
+  } catch (error) {
+    console.error('[v0] Error during exit:', error);
+    exitPasswordError.textContent = 'Terjadi kesalahan. Coba lagi.';
+    exitPasswordError.classList.remove('hidden');
+  }
+}
+
+exitExamBtn.addEventListener('click', () => {
+  openExitPasswordModal();
+});
+
+cancelExitBtn.addEventListener('click', () => {
+  closeExitPasswordModal();
+});
+
+confirmExitBtn.addEventListener('click', () => {
+  handleExitPassword();
+});
+
+exitPasswordInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    handleExitPassword();
+  }
+});
+
+exitPasswordModal.addEventListener('click', (e) => {
+  if (e.target === exitPasswordModal) {
+    closeExitPasswordModal();
+  }
+});
+
+/* =========================
+   SUBMIT (via fetch + fallback)
 ========================= */
 window.doSubmit = async function(skipConfirm = true){
   if (window.EXAM.isSubmitting) return;
 
-  // Hindari guard bereaksi saat navigasi submit
   window.EXAM.isSubmitting = true;
   window.EXAM.guardActive  = false;
   detachBeforeUnload();
 
-  // Susun payload
   const payload = QUESTIONS.map((q,i)=>{
     const t   = getQType(q);
     const ans = window.EXAM.answers[i];
@@ -350,7 +554,6 @@ window.doSubmit = async function(skipConfirm = true){
     };
   });
 
-  // Submit via fetch (JSON)
   try {
     const res = await fetch(SUBMIT_URL, {
       method: 'POST',
@@ -367,18 +570,24 @@ window.doSubmit = async function(skipConfirm = true){
       const ct = res.headers.get('Content-Type') || '';
       if (ct.includes('application/json')) {
         const data = await res.json().catch(()=> ({}));
-        if (data.redirect) { window.location.href = data.redirect; return; }
+        if (data.redirect) { 
+          clearAnswersFromStorage();
+          clearTimerFromStorage(); // <CHANGE> Clear timer when submitted
+          window.location.href = data.redirect; 
+          return; 
+        }
       }
+      clearAnswersFromStorage();
+      clearTimerFromStorage(); // <CHANGE> Clear timer when submitted
       window.location.href = INDEX_URL;
       return;
-    } else {
+    }else {
       console.warn('Submit failed with status:', res.status);
     }
   } catch (err) {
     console.error('Fetch submit error:', err);
   }
 
-  // Fallback: submit form biasa
   try {
     document.getElementById('answers_json').value = JSON.stringify(payload);
     document.getElementById('submitForm').submit();
@@ -395,7 +604,6 @@ window.doSubmit = async function(skipConfirm = true){
    EXAM GUARD (disable Alt+Tab via lock UI)
 ========================= */
 (function Guard(){
-  // Banner peringatan
   const warnBanner = document.createElement('div');
   Object.assign(warnBanner.style, {
     position:'fixed', top:'0', left:'0', right:'0', zIndex:'99999',
@@ -404,7 +612,15 @@ window.doSubmit = async function(skipConfirm = true){
   });
   warnBanner.innerText='Peringatan: Tetap berada di tampilan ujian.';
   document.body.appendChild(warnBanner);
-  function showWarn(msg){ warnBanner.innerText = msg || 'Peringatan: Tetap berada di tampilan ujian.'; warnBanner.style.display='block'; setTimeout(()=>warnBanner.style.display='none',3000); }
+  
+  function showWarn(msg){ 
+    warnBanner.innerText = msg || 'Peringatan: Tetap berada di tampilan ujian.'; 
+    warnBanner.style.display='block'; 
+    setTimeout(()=>warnBanner.style.display='none',3000); 
+  }
+
+  let violationCount = 0;
+  const maxViolations = GUARD_POLICY.maxViolations;
 
   async function requestFullscreenLoop(){
     if (!GUARD_POLICY.requireFullscreen) return true;
@@ -421,29 +637,40 @@ window.doSubmit = async function(skipConfirm = true){
     }
   }
 
-  // Overlay lock UI saat kehilangan fokus
   const blocker = document.createElement('div');
   Object.assign(blocker.style, {
-    position: 'fixed', inset: '0', zIndex: '99998',
-    background: 'rgba(0,0,0,0.6)', display: 'none',
-    alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)'
+    position: 'fixed', 
+    inset: '0', 
+    zIndex: '99998',
+    background: 'rgba(0,0,0,0.6)', 
+    display: 'none',
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backdropFilter: 'blur(2px)',
+    pointerEvents: 'auto'
   });
+
   const card = document.createElement('div');
-  card.style.background = '#0b1220';
-  card.style.border = '1px solid #1f2a44';
-  card.style.borderRadius = '12px';
-  card.style.padding = '20px';
-  card.style.maxWidth = '520px';
-  card.style.width = '92%';
-  card.style.color = '#fff';
-  card.style.textAlign = 'center';
+  Object.assign(card.style, {
+    background: '#0b1220',
+    border: '1px solid #1f2a44',
+    borderRadius: '12px',
+    padding: '20px',
+    maxWidth: '520px',
+    width: '92%',
+    color: '#fff',
+    textAlign: 'center',
+    zIndex: '99999',
+    position: 'relative'
+  });
+
   card.innerHTML = `
     <div style="font-weight:700; font-size:18px; margin-bottom:8px">Fokus Ujian Terputus</div>
     <div style="font-size:14px; opacity:.9; margin-bottom:16px">
       Kamu keluar dari jendela ujian (Alt+Tab/pindah aplikasi). Untuk melanjutkan, klik tombol di bawah.
     </div>
     <button id="resumeExamBtn"
-      style="padding:10px 16px; border-radius:10px; border:1px solid #2563eb; background:#2563eb; color:#fff; font-weight:600;">
+      style="padding:10px 16px; border-radius:10px; border:1px solid #2563eb; background:#2563eb; color:#fff; font-weight:600; cursor:pointer; pointer-events:auto; z-index:100000; position:relative;">
       Lanjutkan Ujian
     </button>
   `;
@@ -452,105 +679,150 @@ window.doSubmit = async function(skipConfirm = true){
 
   function setUIDisabled(on) {
     blocker.style.display = on ? 'flex' : 'none';
+    window.EXAM.isUILocked = on;
   }
 
   blocker.addEventListener('click', (e) => {
-    if (e.target === blocker) e.stopPropagation();
-  });
-  document.addEventListener('click', (e) => {
-    if (blocker.style.display === 'flex') e.stopPropagation();
-  }, true);
-  document.addEventListener('keydown', (e) => {
-    if (blocker.style.display === 'flex') {
-      // cegah keyboard di bawah overlay
-      e.stopPropagation();
-      // Jangan preventDefault total agar ESC/OS hotkeys tidak kacau
-    }
-  }, true);
-
-  document.addEventListener('click', (e) => {
-    // cegah seleksi saat overlay
-    if (blocker.style.display === 'flex') e.preventDefault();
-  }, true);
-
-  // Tombol resume
-  document.addEventListener('click', async (e) => {
-    if (e.target && e.target.id === 'resumeExamBtn') {
-      if (GUARD_POLICY.requireFullscreen && !document.fullscreenElement) {
-        try { await document.documentElement.requestFullscreen(); } catch {}
-      }
-      setUIDisabled(false);
-      showWarn('Fokus kembali ke ujian.');
+    if (e.target === blocker) {
+      e.preventDefault();
     }
   });
 
-  // Cegah back
+  setTimeout(() => {
+    const resumeBtn = document.getElementById('resumeExamBtn');
+    if (resumeBtn) {
+      resumeBtn.addEventListener('click', async () => {
+        if (GUARD_POLICY.requireFullscreen && !document.fullscreenElement) {
+          try {
+            await document.documentElement.requestFullscreen();
+          } catch (err) {
+            console.error('Error requesting fullscreen: ', err);
+          }
+        }
+        setUIDisabled(false);
+        showWarn('Fokus kembali ke ujian.');
+      });
+    }
+  }, 0);
+
   window.history.pushState(null,'',location.href);
-  window.addEventListener('popstate', ()=>{ window.history.pushState(null,'',location.href); showWarn('Navigasi kembali dinonaktifkan.'); });
+  window.addEventListener('popstate', ()=>{ 
+    window.history.pushState(null,'',location.href); 
+    showWarn('Navigasi kembali dinonaktifkan.'); 
+  });
 
-  // Blok klik kanan/seleksi/drag/copy/cut/paste (kecuali input/textarea)
   document.addEventListener('contextmenu', e=>e.preventDefault());
   document.addEventListener('dragstart',  e=>e.preventDefault());
-  document.addEventListener('selectstart', e=>{
-    const t = e.target;
-    if (t && ((t.tagName==='TEXTAREA') || (t.tagName==='INPUT' && t.type==='text'))) return;
-    e.preventDefault();
+  document.addEventListener('selectstart', e=>{ 
+    const t = e.target; 
+    if (t && ((t.tagName==='TEXTAREA') || (t.tagName==='INPUT' && t.type==='text'))) return; 
+    e.preventDefault(); 
   });
-  ['copy','cut','paste'].forEach(ev=>document.addEventListener(ev, e=>{
-    const t = e.target;
-    if (t && ((t.tagName==='TEXTAREA') || (t.tagName==='INPUT' && t.type==='text'))) return;
+  
+  ['copy','cut','paste'].forEach(ev=>document.addEventListener(ev, e=>{ 
+    const t = e.target; 
+    if (t && ((t.tagName==='TEXTAREA') || (t.tagName==='INPUT' && t.type==='text'))) return; 
     e.preventDefault();
+    if (ev === 'copy') showWarn('Copy dinonaktifkan selama ujian.');
+    if (ev === 'cut') showWarn('Cut dinonaktifkan selama ujian.');
+    if (ev === 'paste') showWarn('Paste dinonaktifkan selama ujian.');
   }));
 
-  // Blok shortcut umum
   const BLOCK_KEYS = new Set(['F12','F11','PrintScreen']);
   const CTRL_COMBOS = ['KeyT','KeyW','KeyN','KeyL','KeyK','KeyP','KeyS','KeyR','Equal','Minus','Digit0'];
+  
   document.addEventListener('keydown', (e)=>{
-    if (BLOCK_KEYS.has(e.key)) { e.preventDefault(); e.stopPropagation(); if (e.key==='F11') showWarn('Jangan keluar fullscreen.'); return false; }
-    if (e.ctrlKey || e.metaKey) {
-      if (CTRL_COMBOS.includes(e.code)) { e.preventDefault(); e.stopPropagation(); showWarn('Shortcut dinonaktifkan.'); return false; }
-      if (e.shiftKey && ['KeyI','KeyJ','KeyC'].includes(e.code)) { e.preventDefault(); e.stopPropagation(); showWarn('DevTools dinonaktifkan.'); return false; }
-      if (e.code === 'KeyU') { e.preventDefault(); e.stopPropagation(); showWarn('View source dinonaktifkan.'); return false; }
+    if (BLOCK_KEYS.has(e.key)) { 
+      e.preventDefault(); 
+      e.stopPropagation(); 
+      if (e.key==='F11') showWarn('Jangan keluar fullscreen.'); 
+      return false; 
     }
-    // Cegah navigasi ALT+Left/Right (bukan Alt+Tab)
+    
+    if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyC' || e.code === 'KeyV')) {
+      e.preventDefault();
+      e.stopPropagation();
+      showWarn(e.code === 'KeyC' ? 'CTRL+C dinonaktifkan.' : 'CTRL+V dinonaktifkan.');
+      return false;
+    }
+    
+    if (e.ctrlKey || e.metaKey) {
+      if (CTRL_COMBOS.includes(e.code)) { 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        showWarn('Shortcut dinonaktifkan.'); 
+        return false; 
+      }
+      if (e.shiftKey && ['KeyI','KeyJ','KeyC'].includes(e.code)) { 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        showWarn('DevTools dinonaktifkan.'); 
+        return false; 
+      }
+      if (e.code === 'KeyU') { 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        showWarn('View source dinonaktifkan.'); 
+        return false; 
+      }
+    }
     if (e.altKey && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-      e.preventDefault(); e.stopPropagation(); showWarn('Navigasi browser dinonaktifkan.'); return false;
+      e.preventDefault(); 
+      e.stopPropagation(); 
+      showWarn('Navigasi browser dinonaktifkan.'); 
+      return false;
     }
   }, {capture:true});
 
   function violation(reason){
     if (!window.EXAM.guardActive || window.EXAM.isSubmitting) return;
-    if (window.EXAM.violationCooldown) return;
-    window.EXAM.violationCooldown = true; setTimeout(()=>window.EXAM.violationCooldown=false, 800);
-    window.EXAM.violationCount++;
-    if (GUARD_POLICY.warnOnFirst && window.EXAM.violationCount === 1) showWarn(reason || 'Pelanggaran terdeteksi.');
-    if (window.EXAM.violationCount >= GUARD_POLICY.maxViolations) {
+
+    violationCount++;
+    const remaining = maxViolations - violationCount;
+
+    if (violationCount < maxViolations) {
+      showWarn(`${reason} Kesempatan tersisa: ${remaining}`);
+    }
+
+    if (violationCount >= maxViolations) {
       showWarn('Batas pelanggaran tercapai. UI tetap dikunci.');
+      setUIDisabled(true);
     }
   }
 
-  // Deteksi pindah tab/jendela → kunci UI
-  document.addEventListener('visibilitychange', ()=>{
+  document.addEventListener('visibilitychange', () => {
     if (!window.EXAM.guardActive || window.EXAM.isSubmitting) return;
+
     if (document.hidden) {
-      setUIDisabled(true);
-      showWarn('Berpindah dari tab/jendela. UI dikunci.');
-      violation('Berpindah dari tab/jendela.');
+      violationCount++;
+      const remaining = maxViolations - violationCount;
+
+      if (violationCount < maxViolations) {
+        showWarn(`Berpindah dari tab/jendela. Kesempatan tersisa: ${remaining}`);
+        setUIDisabled(true);
+      } else {
+        setUIDisabled(true);
+        showWarn('Batas pelanggaran tercapai. UI dikunci permanen.');
+      }
     }
   });
-  window.addEventListener('blur', ()=>{
+
+  window.addEventListener('blur', ()=> {
     if (!window.EXAM.guardActive || window.EXAM.isSubmitting) return;
     setUIDisabled(true);
     showWarn('Fokus keluar dari jendela ujian. UI dikunci.');
     violation('Fokus keluar dari jendela ujian.');
   });
+
   window.addEventListener('focus', ()=>{ /* tetap terkunci sampai klik "Lanjutkan Ujian" */ });
+
   window.addEventListener('pagehide', ()=>{
     if (!window.EXAM.guardActive || window.EXAM.isSubmitting) return;
     setUIDisabled(true);
     showWarn('Halaman disembunyikan / pindah konteks. UI dikunci.');
     violation('Halaman disembunyikan / pindah konteks.');
   });
+
   document.addEventListener('fullscreenchange', ()=>{
     if (window.EXAM.guardActive && GUARD_POLICY.requireFullscreen && !document.fullscreenElement){
       showWarn('Tetap dalam mode layar penuh.');
@@ -569,12 +841,17 @@ window.doSubmit = async function(skipConfirm = true){
     window.EXAM.guardActive = true;
     showWarn('Mode Ujian aktif. Jangan berpindah tab/jendela.');
   }
+
   startGuard();
 })();
+
 
 /* =========================
    INISIALISASI UI
 ========================= */
+restoreAnswersFromStorage();
+restoreTimerFromStorage();
+
 renderQuestion(window.EXAM.current);
 renderNavigator();
 updatePrevNext();
@@ -582,7 +859,6 @@ updateSubmitAvailability();
 
 submitBtn.type = 'button';
 submitBtn.addEventListener('click', () => {
-  // tampilkan modal konfirmasi
   openConfirmModal();
 });
 
@@ -597,7 +873,6 @@ nextBtn.addEventListener('click', ()=>{
     window.EXAM.current++;
     renderQuestion(window.EXAM.current); renderNavigator(); updatePrevNext(); updateSubmitAvailability();
   } else {
-    // halaman terakhir → buka modal konfirmasi
     openConfirmModal();
   }
 });

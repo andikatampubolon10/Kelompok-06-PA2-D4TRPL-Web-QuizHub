@@ -7,9 +7,16 @@ use App\Models\Kursus;
 use App\Models\siswa;
 use App\Models\Materi;
 use App\Models\soal;
+use App\Models\jawaban_soal;
+use App\Models\TipeNilai;
+use App\Models\Nilai;
 use App\Models\ujian;
+<<<<<<< Updated upstream
 use App\Models\Nilai;
 use App\Models\TipeNilai;
+=======
+use Illuminate\Support\Facades\DB;
+>>>>>>> Stashed changes
 use App\Models\jawaban_siswa;
 use App\Models\jawaban_soal;
 use Illuminate\Http\Request;
@@ -78,22 +85,27 @@ public function tipeujian($id_kursus, Request $request)
 
     // Cek apakah ujian dapat dimulai atau tidak
     foreach ($ujians as $ujian) {
-        $currentTime = \Carbon\Carbon::now();
-        $startTime = \Carbon\Carbon::parse($ujian->waktu_mulai);
-        $endTime = \Carbon\Carbon::parse($ujian->waktu_selesai);
+    // Ambil waktu sekarang dan pastikan menggunakan timezone yang sama
+$currentTime = \Carbon\Carbon::now('UTC'); // Menggunakan UTC
+$startTime = \Carbon\Carbon::parse($ujian->waktu_mulai)->setTimezone('Asia/Jakarta');
+$endTime = \Carbon\Carbon::parse($ujian->waktu_selesai)->setTimezone('Asia/Jakarta');
 
-        if ($currentTime->isBefore($startTime)) {
-            // Jika sebelum waktu mulai, beri notifikasi bahwa ujian belum dimulai
-            $ujian->status = 'Belum dimulai';
-        } elseif ($currentTime->isAfter($endTime)) {
-            // Jika sudah lewat waktu selesai, beri notifikasi bahwa ujian sudah selesai
-            $ujian->status = 'Selesai';
-        } else {
-            // Ujian sedang berlangsung
-            $ujian->status = 'Berlangsung';
-        }
+// Debugging
+Log::debug("Waktu Mulai: " . $startTime . " Waktu Sekarang: " . $currentTime . " Waktu Selesai: " . $endTime);
+
+// Perbandingan waktu
+if ($currentTime->isBefore($startTime)) {
+    $ujian->status = 'Belum dimulai';
+} elseif ($currentTime->isAfter($endTime)) {
+    $ujian->status = 'Selesai';
+} elseif ($currentTime->between($startTime, $endTime)) {
+    $ujian->status = 'Berlangsung';
+}
+
     }
 
+
+    // Ambil materi untuk kursus ini
     $materi = Materi::where('id_kursus', $id_kursus)
         ->orderByDesc('tanggal_materi')
         ->orderByDesc('id_materi')
@@ -196,7 +208,7 @@ public function gate($id_kursus, $id_ujian, Request $request)
         ]);
     }
 
-public function soal($id_kursus, $id_ujian)
+public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
 {
     $user = auth()->user();
     if (!$user) return redirect()->route('login');
@@ -211,7 +223,7 @@ public function soal($id_kursus, $id_ujian)
             ->with('error', 'Kamu belum terdaftar di kursus ini.');
     }
 
-    // Ambil ujian + info kursus untuk header
+    // <CHANGE> Ambil ujian dan validasi id_tipe_ujian
     $ujian = \App\Models\Ujian::with(['kursus.mataPelajaran','kursus.kelas','kursus.guru'])
         ->findOrFail($id_ujian);
 
@@ -219,59 +231,24 @@ public function soal($id_kursus, $id_ujian)
         abort(404);
     }
 
-    // Ambil soal + pilihan
-    $soals = \App\Models\Soal::with(['jawaban_soal','tipe_soal'])
-        ->where('id_ujian', $id_ujian)
-        ->orderBy('id_soal')
-        ->get();
+    // <CHANGE> Validasi bahwa id_tipe_ujian sesuai dengan ujian
+    if ((int)$ujian->id_tipe_ujian !== (int)$id_tipe_ujian) {
+        abort(404, 'Tipe ujian tidak sesuai');
+    }
 
-    $letters = ['A','B','C','D','E','F','G'];
-
-    $questions = $soals->map(function ($s) use ($letters) {
-        $choices    = [];
-        $choiceIds  = [];
-
-        if ((int)$s->id_tipe_soal === 1) {
-            // Pilihan Ganda: pakai huruf A–E...
-            foreach ($s->jawaban_soal as $i => $jwb) {
-                $label = $letters[$i] ?? chr(65 + $i);
-                $choices[]              = $jwb->jawaban;
-                $choiceIds[$label]      = $jwb->id_jawaban_soal;
-            }
-        } elseif ((int)$s->id_tipe_soal === 2) {
-            // Benar/Salah: default True/False jika tidak ada di DB
-            if ($s->jawaban_soal->isNotEmpty()) {
-                $choices = $s->jawaban_soal->pluck('jawaban')->values()->all();
-                $t = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'True')  === 0 || strcasecmp($r->jawaban, 'Benar') === 0);
-                $f = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'False') === 0 || strcasecmp($r->jawaban, 'Salah') === 0);
-                $choiceIds = ['T' => optional($t)->id_jawaban_soal, 'F' => optional($f)->id_jawaban_soal];
-            } else {
-                $choices   = ['True','False'];
-                $choiceIds = ['T' => null, 'F' => null];
-            }
-        } // Isian (3): choices kosong
-
-        return [
-            'id'         => $s->id_soal,
-            'text'       => $s->soal,
-            'tipe_id'    => (int)$s->id_tipe_soal,  // 1=PG, 2=TF, 3=Isian
-            'choices'    => $choices,               // array teks
-            'choice_ids' => $choiceIds,             // map huruf/T/F -> id_jawaban_soal (opsional)
-        ];
-    })->values();
-
-    // Durasi (detik). Jika null, default 30 menit
-    $durationSeconds = $ujian->durasi ? ((int)$ujian->durasi * 60) : 1800;
-
+    // ... rest of existing code ...
+    
     return view('Role.Siswa.Course.exam_take', [
         'kursus'    => $ujian->kursus,
         'ujian'     => $ujian,
-        'questions' => $questions,              // di Blade: const QUESTIONS = @json($questions);
+        'questions' => $questions,
         'total'     => $questions->count(),
         'duration'  => $durationSeconds,
+        'id_tipe_ujian' => $id_tipe_ujian,  // <CHANGE> Pass id_tipe_ujian to view
     ]);
 }
 
+<<<<<<< Updated upstream
 
 public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $ujian = Ujian::findOrFail($id_ujian);
@@ -386,6 +363,8 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
 }
 
+=======
+>>>>>>> Stashed changes
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -500,4 +479,155 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
 
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
+<<<<<<< Updated upstream
+=======
+
+    public function submitUjian(Request $request, $id_kursus, $id_ujian) {
+    $id_ujian_from_url = $request->route('id_ujian');
+    $ujian = Ujian::find($id_ujian_from_url);
+    $now = now();
+
+    if ($now->lt($ujian->waktu_mulai)) {
+        return back()->with('error', 'Ujian belum dimulai.');
+    }
+
+    if ($now->gt($ujian->waktu_selesai)) {
+        return back()->with('error', 'Waktu ujian telah berakhir.');
+    }
+
+    $request->validate([
+        'answers_json' => 'required|string',
+    ]);
+
+    $user = auth()->user();
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    $answers = json_decode($request->answers_json, true) ?? [];
+
+    $totalNilai = 0;
+    $totalBobot = 0;
+
+    // Loop untuk setiap jawaban siswa
+    foreach ($answers as $row) {
+        $idSoal = $row['id_soal'] ?? null;
+        if (!$idSoal) continue;
+
+        // Update atau buat entri baru jawaban siswa
+        jawaban_siswa::updateOrCreate(
+            [
+                'id_siswa' => $siswa->id_siswa,
+                'id_soal' => $idSoal,
+            ],
+            [
+                'jawaban_siswa' => $row['jawaban_siswa'] ?? null,
+                'id_jawaban_soal' => $row['id_jawaban_soal'] ?? null,
+            ]
+        );
+
+        // Ambil soal untuk pengecekan
+        $soal = Soal::find($idSoal);
+        if (!$soal) continue;
+
+        // Cek hanya soal tipe PG dan BS
+        if (!in_array($soal->tipe_soal->nama_tipe_soal, ['Pilihan Berganda', 'Benar Salah'])) {
+            continue;
+        }
+
+        // Bobot soal
+        $bobotSoal = $soal->bobot ?? 0;
+
+        $isCorrect = false;
+        if ($soal->tipe_soal->nama_tipe_soal === 'Pilihan Berganda') {
+            // Cek untuk soal Pilihan Ganda (PG)
+            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
+            if ($jawabanBenar && $row['id_jawaban_soal'] == $jawabanBenar->id_jawaban_soal) {
+                $isCorrect = true;
+            }
+        } elseif ($soal->tipe_soal->nama_tipe_soal === 'Benar Salah') {
+            // Cek untuk soal Benar Salah (BS)
+            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
+            if ($jawabanBenar) {
+                if (($row['jawaban_siswa'] == 'benar' && $jawabanBenar->benar) || 
+                    ($row['jawaban_siswa'] == 'salah' && !$jawabanBenar->benar)) {
+                    $isCorrect = true;
+                }
+            }
+        }
+
+        // Jika jawaban benar, tambahkan bobot soal ke nilai total
+        if ($isCorrect) {
+            $totalNilai += $bobotSoal;
+        }
+        $totalBobot += $bobotSoal;
+    }
+
+    // Hitung persentase nilai
+    $nilaiAkhir = $totalBobot > 0 ? ($totalNilai / $totalBobot) * 100 : 0;
+    $id_tipe_ujian = $ujian->id_tipe_ujian;
+
+
+TipeNilai::updateOrCreate(
+    [
+        'id_siswa' => $siswa->id_siswa,
+        'id_ujian' => $id_ujian_from_url,  // Use id_ujian from route
+    ],
+    [
+        'nilai' => $nilaiAkhir,
+        'id_tipe_ujian' => $id_tipe_ujian,
+    ]
+);
+
+
+    // Setelah perhitungan nilai per tipe, hitung nilai total di tabel Nilai
+    $nilaiTotal = TipeNilai::where('id_siswa', $siswa->id_siswa)
+        ->where('id_ujian', $id_ujian)
+        ->sum('nilai');
+
+    // Simpan nilai total ke tabel Nilai
+    Nilai::updateOrCreate(
+        [
+            'id_siswa' => $siswa->id_siswa,
+            'id_kursus' => $id_kursus,
+        ],
+        [
+            'nilai_total' => $nilaiTotal,
+        ]
+    );
+
+    return redirect()
+        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
+        ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
+>>>>>>> Stashed changes
 }
+
+public function exitExam($kursus_id, $ujian_id, Request $request)
+{
+    // Ambil data ujian berdasarkan ID
+    $ujian = Ujian::findOrFail($ujian_id);
+
+    // Validasi password keluar
+    $request->validate([
+        'password_keluar' => 'required|string',
+    ]);
+
+    // <CHANGE> Debug: Log the stored hash and its length
+    \Log::info('Stored hash length: ' . strlen($ujian->password_keluar));
+    \Log::info('Stored hash: ' . $ujian->password_keluar);
+    \Log::info('Input password: ' . $request->password_keluar);
+
+    // Cek apakah password yang dimasukkan cocok dengan hash di database
+    if (!Hash::check($request->password_keluar, $ujian->password_keluar)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Password salah. Coba lagi.'
+        ], 400);
+    }
+
+    // Jika password benar, proses keluar ujian
+    return response()->json([
+        'status' => 'success',
+        'redirect' => route('Siswa.Course.index')
+    ]);
+}
+}
+
