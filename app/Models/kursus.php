@@ -27,12 +27,12 @@ class Kursus extends Model
 
     public function guru()
     {
-        return $this->belongsTo(guru::class, 'id_guru', 'id_guru', 'id_guru', 'id_guru');
+        return $this->belongsTo(guru::class, 'id_guru', 'id_guru', 'id_guru', 'id_guru','id_guru');
     }
 
     public function kelas()
     {
-        return $this->belongsTo(kelas::class, 'id_kelas', 'id_kelas');
+        return $this->belongsTo(kelas::class, 'id_kelas', 'id_kelas','id_kelas');
     }
 
     public function operator()
@@ -47,7 +47,7 @@ class Kursus extends Model
 
     public function mataPelajaran()
     {
-        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran');
+        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran','id_mata_pelajaran');
     }
 
     public function kursusSiswa()
@@ -84,4 +84,6 @@ class Kursus extends Model
     {
         return $this->belongsToMany(Siswa::class, 'kursus_siswa', 'id_kursus', 'id_siswa');
     }
+
+    
 }

@@ -186,6 +186,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
         Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
 
+        Route::post('/kursus/{id_kursus}/ujian/{id_ujian}/submit', [UjianController::class, 'submitUjian'])
+    ->name('submitUjian');
 
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
