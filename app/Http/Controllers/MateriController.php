@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Materi;
 use App\Models\kursus;
+use App\Models\ujian;
 use App\Models\guru;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -45,8 +46,11 @@ class MateriController extends Controller
 
         // Memastikan $course dipassing ke view
         $course = $kursus;
+         $ujian = Ujian::where('id_kursus', $kursus->id_kursus)
+            ->orderBy('tanggal_ujian', 'DESC')
+            ->get();
 
-        return view('Role.Guru.Course.Materi.index', compact('materi', 'materi_pertama', 'user', 'kursus', 'id_kursus', 'id_materi', 'course'));
+        return view('Role.Guru.Course.index', compact('materi', 'materi_pertama', 'user', 'kursus', 'id_kursus', 'id_materi', 'course','ujian'));
     }
 
     public function create(Request $request)
