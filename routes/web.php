@@ -173,6 +173,8 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
 
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
+
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])
             ->name('enroll.mapel');

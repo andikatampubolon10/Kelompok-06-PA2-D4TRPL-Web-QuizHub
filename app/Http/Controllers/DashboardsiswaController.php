@@ -12,8 +12,12 @@ use App\Models\TipeNilai;
 use App\Models\Nilai;
 use App\Models\ujian;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 use App\Models\Nilai;
 use App\Models\TipeNilai;
+=======
+use Illuminate\Support\Facades\DB;
+>>>>>>> Stashed changes
 =======
 use Illuminate\Support\Facades\DB;
 >>>>>>> Stashed changes
@@ -249,6 +253,7 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $ujian = Ujian::findOrFail($id_ujian);
@@ -365,6 +370,8 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -479,8 +486,6 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
 
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
-<<<<<<< Updated upstream
-=======
 
     public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $id_ujian_from_url = $request->route('id_ujian');
@@ -597,6 +602,9 @@ TipeNilai::updateOrCreate(
     return redirect()
         ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 
