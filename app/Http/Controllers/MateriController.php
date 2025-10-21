@@ -173,6 +173,7 @@ class MateriController extends Controller
 
     public function update(Request $request, $id_materi)
     {
+        // dd($request);
         Log::info('Mulai validasi input.');
         $request->validate([
             'judul_materi' => 'required|string|max:30',

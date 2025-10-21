@@ -10,7 +10,7 @@
                 <i class="fas fa-lightbulb text-blue-600 text-sm"></i>
             </div>
             <div>
-                   <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Materi</h4>
+                <h4 class="text-sm font-semibold text-blue-800 mb-1">Tips Penambahan Materi</h4>
                 <ul class="text-xs text-blue-700 space-y-1">
                     <li>• Masukkan Topik Materi</li>
                     <li>• Masukkan Deskripsi Materi dan Link Vidio Pembelajaran</li>
@@ -22,59 +22,52 @@
 
     <!-- Form Container -->
     <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
-      
-
-        <form action="{{ route('Guru.Materi.update', $materi->id_materi) }}" method="POST">
-            @csrf
-
-            <!-- Nama Sekolah Field -->
-            <div class="mb-6">
-                        <label for="judul_materi" class="block font-bold mb-2">Topik Materi</label>
-                        <input type="text" value="{{ old('judul_materi', $materi->judul_materi) }}"
-                            name="judul_materi" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
 
 
-            <!-- Email Field -->
-            <div class="mb-6">
-                 <label for="deskripsi" class="block font-bold mb-2">Deskripsi</label>
-                        <textarea name="deskripsi" class="w-full border p-2" rows="5" required>{{ old('deskripsi', $materi->deskripsi) }}</textarea>
-                    </div>
-            <!-- Password Field -->
-            <div class="mb-6">
-                     <label class="block text-gray-700 text-sm font-bold mb-2" for="file_upload">Upload File</label>
-                        <input type="file" id="file_upload" name="file"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
-                    <input type="hidden" name="id_materi" value="{{ $materi->id_materi }}">
-                </form>
+        <form action="{{ route('Guru.Materi.update', $materi->id_materi) }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
+    
+    <!-- Topik Materi -->
+    <div class="mb-6">
+        <label for="judul_materi" class="block font-bold mb-2">Topik Materi</label>
+        <input type="text" value="{{ old('judul_materi', $materi->judul_materi) }}"
+               name="judul_materi"
+               class="block w-full p-2 border border-gray-300 rounded-md"
+               required>
+    </div>
 
-              
-                <!-- Form Actions -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Semua field yang bertanda (*) wajib diisi</span>
-                    </div>
+    <!-- Deskripsi -->
+    <div class="mb-6">
+        <label for="deskripsi" class="block font-bold mb-2">Deskripsi</label>
+        <textarea name="deskripsi" class="w-full border p-2" rows="5" required>{{ old('deskripsi', $materi->deskripsi) }}</textarea>
+    </div>
 
-                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <a href="{{ route('Guru.Materi.index', ['id_kursus' => $course->id_kursus]) }}"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
+    <!-- Upload File -->
+    <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="file_upload">Upload File</label>
+        <input type="file" id="file_upload" name="file"
+               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    </div>
 
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan 
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+    <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
+    <input type="hidden" name="id_materi" value="{{ $materi->id_materi }}">
+
+    <!-- Tombol Aksi -->
+    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-100 mt-8">
+        <a href="{{ route('Guru.Materi.index', ['id_kursus' => $course->id_kursus]) }}"
+           class="px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition">
+           <i class="fas fa-arrow-left mr-2"></i>Kembali
+        </a>
+
+        <button type="submit"
+                class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl">
+            <i class="fas fa-save mr-2"></i>Simpan
+        </button>
+    </div>
+</form>
+
+    </div>
     </div>
 
     <!-- Success/Error Messages -->
