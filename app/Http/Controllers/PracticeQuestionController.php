@@ -7,6 +7,7 @@ use App\Models\kurikulum;
 use App\Models\kelas;
 use App\Models\TahunAjaran;
 use App\Models\Semester;
+use App\Models\jawaban_soal;
 use App\Models\latihan;
 use App\Models\soal;
 use App\Models\mata_pelajaran;
@@ -103,6 +104,8 @@ public function topikByKelas($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_
 
 
 
+// app/Http/Controllers/LatihanController.php
+
 public function viewLatihan($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas, $id_latihan)
 {
     // Get the relevant models
@@ -113,33 +116,90 @@ public function viewLatihan($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_m
     $kelas       = kelas::findOrFail($id_kelas);
     $latihan     = latihan::findOrFail($id_latihan);
 
-    // Get the questions related to this topic (latihan)
-    $soals = Soal::where('id_latihan', $id_latihan)
+    // <CHANGE> Eager load jawaban_soal dan tipe_soal relasi
+    $soals = Soal::with(['jawaban_soal', 'tipe_soal'])
+        ->where('id_latihan', $id_latihan)
         ->orderBy('id_soal')
         ->get();
 
     return view('Role.Siswa.Latihan.exam_take_latihan', compact('kurikulum', 'tahunAjaran', 'semester', 'mapel', 'kelas', 'latihan', 'soals'));
 }
+// app/Http/Controllers/LatihanController.php (atau controller yang sesuai)
 
-public function submitLatihan($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas, $id_latihan, Request $request)
+// app/Http/Controllers/LatihanController.php
+
+public function submitLatihan(Request $request, $id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas, $id_latihan)
 {
-    // Process the submitted answers
-    $answers = $request->except('_token');
-    
-    foreach ($answers as $soalId => $jawaban) {
-        // Store the student's answer
-        jawaban_siswa::create([
-            'jawaban_siswa' => $jawaban,
-            'id_soal' => substr($soalId, 5), // Remove "soal_" prefix
-            'id_siswa' => auth()->user()->siswa->id_siswa,
-            'id_latihan' => $id_latihan,
-            'id_jawaban_soal' => $jawaban,  // Adjust this based on your logic
-        ]);
+    $latihan = Latihan::findOrFail($id_latihan);
+    $soals = Soal::where('id_latihan', $latihan->id_latihan)->get();
+    $kelas = Kelas::findOrFail($id_kelas);
+
+    $correctAnswers = 0;
+    $totalWeight = 0;
+
+    foreach ($soals as $soal) {
+        // Dapatkan jawaban yang benar
+        $correctAnswer = jawaban_soal::where('id_soal', $soal->id_soal)->where('benar', 1)->first();
+        $userAnswer = $request->input('soal_' . $soal->id_soal);
+
+        // Periksa jawaban benar
+        if ($correctAnswer && $correctAnswer->id_jawaban_soal == $userAnswer) {
+            $correctAnswers++;
+            $totalWeight += $soal->bobot;
+        }
     }
 
-    return redirect()->route('Siswa.latihan.kelas.topik', [$id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas])->with('success', 'Jawaban berhasil dikumpulkan!');
+    // Hitung nilai
+    $totalQuestions = count($soals);
+    $score = ($correctAnswers / $totalQuestions) * 100;
+
+    return view('Role.Siswa.Latihan.hasil_latihan', [
+        'latihan' => $latihan,
+        'kelas' => $kelas,
+        'score' => $score,
+        'correctAnswers' => $correctAnswers,
+        'totalQuestions' => $totalQuestions,
+        'totalWeight' => $totalWeight,
+    ]);
 }
 
+// <CHANGE> Method baru untuk menampilkan hasil latihan
+public function hasilLatihan($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas, $id_latihan)
+{
+    $siswa = auth()->user()->siswa;
+    
+    $kurikulum = kurikulum::findOrFail($id_kurikulum);
+    $tahunAjaran = TahunAjaran::findOrFail($id_tahun_ajaran);
+    $semester = Semester::findOrFail($id_semester);
+    $mapel = mata_pelajaran::findOrFail($id_mata_pelajaran);
+    $kelas = kelas::findOrFail($id_kelas);
+    $latihan = latihan::findOrFail($id_latihan);
+
+    // Ambil hasil dari session
+    $hasil = session('hasil_latihan');
+
+    if (!$hasil) {
+        return redirect()->route('latihan.kelas.topik', [
+            $id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas
+        ])->with('error', 'Data hasil latihan tidak ditemukan.');
+    }
+
+    // Tentukan grade
+    $grade = $this->getGrade($hasil['nilai']);
+
+    return view('Role.Siswa.Latihan.hasil_latihan', compact(
+        'kurikulum', 'tahunAjaran', 'semester', 'mapel', 'kelas', 'latihan', 'hasil', 'grade'
+    ));
+}
+
+private function getGrade($nilai)
+{
+    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
+    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
+    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
+    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
+    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
+}
 
 
 }

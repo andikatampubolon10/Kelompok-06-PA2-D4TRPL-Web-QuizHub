@@ -8,6 +8,7 @@ use App\Models\siswa;
 use App\Models\Materi;
 use App\Models\soal;
 use App\Models\ujian;
+use App\Models\jawaban_soal;
 
 use App\Models\NilaiKursus;
 use App\Models\TipeNilai;
@@ -552,6 +553,165 @@ public function exitExam($kursus_id, $ujian_id, Request $request)
         'redirect' => route('Siswa.Course.index')
     ]);
 }
+
+public function hasilUjian($id_kursus, $id_ujian)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+    
+    // Ambil data ujian
+    $ujian = Ujian::with(['kursus.mataPelajaran', 'kursus.kelas', 'kursus.guru'])
+        ->findOrFail($id_ujian);
+
+    // Validasi siswa terdaftar di kursus
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$enrolled) {
+        return redirect()->route('Siswa.Course.index')
+            ->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    // Ambil nilai dari tabel TipeNilai
+    $nilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
+        ->where('id_ujian', $id_ujian)
+        ->first();
+
+    if (!$nilai) {
+        return redirect()->route('Siswa.Course.tipeujian', $id_kursus)
+            ->with('error', 'Data nilai tidak ditemukan.');
+    }
+
+    // Tentukan grade dan feedback berdasarkan nilai
+    $grade = $this->getGrade($nilai->nilai);
+    $feedback = $this->getFeedback($nilai->nilai);
+
+    return view('Role.Siswa.Course.exam_hasil', [
+        'kursus' => $ujian->kursus,
+        'ujian' => $ujian,
+        'nilai' => $nilai->nilai,
+        'grade' => $grade,
+        'feedback' => $feedback,
+    ]);
+}
+
+private function getGrade($nilai)
+{
+    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
+    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
+    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
+    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
+    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
+}
+
+private function getFeedback($nilai)
+{
+    if ($nilai >= 90) return 'Luar biasa! Kamu menguasai materi dengan sempurna. Pertahankan prestasi ini!';
+    if ($nilai >= 80) return 'Sangat bagus! Kamu memahami materi dengan baik. Terus tingkatkan!';
+    if ($nilai >= 70) return 'Bagus! Kamu sudah memahami materi. Pelajari kembali bagian yang kurang.';
+    if ($nilai >= 60) return 'Cukup. Kamu perlu lebih banyak belajar untuk menguasai materi ini.';
+    return 'Perlu perbaikan. Silakan pelajari kembali materi dan coba lagi.';
+}
+
+// app/Http/Controllers/DashboardsiswaController.php
+
+public function nilaiSiswa()
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    // Ambil semua kursus yang diikuti siswa dengan nilai
+    $kursusNilai = $siswa->kursus()
+        ->with(['nilai' => function($query) use ($siswa) {
+            $query->where('id_siswa', $siswa->id_siswa);
+        }])
+        ->get();
+
+    // Hitung nilai overall
+    $nilaiOverall = 0;
+    $totalKursus = 0;
+
+    foreach ($kursusNilai as $kursus) {
+        if ($kursus->nilai->isNotEmpty()) {
+            $nilaiOverall += $kursus->nilai->first()->nilai_total;
+            $totalKursus++;
+        }
+    }
+
+    $nilaiOverall = $totalKursus > 0 ? $nilaiOverall / $totalKursus : 0;
+
+    // Tentukan grade overall
+    $gradeOverall = $this->getGradeRaport($nilaiOverall);
+
+    return view('Role.Siswa.Course.nilai', [
+        'kursusNilai' => $kursusNilai,
+        'nilaiOverall' => $nilaiOverall,
+        'gradeOverall' => $gradeOverall,
+        'totalKursus' => $totalKursus,
+    ]);
+}
+
+public function nilaiKursus($id_kursus)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    // Validasi siswa terdaftar di kursus
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$enrolled) {
+        return redirect()->route('Siswa.Grades.index')
+            ->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    // Ambil data kursus
+    $kursus = Kursus::with(['mataPelajaran', 'guru', 'ujian'])
+        ->findOrFail($id_kursus);
+
+    // Ambil nilai kursus
+    $nilaiKursus = Nilai::where('id_siswa', $siswa->id_siswa)
+        ->where('id_kursus', $id_kursus)
+        ->first();
+
+    // Ambil nilai setiap ujian di kursus ini
+    $ujianNilai = [];
+    foreach ($kursus->ujian as $ujian) {
+        $tipeNilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
+            ->where('id_ujian', $ujian->id_ujian)
+            ->first();
+
+        if ($tipeNilai) {
+            $ujianNilai[] = [
+                'ujian' => $ujian,
+                'nilai' => $tipeNilai->nilai,
+                'grade' => $this->getGradeRaport($tipeNilai->nilai),
+            ];
+        }
+    }
+
+    $nilaiTotal = $nilaiKursus ? $nilaiKursus->nilai_total : 0;
+    $gradeKursus = $this->getGradeRaport($nilaiTotal);
+
+    return view('Role.Siswa.Course.detail_nilai', [
+        'kursus' => $kursus,
+        'ujianNilai' => $ujianNilai,
+        'nilaiTotal' => $nilaiTotal,
+        'gradeKursus' => $gradeKursus,
+    ]);
+}
+
+private function getGradeRaport($nilai)
+{
+    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
+    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
+    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
+    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
+    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
+}
+
 }
 
 

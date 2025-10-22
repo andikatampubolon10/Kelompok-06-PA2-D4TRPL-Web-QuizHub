@@ -41,17 +41,10 @@ class Ujian extends Model
         return $this->belongsTo(tipe_ujian::class, 'id_tipe_ujian','id_tipe_ujian');
     }
 
-    public function tipeNilai()
-    {
-        return $this->hasMany(TipeNilai::class, 'id_ujian', 'id_ujian');
-    }
-
-
     public function soal()
     {
-        return $this->hasMany(Soal::class, 'id_ujian', 'id_ujian');
+        return $this->hasMany(Soal::class);
     }
-
 
     public function bobot_tipe_soal()
     {

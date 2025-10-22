@@ -202,7 +202,16 @@ Route::middleware('auth')->group(function () {
             ->name('latihan.kelas.topik');
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
         Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
-        
+        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/hasil', 
+    [PracticeQuestionController::class, 'hasilLatihan'])
+    ->name('latihan.hasil');
+        // routes/web.php
+
+// routes/web.php
+
+        Route::get('/latihan/{id_kurikulum}/{id_tahun_ajaran}/{id_semester}/{id_mata_pelajaran}/{id_kelas}/{id_latihan}/hasil', 
+            [PracticeQuestionController::class, 'hasilLatihan'])
+            ->name('latihan.hasil');
         // routes/web.php
 
         Route::get('/grades', [DashboardsiswaController::class, 'nilaiSiswa'])

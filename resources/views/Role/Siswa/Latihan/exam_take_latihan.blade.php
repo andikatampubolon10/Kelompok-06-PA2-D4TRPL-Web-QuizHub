@@ -14,8 +14,8 @@
 
 @section('content')
   <div class="mb-6">
-    <h1 class="text-2xl font-bold mb-1">Topik Latihan: {{ $latihan->Topik }}</h1>
-    <p class="text-muted-foreground">
+    <h1 class="text-2xl font-bold mb-1 text-white">Topik Latihan: {{ $latihan->Topik }}</h1>
+    <p class="text-muted-foreground text-white">
       Kurikulum: {{ $kurikulum->nama_kurikulum }} • Tahun Ajaran: {{ $tahunAjaran->Nama_Tahun_Ajaran }}
     </p>
   </div>
@@ -25,7 +25,7 @@
 
     <div class="space-y-6">
       <!-- Display one question at a time -->
-      <div id="question-container">
+      <div id="question-container" class="text-white">
         @foreach ($soals as $index => $soal)
           <div id="question-{{ $soal->id_soal }}" class="question" style="display: none;">
             <div class="bg-card rounded-lg p-6 border border-border">

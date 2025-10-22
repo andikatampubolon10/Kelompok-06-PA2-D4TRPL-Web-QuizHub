@@ -16,7 +16,8 @@ class TipeNilai extends Model
     protected $fillable = [
         'nilai',            
         'id_tipe_ujian',      
-        'id_siswa',           
+        'id_siswa',
+        'id_ujian'           
     ];
 
     public function tipeUjian()
@@ -30,8 +31,7 @@ class TipeNilai extends Model
     }
 
     public function ujian()
-    {
-        return $this->belongsTo(Ujian::class, 'id_ujian');
-    }
-
+{
+    return $this->belongsTo(Ujian::class, 'id_ujian');
+}
 }
