@@ -1,0 +1,28 @@
+[33mf75f8d0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m1b662d5[m HEAD@{1}: reset: moving to HEAD
+[33m1b662d5[m HEAD@{2}: pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+[33mf8ae245[m HEAD@{3}: commit: update ujian
+[33mb66def2[m HEAD@{4}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33md5c58b9[m HEAD@{5}: commit: update
+[33m99c571a[m HEAD@{6}: commit: tambah guru
+[33mc1482a1[m HEAD@{7}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m738240f[m HEAD@{8}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33ma4d192b[m HEAD@{9}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m3c19003[m HEAD@{10}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m8d7794a[m HEAD@{11}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m91e98dc[m HEAD@{12}: pull: Fast-forward
+[33mf08c365[m HEAD@{13}: reset: moving to HEAD
+[33mf08c365[m HEAD@{14}: pull: Fast-forward
+[33m00f6836[m HEAD@{15}: reset: moving to HEAD
+[33m00f6836[m HEAD@{16}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m17bdf36[m HEAD@{17}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33mc6288e8[m HEAD@{18}: reset: moving to HEAD
+[33mc6288e8[m HEAD@{19}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m235fc13[m HEAD@{20}: reset: moving to HEAD
+[33m235fc13[m HEAD@{21}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m76f0ec4[m HEAD@{22}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m062b01b[m HEAD@{23}: reset: moving to HEAD
+[33m062b01b[m HEAD@{24}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m05bfc0d[m HEAD@{25}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33md790b93[m HEAD@{26}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33m4107cd6[m HEAD@{27}: clone: from https://github.com/andikatampubolon10/Kelompok-06-PA2-D4TRPL-Web-QuizHub.git

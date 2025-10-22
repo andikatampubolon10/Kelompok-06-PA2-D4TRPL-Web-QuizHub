@@ -325,17 +325,50 @@ class UjianController extends Controller
 }
 public function detailJawabanSiswa($id_ujian, $id_siswa)
 {
-    $ujian  = ujian::findOrFail($id_ujian);
-    $siswa  = siswa::findOrFail($id_siswa);
+    $ujian = ujian::findOrFail($id_ujian);
+    $siswa = siswa::findOrFail($id_siswa);
 
-    // Ambil semua jawaban siswa ini untuk soal yang termasuk ujian tsb
-    $jawaban = jawaban_siswa::with(['soal', 'jawaban_soal'])
-        ->where('id_siswa', $id_siswa)
-        ->whereHas('soal', fn($q) => $q->where('id_ujian', $id_ujian))
-        ->orderBy('id_soal')
+    // Ambil semua SOAL milik ujian ini yang dijawab oleh siswa tsb
+    $soals = Soal::with([
+            'tipe_soal:id_tipe_soal,nama_tipe_soal',
+            'jawaban_soal' // semua opsi jawaban (PG/TF) untuk ditampilkan di modal
+        ])
+        ->where('id_ujian', $id_ujian)
+        ->whereHas('jawaban_siswa', fn($q) => $q->where('id_siswa', $id_siswa))
         ->get();
 
-    return view('Role.Guru.Course.detail-jawaban-siswa', compact('ujian','siswa','jawaban'));
+    // Ambil jawaban siswa, keyBy id_soal supaya mudah diakses di Blade
+    $jawabanBySoal = jawaban_siswa::with('jawaban_soal')
+        ->where('id_siswa', $id_siswa)
+        ->whereIn('id_soal', $soals->pluck('id_soal'))
+        ->get()
+        ->keyBy('id_soal');
+
+    // Angka-angka untuk header statistik & ringkasan bobot
+    $countPilgan     = $soals->where('id_tipe_soal', 1)->count();
+    $countTrueFalse  = $soals->where('id_tipe_soal', 2)->count();
+    $countEssay      = $soals->where('id_tipe_soal', 3)->count();
+    $countTotal      = $soals->count();
+
+    $sumPilgan       = (float) $soals->where('id_tipe_soal', 1)->sum('bobot');
+    $sumTrueFalse    = (float) $soals->where('id_tipe_soal', 2)->sum('bobot');
+    $sumEssay        = (float) $soals->where('id_tipe_soal', 3)->sum('bobot');
+
+    return view('Role.Guru.Course.detail-jawaban-siswa', [
+        'ujian'          => $ujian,
+        'siswa'          => $siswa,
+        'soals'          => $soals,
+        'jawabanBySoal'  => $jawabanBySoal,
+        'countPilgan'    => $countPilgan,
+        'countTrueFalse' => $countTrueFalse,
+        'countEssay'     => $countEssay,
+        'countTotal'     => $countTotal,
+        'sumPilgan'      => $sumPilgan,
+        'sumTrueFalse'   => $sumTrueFalse,
+        'sumEssay'       => $sumEssay,
+        'idUjian'        => $ujian->id_ujian,
+    ]);
 }
+
 
 }
