@@ -7,16 +7,14 @@ use App\Models\Kursus;
 use App\Models\siswa;
 use App\Models\Materi;
 use App\Models\soal;
-use App\Models\jawaban_soal;
-use App\Models\TipeNilai;
-use App\Models\Nilai;
-use App\Models\BobotTipeSoal;
 use App\Models\ujian;
-use Illuminate\Support\Facades\DB;
-
+use App\Models\NilaiKursus;
+use App\Models\TipeNilai;
 use App\Models\jawaban_siswa;
+use App\Models\jawaban_soal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\BobotTipeSoal;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +34,7 @@ class DashboardsiswaController extends Controller
             return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
         }
 
-        // Ambil kursus yang dimiliki siswa dari pivot `kursus_siswa`
+        // Ambil kursus yang dimiliki siswa dari pivot kursus_siswa
         // dan eager load relasi yang diperlukan
         $courses = $siswa->kursus()
             ->with(['guru', 'kelas', 'mataPelajaran'])
@@ -81,27 +79,22 @@ public function tipeujian($id_kursus, Request $request)
 
     // Cek apakah ujian dapat dimulai atau tidak
     foreach ($ujians as $ujian) {
-    // Ambil waktu sekarang dan pastikan menggunakan timezone yang sama
-$currentTime = \Carbon\Carbon::now('UTC'); // Menggunakan UTC
-$startTime = \Carbon\Carbon::parse($ujian->waktu_mulai)->setTimezone('Asia/Jakarta');
-$endTime = \Carbon\Carbon::parse($ujian->waktu_selesai)->setTimezone('Asia/Jakarta');
+        $currentTime = \Carbon\Carbon::now();
+        $startTime = \Carbon\Carbon::parse($ujian->waktu_mulai);
+        $endTime = \Carbon\Carbon::parse($ujian->waktu_selesai);
 
-// Debugging
-Log::debug("Waktu Mulai: " . $startTime . " Waktu Sekarang: " . $currentTime . " Waktu Selesai: " . $endTime);
-
-// Perbandingan waktu
-if ($currentTime->isBefore($startTime)) {
-    $ujian->status = 'Belum dimulai';
-} elseif ($currentTime->isAfter($endTime)) {
-    $ujian->status = 'Selesai';
-} elseif ($currentTime->between($startTime, $endTime)) {
-    $ujian->status = 'Berlangsung';
-}
-
+        if ($currentTime->isBefore($startTime)) {
+            // Jika sebelum waktu mulai, beri notifikasi bahwa ujian belum dimulai
+            $ujian->status = 'Belum dimulai';
+        } elseif ($currentTime->isAfter($endTime)) {
+            // Jika sudah lewat waktu selesai, beri notifikasi bahwa ujian sudah selesai
+            $ujian->status = 'Selesai';
+        } else {
+            // Ujian sedang berlangsung
+            $ujian->status = 'Berlangsung';
+        }
     }
 
-
-    // Ambil materi untuk kursus ini
     $materi = Materi::where('id_kursus', $id_kursus)
         ->orderByDesc('tanggal_materi')
         ->orderByDesc('id_materi')
@@ -204,7 +197,7 @@ public function gate($id_kursus, $id_ujian, Request $request)
         ]);
     }
 
-public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
+public function soal($id_kursus, $id_ujian)
 {
     $user = auth()->user();
     if (!$user) return redirect()->route('login');
@@ -219,20 +212,11 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
             ->with('error', 'Kamu belum terdaftar di kursus ini.');
     }
 
-    // <CHANGE> Ambil ujian dan validasi id_tipe_ujian
+    // Ambil ujian + info kursus untuk header
     $ujian = \App\Models\Ujian::with(['kursus.mataPelajaran','kursus.kelas','kursus.guru'])
         ->findOrFail($id_ujian);
 
     if ((int)$ujian->id_kursus !== (int)$id_kursus) {
-        abort(404);
-    }
-
-    // <CHANGE> Validasi bahwa id_tipe_ujian sesuai dengan ujian
-    if ((int)$ujian->id_tipe_ujian !== (int)$id_tipe_ujian) {
-        abort(404, 'Tipe ujian tidak sesuai');
-    }
-
-     if ((int)$ujian->id_kursus !== (int)$id_kursus) {
         abort(404);
     }
 
@@ -280,134 +264,16 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
     // Durasi (detik). Jika null, default 30 menit
     $durationSeconds = $ujian->durasi ? ((int)$ujian->durasi * 60) : 1800;
 
-    
     return view('Role.Siswa.Course.exam_take', [
         'kursus'    => $ujian->kursus,
         'ujian'     => $ujian,
-        'questions' => $questions,
+        'questions' => $questions,              // di Blade: const QUESTIONS = @json($questions);
         'total'     => $questions->count(),
         'duration'  => $durationSeconds,
-        'id_tipe_ujian' => $id_tipe_ujian,  // <CHANGE> Pass id_tipe_ujian to view
     ]);
 }
 
-
-    public function materi(Request $request)
-    {
-        $user = auth()->user();
-
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        $siswa = Siswa::where('id_user', $user->id)->first();
-
-        $idKursus = $request->input('id_kursus');
-
-        $kursus = Kursus::find($idKursus);
-
-        $materi = Materi::where('id_kursus', $idKursus)->get();
-
-        return view('materi.index', compact('materi', 'kursus'));
-    }
-
-    public function ujian(Request $request)
-    {
-        $user = auth()->user();
-
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        $siswa = Siswa::where('id_user', $user->id)->first();
-
-        $idKursus = $request->input('id_kursus');
-
-        $kursus = Kursus::find($idKursus);
-
-        $ujian = Ujian::where('id_kursus', $idKursus)->get();
-
-        return view('ujian.index', compact('ujian', 'kursus'));
-    }
-
-    public function kuis(Request $request, $idUjian)
-    {
-        $user = auth()->user();
-
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        $siswa = Siswa::where('id_user', $user->id)->first();
-
-        if (!$siswa) {
-            return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
-        }
-
-        $ujian = Ujian::find($idUjian);
-
-        if (!$ujian) {
-            return redirect()->route('Role.Guru.index')->with('error', 'Ujian tidak ditemukan');
-        }
-
-        $currentTime = now();
-
-        if ($currentTime->lt($ujian->waktu_mulai) || $currentTime->gt($ujian->waktu_selesai)) {
-            return redirect()->back()->with('error', 'Kuis belum dimulai atau sudah selesai.');
-        }
-
-        if ($request->has('password')) {
-            $passwordInput = $request->input('password');
-
-            if (password_verify($passwordInput, $ujian->password_masuk)) {
-                return view('kuis.start', compact('ujian', 'siswa'));
-            } else {
-                // Jika password salah
-                return redirect()->back()->with('error', 'Password yang dimasukkan salah.');
-            }
-        }
-
-        return view('kuis.enter_password', compact('ujian'));
-    }
-
-    
-    public function submitKuis(Request $request, $idUjian)
-    {
-        $user = auth()->user();
-
-        // Pastikan pengguna sudah login
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        // Ambil data siswa berdasarkan user yang sedang login
-        $siswa = Siswa::where('id_user', $user->id)->first();
-
-        if (!$siswa) {
-            return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
-        }
-
-        // Ambil ujian
-        $ujian = Ujian::find($idUjian);
-
-        if (!$ujian) {
-            return redirect()->route('Role.Guru.index')->with('error', 'Ujian tidak ditemukan');
-        }
-
-        // Simpan jawaban siswa
-        foreach ($request->jawaban as $idSoal => $idJawabanSoal) {
-            JawabanSiswa::create([
-                'jawaban_siswa' => $request->jawaban_siswa[$idSoal], // Jawaban yang dipilih siswa
-                'id_soal' => $idSoal,
-                'id_siswa' => $siswa->id_siswa,
-                'id_jawaban_soal' => $idJawabanSoal,
-            ]);
-        }
-
-        return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
-    }
-
-    public function submitUjian(Request $request, $id_kursus, $id_ujian) {
+public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $ujian = Ujian::findOrFail($id_ujian);
     $now = now();
 
@@ -534,194 +400,118 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
 }
 
-public function exitExam($kursus_id, $ujian_id, Request $request)
-{
-    // Ambil data ujian berdasarkan ID
-    $ujian = Ujian::findOrFail($ujian_id);
+    public function materi(Request $request)
+    {
+        $user = auth()->user();
 
-    // Validasi password keluar
-    $request->validate([
-        'password_keluar' => 'required|string',
-    ]);
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
-    // <CHANGE> Debug: Log the stored hash and its length
-    \Log::info('Stored hash length: ' . strlen($ujian->password_keluar));
-    \Log::info('Stored hash: ' . $ujian->password_keluar);
-    \Log::info('Input password: ' . $request->password_keluar);
+        $siswa = Siswa::where('id_user', $user->id)->first();
 
-    // Cek apakah password yang dimasukkan cocok dengan hash di database
-    if (!Hash::check($request->password_keluar, $ujian->password_keluar)) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Password salah. Coba lagi.'
-        ], 400);
+        $idKursus = $request->input('id_kursus');
+
+        $kursus = Kursus::find($idKursus);
+
+        $materi = Materi::where('id_kursus', $idKursus)->get();
+
+        return view('materi.index', compact('materi', 'kursus'));
     }
 
-    // Jika password benar, proses keluar ujian
-    return response()->json([
-        'status' => 'success',
-        'redirect' => route('Siswa.Course.index')
-    ]);
-}
+    public function ujian(Request $request)
+    {
+        $user = auth()->user();
 
-// app/Http/Controllers/DashboardsiswaController.php
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
-public function hasilUjian($id_kursus, $id_ujian)
-{
-    $user = auth()->user();
-    if (!$user) return redirect()->route('login');
+        $siswa = Siswa::where('id_user', $user->id)->first();
 
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+        $idKursus = $request->input('id_kursus');
+
+        $kursus = Kursus::find($idKursus);
+
+        $ujian = Ujian::where('id_kursus', $idKursus)->get();
+
+        return view('ujian.index', compact('ujian', 'kursus'));
+    }
+
+    public function kuis(Request $request, $idUjian)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $siswa = Siswa::where('id_user', $user->id)->first();
+
+        if (!$siswa) {
+            return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
+        }
+
+        $ujian = Ujian::find($idUjian);
+
+        if (!$ujian) {
+            return redirect()->route('Role.Guru.index')->with('error', 'Ujian tidak ditemukan');
+        }
+
+        $currentTime = now();
+
+        if ($currentTime->lt($ujian->waktu_mulai) || $currentTime->gt($ujian->waktu_selesai)) {
+            return redirect()->back()->with('error', 'Kuis belum dimulai atau sudah selesai.');
+        }
+
+        if ($request->has('password')) {
+            $passwordInput = $request->input('password');
+
+            if (password_verify($passwordInput, $ujian->password_masuk)) {
+                return view('kuis.start', compact('ujian', 'siswa'));
+            } else {
+                // Jika password salah
+                return redirect()->back()->with('error', 'Password yang dimasukkan salah.');
+            }
+        }
+
+        return view('kuis.enter_password', compact('ujian'));
+    }
+
     
-    // Ambil data ujian
-    $ujian = Ujian::with(['kursus.mataPelajaran', 'kursus.kelas', 'kursus.guru'])
-        ->findOrFail($id_ujian);
+    public function submitKuis(Request $request, $idUjian)
+    {
+        $user = auth()->user();
 
-    // Validasi siswa terdaftar di kursus
-    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
-    if (!$enrolled) {
-        return redirect()->route('Siswa.Course.index')
-            ->with('error', 'Kamu belum terdaftar di kursus ini.');
-    }
-
-    // Ambil nilai dari tabel TipeNilai
-    $nilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
-        ->where('id_ujian', $id_ujian)
-        ->first();
-
-    if (!$nilai) {
-        return redirect()->route('Siswa.Course.tipeujian', $id_kursus)
-            ->with('error', 'Data nilai tidak ditemukan.');
-    }
-
-    // Tentukan grade dan feedback berdasarkan nilai
-    $grade = $this->getGrade($nilai->nilai);
-    $feedback = $this->getFeedback($nilai->nilai);
-
-    return view('Role.Siswa.Course.exam_hasil', [
-        'kursus' => $ujian->kursus,
-        'ujian' => $ujian,
-        'nilai' => $nilai->nilai,
-        'grade' => $grade,
-        'feedback' => $feedback,
-    ]);
-}
-
-private function getGrade($nilai)
-{
-    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
-    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
-    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
-    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
-    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
-}
-
-private function getFeedback($nilai)
-{
-    if ($nilai >= 90) return 'Luar biasa! Kamu menguasai materi dengan sempurna. Pertahankan prestasi ini!';
-    if ($nilai >= 80) return 'Sangat bagus! Kamu memahami materi dengan baik. Terus tingkatkan!';
-    if ($nilai >= 70) return 'Bagus! Kamu sudah memahami materi. Pelajari kembali bagian yang kurang.';
-    if ($nilai >= 60) return 'Cukup. Kamu perlu lebih banyak belajar untuk menguasai materi ini.';
-    return 'Perlu perbaikan. Silakan pelajari kembali materi dan coba lagi.';
-}
-
-// app/Http/Controllers/DashboardsiswaController.php
-
-public function nilaiSiswa()
-{
-    $user = auth()->user();
-    if (!$user) return redirect()->route('login');
-
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
-
-    // Ambil semua kursus yang diikuti siswa dengan nilai
-    $kursusNilai = $siswa->kursus()
-        ->with(['nilai' => function($query) use ($siswa) {
-            $query->where('id_siswa', $siswa->id_siswa);
-        }])
-        ->get();
-
-    // Hitung nilai overall
-    $nilaiOverall = 0;
-    $totalKursus = 0;
-
-    foreach ($kursusNilai as $kursus) {
-        if ($kursus->nilai->isNotEmpty()) {
-            $nilaiOverall += $kursus->nilai->first()->nilai_total;
-            $totalKursus++;
+        // Pastikan pengguna sudah login
+        if (!$user) {
+            return redirect()->route('login');
         }
-    }
 
-    $nilaiOverall = $totalKursus > 0 ? $nilaiOverall / $totalKursus : 0;
+        // Ambil data siswa berdasarkan user yang sedang login
+        $siswa = Siswa::where('id_user', $user->id)->first();
 
-    // Tentukan grade overall
-    $gradeOverall = $this->getGradeRaport($nilaiOverall);
-
-    return view('Role.Siswa.Course.nilai', [
-        'kursusNilai' => $kursusNilai,
-        'nilaiOverall' => $nilaiOverall,
-        'gradeOverall' => $gradeOverall,
-        'totalKursus' => $totalKursus,
-    ]);
-}
-
-public function nilaiKursus($id_kursus)
-{
-    $user = auth()->user();
-    if (!$user) return redirect()->route('login');
-
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
-
-    // Validasi siswa terdaftar di kursus
-    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
-    if (!$enrolled) {
-        return redirect()->route('Siswa.Grades.index')
-            ->with('error', 'Kamu belum terdaftar di kursus ini.');
-    }
-
-    // Ambil data kursus
-    $kursus = Kursus::with(['mataPelajaran', 'guru', 'ujian'])
-        ->findOrFail($id_kursus);
-
-    // Ambil nilai kursus
-    $nilaiKursus = Nilai::where('id_siswa', $siswa->id_siswa)
-        ->where('id_kursus', $id_kursus)
-        ->first();
-
-    // Ambil nilai setiap ujian di kursus ini
-    $ujianNilai = [];
-    foreach ($kursus->ujian as $ujian) {
-        $tipeNilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
-            ->where('id_ujian', $ujian->id_ujian)
-            ->first();
-
-        if ($tipeNilai) {
-            $ujianNilai[] = [
-                'ujian' => $ujian,
-                'nilai' => $tipeNilai->nilai,
-                'grade' => $this->getGradeRaport($tipeNilai->nilai),
-            ];
+        if (!$siswa) {
+            return redirect()->route('login')->with('error', 'Siswa tidak ditemukan');
         }
+
+        // Ambil ujian
+        $ujian = Ujian::find($idUjian);
+
+        if (!$ujian) {
+            return redirect()->route('Role.Guru.index')->with('error', 'Ujian tidak ditemukan');
+        }
+
+        // Simpan jawaban siswa
+        foreach ($request->jawaban as $idSoal => $idJawabanSoal) {
+            JawabanSiswa::create([
+                'jawaban_siswa' => $request->jawaban_siswa[$idSoal], // Jawaban yang dipilih siswa
+                'id_soal' => $idSoal,
+                'id_siswa' => $siswa->id_siswa,
+                'id_jawaban_soal' => $idJawabanSoal,
+            ]);
+        }
+
+        return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
-
-    $nilaiTotal = $nilaiKursus ? $nilaiKursus->nilai_total : 0;
-    $gradeKursus = $this->getGradeRaport($nilaiTotal);
-
-    return view('Role.Siswa.Course.detail_nilai', [
-        'kursus' => $kursus,
-        'ujianNilai' => $ujianNilai,
-        'nilaiTotal' => $nilaiTotal,
-        'gradeKursus' => $gradeKursus,
-    ]);
 }
-
-private function getGradeRaport($nilai)
-{
-    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
-    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
-    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
-    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
-    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
-}
-}
-
