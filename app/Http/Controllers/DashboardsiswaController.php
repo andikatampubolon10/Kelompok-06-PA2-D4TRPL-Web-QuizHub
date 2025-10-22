@@ -12,10 +12,6 @@ use App\Models\jawaban_soal;
 
 use App\Models\NilaiKursus;
 use App\Models\TipeNilai;
-
-use Illuminate\Support\Facades\DB;
-
-
 use App\Models\jawaban_siswa;
 
 use Illuminate\Http\Request;
@@ -523,21 +519,11 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
 
-
-public function exitExam($kursus_id, $ujian_id, Request $request)
+    public function exitExam($kursus_id, $ujian_id, Request $request)
 {
     // Ambil data ujian berdasarkan ID
     $ujian = Ujian::findOrFail($ujian_id);
 
-    // Validasi password keluar
-    $request->validate([
-        'password_keluar' => 'required|string',
-    ]);
-
-    // <CHANGE> Debug: Log the stored hash and its length
-    \Log::info('Stored hash length: ' . strlen($ujian->password_keluar));
-    \Log::info('Stored hash: ' . $ujian->password_keluar);
-    \Log::info('Input password: ' . $request->password_keluar);
 
     // Cek apakah password yang dimasukkan cocok dengan hash di database
     if (!Hash::check($request->password_keluar, $ujian->password_keluar)) {
@@ -553,6 +539,8 @@ public function exitExam($kursus_id, $ujian_id, Request $request)
         'redirect' => route('Siswa.Course.index')
     ]);
 }
+
+// app/Http/Controllers/DashboardsiswaController.php
 
 public function hasilUjian($id_kursus, $id_ujian)
 {
@@ -712,6 +700,5 @@ private function getGradeRaport($nilai)
     return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
 }
 
+
 }
-
-
