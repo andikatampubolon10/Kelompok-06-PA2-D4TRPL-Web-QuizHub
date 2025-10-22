@@ -70,9 +70,18 @@ Route::middleware('auth')->group(function () {
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
         Route::get('/Ujian/{id_ujian}/selesai', [UjianController::class, 'selesai'])
-        ->name('Ujian.selesai');
+            ->name('Ujian.selesai');
         Route::get('/Ujian/{id_ujian}/siswa/{id_siswa}', [UjianController::class, 'detailJawabanSiswa'])
-        ->name('Ujian.jawabanSiswa');
+            ->name('Ujian.jawabanSiswa');
+        Route::post(
+            '/Ujian/{id_ujian}/siswa/{id_siswa}/essay/{id_soal}/nilai',
+            [UjianController::class, 'updateEssayScore']
+        )->name('Ujian.essay.updateScore');
+        Route::post(
+            '/Ujian/{id_ujian}/siswa/{id_siswa}/essay/{id_soal}/nilai',
+            [App\Http\Controllers\UjianController::class, 'updateEssayScore']
+        )->name('Ujian.updateEssayScore');
+
         Route::resource('/Ujian', UjianController::class);
         Route::get('/ListSiswa/{id_kursus}', [ListSiswaController::class, 'index'])->name('ListSiswa');
         Route::get('/nilai/export/{id_kursus}', [ListSiswaController::class, 'exportNilai'])->name('nilai.export');
@@ -154,7 +163,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
-        Route::get('export-template', [GuruController::class, 'exportTemplate'])->name('guru.exportTemplate'); 
+        Route::get('export-template', [GuruController::class, 'exportTemplate'])->name('guru.exportTemplate');
         Route::get('siswa/export-template', [SiswaController::class, 'exportTemplate'])->name('Siswa.exportTemplate');
 
     });
@@ -214,17 +223,21 @@ Route::middleware('auth')->group(function () {
             ->name('latihan.kelas.topik');
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
         Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
-        Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/hasil', 
-    [PracticeQuestionController::class, 'hasilLatihan'])
-    ->name('latihan.hasil');
-    Route::get('/latihan/{id_latihan}/detail-jawaban', [PracticeQuestionController::class, 'showDetailJawaban'])->name('latihan.detailJawaban');
+        Route::get(
+            '/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/hasil',
+            [PracticeQuestionController::class, 'hasilLatihan']
+        )
+            ->name('latihan.hasil');
+        Route::get('/latihan/{id_latihan}/detail-jawaban', [PracticeQuestionController::class, 'showDetailJawaban'])->name('latihan.detailJawaban');
 
         // routes/web.php
 
-// routes/web.php
+        // routes/web.php
 
-        Route::get('/latihan/{id_kurikulum}/{id_tahun_ajaran}/{id_semester}/{id_mata_pelajaran}/{id_kelas}/{id_latihan}/hasil', 
-            [PracticeQuestionController::class, 'hasilLatihan'])
+        Route::get(
+            '/latihan/{id_kurikulum}/{id_tahun_ajaran}/{id_semester}/{id_mata_pelajaran}/{id_kelas}/{id_latihan}/hasil',
+            [PracticeQuestionController::class, 'hasilLatihan']
+        )
             ->name('latihan.hasil');
         // routes/web.php
 
@@ -235,7 +248,7 @@ Route::middleware('auth')->group(function () {
             ->name('Grades.course');
 
         Route::post('/kursus/{id_kursus}/ujian/{id_ujian}/submit', [UjianController::class, 'submitUjian'])
-    ->name('submitUjian');
+            ->name('submitUjian');
 
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);

@@ -419,6 +419,26 @@ class UjianController extends Controller
 
         return back()->with('success', "Nilai essay disimpan (raw {$raw}, dibobot {$final} × {$bobot}%).");
     }
+    public function updateEssayScore(Request $request, $id_ujian, $id_siswa, $id_soal)
+{
+    $data = $request->validate([
+        'nilai_essay_raw' => 'required|numeric|min:0|max:100',
+    ]);
+
+    $jawaban = \App\Models\jawaban_siswa::where('id_siswa', $id_siswa)
+        ->where('id_soal', $id_soal)
+        ->firstOrFail();
+
+    $bobotEssay = \App\Models\BobotTipeSoal::where('id_ujian', $id_ujian)
+        ->where('id_tipe_soal', 3)
+        ->value('bobot') ?? 0;
+
+    $jawaban->nilai_essay_raw = $data['nilai_essay_raw'];
+    $jawaban->nilai_essay_final = round(($data['nilai_essay_raw'] * $bobotEssay) / 100, 2);
+    $jawaban->save();
+
+    return back()->with('success', 'Nilai essay berhasil disimpan.');
+}
 
 
 

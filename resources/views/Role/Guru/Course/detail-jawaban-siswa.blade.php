@@ -363,6 +363,50 @@
               {{ $j->jawaban_siswa ?? '—' }}
             </div>
           </div>
+        {{-- === Form nilai essay (centered) === --}}
+<div class="mt-3 text-center">
+  <form method="POST"
+        action="{{ route('Guru.Ujian.updateEssayScore', [$ujian->id_ujian, $siswa->id_siswa, $soal->id_soal]) }}"
+        class="d-inline-block text-center">
+    @csrf
+    @method('POST')
+
+    <label class="form-label fw-semibold mb-2 d-block">Nilai Essay</label>
+
+    <div class="input-group justify-content-center mx-auto" style="max-width: 200px;">
+      <span class="input-group-text bg-light"><i class="fas fa-star text-warning"></i></span>
+      <input type="number"
+             name="nilai_essay_raw"
+             class="form-control text-center"
+             style="max-width: 90px;"
+             min="0"
+             max="100"
+             step="0.01"
+             value="{{ old('nilai_essay_raw', $j->nilai_essay_raw ?? '') }}"
+             placeholder="0–100">
+      <span class="input-group-text bg-light">/ 100</span>
+    </div>
+
+    @error('nilai_essay_raw')
+      <div class="form-text text-danger mt-1">{{ $message }}</div>
+    @else
+      <div class="form-text mt-1">Masukkan angka 0–100. (Sistem sudah membatasi otomatis.)</div>
+    @enderror
+
+    <button type="submit" class="btn btn-primary mt-3 px-4">
+      <i class="fas fa-save me-1"></i> Simpan Nilai
+    </button>
+
+    @if(!is_null($j->nilai_essay_final ?? null))
+      <div class="mt-2 small text-muted">
+        Nilai akhir (setelah bobot {{ $bobotEssay ?? '—' }}%):
+        <strong>{{ rtrim(rtrim(number_format($j->nilai_essay_final, 2, '.', ''), '0'), '.') }}</strong>
+      </div>
+    @endif
+  </form>
+</div>
+
+
 
           <div class="modal-footer">
             <button type="button"
