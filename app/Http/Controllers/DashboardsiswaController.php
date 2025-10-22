@@ -10,19 +10,11 @@ use App\Models\soal;
 use App\Models\jawaban_soal;
 use App\Models\TipeNilai;
 use App\Models\Nilai;
+use App\Models\BobotTipeSoal;
 use App\Models\ujian;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-use App\Models\Nilai;
-use App\Models\TipeNilai;
-=======
 use Illuminate\Support\Facades\DB;
->>>>>>> Stashed changes
-=======
-use Illuminate\Support\Facades\DB;
->>>>>>> Stashed changes
+
 use App\Models\jawaban_siswa;
-use App\Models\jawaban_soal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -178,7 +170,7 @@ public function enterUjian(Request $request)
         'exam_start' => now()->toISOString(),
     ]);
 
-    return redirect()->route('Siswa.Course.ujian.take', [$kursus->id_kursus, $ujian->id_ujian]);
+    return redirect()->route('Siswa.Course.ujian.take', [$kursus->id_kursus, $ujian->id_ujian, $ujian->id_tipe_ujian]);
 }
 
 
@@ -240,7 +232,54 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
         abort(404, 'Tipe ujian tidak sesuai');
     }
 
-    // ... rest of existing code ...
+     if ((int)$ujian->id_kursus !== (int)$id_kursus) {
+        abort(404);
+    }
+
+    // Ambil soal + pilihan
+    $soals = \App\Models\Soal::with(['jawaban_soal','tipe_soal'])
+        ->where('id_ujian', $id_ujian)
+        ->orderBy('id_soal')
+        ->get();
+
+    $letters = ['A','B','C','D','E','F','G'];
+
+    $questions = $soals->map(function ($s) use ($letters) {
+        $choices    = [];
+        $choiceIds  = [];
+
+        if ((int)$s->id_tipe_soal === 1) {
+            // Pilihan Ganda: pakai huruf A–E...
+            foreach ($s->jawaban_soal as $i => $jwb) {
+                $label = $letters[$i] ?? chr(65 + $i);
+                $choices[]              = $jwb->jawaban;
+                $choiceIds[$label]      = $jwb->id_jawaban_soal;
+            }
+        } elseif ((int)$s->id_tipe_soal === 2) {
+            // Benar/Salah: default True/False jika tidak ada di DB
+            if ($s->jawaban_soal->isNotEmpty()) {
+                $choices = $s->jawaban_soal->pluck('jawaban')->values()->all();
+                $t = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'True')  === 0 || strcasecmp($r->jawaban, 'Benar') === 0);
+                $f = $s->jawaban_soal->first(fn($r) => strcasecmp($r->jawaban, 'False') === 0 || strcasecmp($r->jawaban, 'Salah') === 0);
+                $choiceIds = ['T' => optional($t)->id_jawaban_soal, 'F' => optional($f)->id_jawaban_soal];
+            } else {
+                $choices   = ['True','False'];
+                $choiceIds = ['T' => null, 'F' => null];
+            }
+        } // Isian (3): choices kosong
+
+        return [
+            'id'         => $s->id_soal,
+            'text'       => $s->soal,
+            'tipe_id'    => (int)$s->id_tipe_soal,  // 1=PG, 2=TF, 3=Isian
+            'choices'    => $choices,               // array teks
+            'choice_ids' => $choiceIds,             // map huruf/T/F -> id_jawaban_soal (opsional)
+        ];
+    })->values();
+
+    // Durasi (detik). Jika null, default 30 menit
+    $durationSeconds = $ujian->durasi ? ((int)$ujian->durasi * 60) : 1800;
+
     
     return view('Role.Siswa.Course.exam_take', [
         'kursus'    => $ujian->kursus,
@@ -252,126 +291,7 @@ public function soal($id_kursus, $id_ujian, $id_tipe_ujian)
     ]);
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
-public function submitUjian(Request $request, $id_kursus, $id_ujian) {
-    $ujian = Ujian::findOrFail($id_ujian);
-    $now = now();
-
-    if ($now->lt($ujian->waktu_mulai)) {
-        return back()->with('error', 'Ujian belum dimulai.');
-    }
-
-    if ($now->gt($ujian->waktu_selesai)) {
-        return back()->with('error', 'Waktu ujian telah berakhir.');
-    }
-
-    $request->validate([
-        'answers_json' => 'required|string',
-    ]);
-
-    $user = auth()->user();
-    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
-
-    $answers = json_decode($request->answers_json, true) ?? [];
-
-    $totalNilai = 0;
-    $totalBobot = 0;
-
-    // Loop untuk setiap jawaban siswa
-    foreach ($answers as $row) {
-        $idSoal = $row['id_soal'] ?? null;
-        if (!$idSoal) continue;
-
-        // Update atau buat entri baru jawaban siswa
-        jawaban_siswa::updateOrCreate(
-            [
-                'id_siswa' => $siswa->id_siswa,
-                'id_soal' => $idSoal,
-            ],
-            [
-                'jawaban_siswa' => $row['jawaban_siswa'] ?? null,
-                'id_jawaban_soal' => $row['id_jawaban_soal'] ?? null,
-            ]
-        );
-
-        // Ambil soal untuk pengecekan
-        $soal = Soal::find($idSoal);
-        if (!$soal) continue;
-
-        // Cek hanya soal tipe PG dan BS
-        if (!in_array($soal->tipe_soal->nama_tipe_soal, ['Pilihan Berganda', 'Benar Salah'])) {
-            continue;
-        }
-
-        // Bobot soal
-        $bobotSoal = $soal->bobot ?? 0;
-
-        $isCorrect = false;
-        if ($soal->tipe_soal->nama_tipe_soal === 'Pilihan Berganda') {
-            // Cek untuk soal Pilihan Ganda (PG)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar && $row['id_jawaban_soal'] == $jawabanBenar->id_jawaban_soal) {
-                $isCorrect = true;
-            }
-        } elseif ($soal->tipe_soal->nama_tipe_soal === 'Benar Salah') {
-            // Cek untuk soal Benar Salah (BS)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar) {
-                if (($row['jawaban_siswa'] == 'benar' && $jawabanBenar->benar) || 
-                    ($row['jawaban_siswa'] == 'salah' && !$jawabanBenar->benar)) {
-                    $isCorrect = true;
-                }
-            }
-        }
-
-        // Jika jawaban benar, tambahkan bobot soal ke nilai total
-        if ($isCorrect) {
-            $totalNilai += $bobotSoal;
-        }
-        $totalBobot += $bobotSoal;
-    }
-
-    // Hitung persentase nilai
-    $nilaiAkhir = $totalBobot > 0 ? ($totalNilai / $totalBobot) * 100 : 0;
-
-    // Simpan nilai ke tabel TipeNilai untuk siswa dan ujian yang sesuai
-    TipeNilai::updateOrCreate(
-        [
-            'id_siswa' => $siswa->id_siswa,
-            'id_ujian' => $id_ujian,
-        ],
-        [
-            'nilai' => $nilaiAkhir,
-        ]
-    );
-
-    // Setelah perhitungan nilai per tipe, hitung nilai total di tabel Nilai
-    $nilaiTotal = TipeNilai::where('id_siswa', $siswa->id_siswa)
-        ->where('id_ujian', $id_ujian)
-        ->sum('nilai');
-
-    // Simpan nilai total ke tabel Nilai
-    Nilai::updateOrCreate(
-        [
-            'id_siswa' => $siswa->id_siswa,
-            'id_kursus' => $id_kursus,
-        ],
-        [
-            'nilai_total' => $nilaiTotal,
-        ]
-    );
-
-    return redirect()
-        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
-        ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
-}
-
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -488,15 +408,20 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     }
 
     public function submitUjian(Request $request, $id_kursus, $id_ujian) {
-    $id_ujian_from_url = $request->route('id_ujian');
-    $ujian = Ujian::find($id_ujian_from_url);
+    $ujian = Ujian::findOrFail($id_ujian);
     $now = now();
 
+    // Logging the time when the submission is attempted
+    Log::info("Attempting to submit exam for course ID: {$id_kursus} and exam ID: {$id_ujian} at {$now}");
+
+    // Mengecek apakah ujian sudah dimulai atau sudah berakhir
     if ($now->lt($ujian->waktu_mulai)) {
+        Log::warning("Exam {$id_ujian} has not started yet.");
         return back()->with('error', 'Ujian belum dimulai.');
     }
 
     if ($now->gt($ujian->waktu_selesai)) {
+        Log::warning("Exam {$id_ujian} time has already ended.");
         return back()->with('error', 'Waktu ujian telah berakhir.');
     }
 
@@ -507,17 +432,70 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $user = auth()->user();
     $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
 
+    // Logging the student’s info
+    Log::info("Student ID {$siswa->id_siswa} is submitting answers.");
+
     $answers = json_decode($request->answers_json, true) ?? [];
 
-    $totalNilai = 0;
-    $totalBobot = 0;
+    $totalNilaiPG = 0;
+    $totalNilaiBS = 0;
+    $totalBobotPG = 0;
+    $totalBobotBS = 0;
 
-    // Loop untuk setiap jawaban siswa
     foreach ($answers as $row) {
         $idSoal = $row['id_soal'] ?? null;
-        if (!$idSoal) continue;
+        if (!$idSoal) {
+            Log::debug("Skipping answer due to missing 'id_soal'.");
+            continue;
+        }
 
-        // Update atau buat entri baru jawaban siswa
+        // Mengambil soal berdasarkan id_soal
+        $soal = Soal::find($idSoal);
+        if (!$soal) {
+            Log::debug("Skipping question with ID {$idSoal}, question not found.");
+            continue;
+        }
+
+        // Mengambil jawaban yang benar untuk soal ini
+        $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
+        if (!$jawabanBenar) {
+            Log::debug("Skipping question {$idSoal}, no correct answer found.");
+            continue;
+        }
+
+        $isCorrect = false;
+
+        // Jika soal adalah Pilihan Ganda (A, B, C, D, E)
+        if ($soal->tipe_soal->nama_tipe_soal === 'Pilihan Berganda') {
+            $mappingJawaban = [
+                'A' => 1,
+                'B' => 2,
+                'C' => 3,
+                'D' => 4,
+                'E' => 5
+            ];
+
+            if (isset($mappingJawaban[$row['jawaban_siswa']]) && $mappingJawaban[$row['jawaban_siswa']] == $jawabanBenar->jawaban) {
+                $isCorrect = true;
+                $totalNilaiPG += $soal->bobot; // Tambahkan bobot soal PG yang benar
+            }
+
+            $totalBobotPG += $soal->bobot; // Menambahkan bobot soal PG
+        }
+
+        // Jika soal adalah Benar/Salah
+        elseif ($soal->tipe_soal->nama_tipe_soal === 'Benar Salah') {
+            $jawabanSiswa = ($row['jawaban_siswa'] == 'T') ? true : false;
+
+            if ($jawabanSiswa == $jawabanBenar->benar) {
+                $isCorrect = true;
+                $totalNilaiBS += $soal->bobot; // Tambahkan bobot soal BS yang benar
+            }
+
+            $totalBobotBS += $soal->bobot; // Menambahkan bobot soal BS
+        }
+
+        // Menyimpan atau memperbarui jawaban siswa di tabel jawaban_siswa
         jawaban_siswa::updateOrCreate(
             [
                 'id_siswa' => $siswa->id_siswa,
@@ -528,84 +506,32 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
                 'id_jawaban_soal' => $row['id_jawaban_soal'] ?? null,
             ]
         );
-
-        // Ambil soal untuk pengecekan
-        $soal = Soal::find($idSoal);
-        if (!$soal) continue;
-
-        // Cek hanya soal tipe PG dan BS
-        if (!in_array($soal->tipe_soal->nama_tipe_soal, ['Pilihan Berganda', 'Benar Salah'])) {
-            continue;
-        }
-
-        // Bobot soal
-        $bobotSoal = $soal->bobot ?? 0;
-
-        $isCorrect = false;
-        if ($soal->tipe_soal->nama_tipe_soal === 'Pilihan Berganda') {
-            // Cek untuk soal Pilihan Ganda (PG)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar && $row['id_jawaban_soal'] == $jawabanBenar->id_jawaban_soal) {
-                $isCorrect = true;
-            }
-        } elseif ($soal->tipe_soal->nama_tipe_soal === 'Benar Salah') {
-            // Cek untuk soal Benar Salah (BS)
-            $jawabanBenar = jawaban_soal::where('id_soal', $idSoal)->where('benar', 1)->first();
-            if ($jawabanBenar) {
-                if (($row['jawaban_siswa'] == 'benar' && $jawabanBenar->benar) || 
-                    ($row['jawaban_siswa'] == 'salah' && !$jawabanBenar->benar)) {
-                    $isCorrect = true;
-                }
-            }
-        }
-
-        // Jika jawaban benar, tambahkan bobot soal ke nilai total
-        if ($isCorrect) {
-            $totalNilai += $bobotSoal;
-        }
-        $totalBobot += $bobotSoal;
     }
 
-    // Hitung persentase nilai
-    $nilaiAkhir = $totalBobot > 0 ? ($totalNilai / $totalBobot) * 100 : 0;
-    $id_tipe_ujian = $ujian->id_tipe_ujian;
-
-
-TipeNilai::updateOrCreate(
-    [
-        'id_siswa' => $siswa->id_siswa,
-        'id_ujian' => $id_ujian_from_url,  // Use id_ujian from route
-    ],
-    [
-        'nilai' => $nilaiAkhir,
-        'id_tipe_ujian' => $id_tipe_ujian,
-    ]
-);
-
-
-    // Setelah perhitungan nilai per tipe, hitung nilai total di tabel Nilai
-    $nilaiTotal = TipeNilai::where('id_siswa', $siswa->id_siswa)
+    // Mengambil bobot tipe soal untuk tiap tipe soal berdasarkan id_tipe_soal
+    $bobotTipeSoal = BobotTipeSoal::where('id_tipe_soal', $soal->id_tipe_soal)
         ->where('id_ujian', $id_ujian)
-        ->sum('nilai');
+        ->first();
 
-    // Simpan nilai total ke tabel Nilai
-    Nilai::updateOrCreate(
-        [
-            'id_siswa' => $siswa->id_siswa,
-            'id_kursus' => $id_kursus,
-        ],
-        [
-            'nilai_total' => $nilaiTotal,
-        ]
-    );
+    // Log if bobot_tipe_soal is not found
+    if (!$bobotTipeSoal) {
+        Log::error("Bobot tipe soal for exam ID {$id_ujian} not found.");
+        return back()->with('error', 'Bobot tipe soal tidak ditemukan.');
+    }
 
+    // Menghitung nilai akhir berdasarkan bobot tipe soal
+    $nilaiPG = $totalBobotPG > 0 ? ($totalNilaiPG / $totalBobotPG) * 100 : 0;
+    $nilaiBS = $totalBobotBS > 0 ? ($totalNilaiBS / $totalBobotBS) * 100 : 0;
+
+    // Hitung nilai akhir berdasarkan bobot tipe soal
+    $nilaiFinal = ($nilaiPG + $nilaiBS) * ($bobotTipeSoal->bobot / 100);
+    // Logging the final score
+    Log::info("Student ID {$siswa->id_siswa} has final score: {$nilaiFinal}");
+
+    // Redirect ke halaman ujian dengan pesan sukses
     return redirect()
         ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 }
 
 public function exitExam($kursus_id, $ujian_id, Request $request)
@@ -636,6 +562,166 @@ public function exitExam($kursus_id, $ujian_id, Request $request)
         'status' => 'success',
         'redirect' => route('Siswa.Course.index')
     ]);
+}
+
+// app/Http/Controllers/DashboardsiswaController.php
+
+public function hasilUjian($id_kursus, $id_ujian)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+    
+    // Ambil data ujian
+    $ujian = Ujian::with(['kursus.mataPelajaran', 'kursus.kelas', 'kursus.guru'])
+        ->findOrFail($id_ujian);
+
+    // Validasi siswa terdaftar di kursus
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$enrolled) {
+        return redirect()->route('Siswa.Course.index')
+            ->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    // Ambil nilai dari tabel TipeNilai
+    $nilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
+        ->where('id_ujian', $id_ujian)
+        ->first();
+
+    if (!$nilai) {
+        return redirect()->route('Siswa.Course.tipeujian', $id_kursus)
+            ->with('error', 'Data nilai tidak ditemukan.');
+    }
+
+    // Tentukan grade dan feedback berdasarkan nilai
+    $grade = $this->getGrade($nilai->nilai);
+    $feedback = $this->getFeedback($nilai->nilai);
+
+    return view('Role.Siswa.Course.exam_hasil', [
+        'kursus' => $ujian->kursus,
+        'ujian' => $ujian,
+        'nilai' => $nilai->nilai,
+        'grade' => $grade,
+        'feedback' => $feedback,
+    ]);
+}
+
+private function getGrade($nilai)
+{
+    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
+    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
+    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
+    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
+    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
+}
+
+private function getFeedback($nilai)
+{
+    if ($nilai >= 90) return 'Luar biasa! Kamu menguasai materi dengan sempurna. Pertahankan prestasi ini!';
+    if ($nilai >= 80) return 'Sangat bagus! Kamu memahami materi dengan baik. Terus tingkatkan!';
+    if ($nilai >= 70) return 'Bagus! Kamu sudah memahami materi. Pelajari kembali bagian yang kurang.';
+    if ($nilai >= 60) return 'Cukup. Kamu perlu lebih banyak belajar untuk menguasai materi ini.';
+    return 'Perlu perbaikan. Silakan pelajari kembali materi dan coba lagi.';
+}
+
+// app/Http/Controllers/DashboardsiswaController.php
+
+public function nilaiSiswa()
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    // Ambil semua kursus yang diikuti siswa dengan nilai
+    $kursusNilai = $siswa->kursus()
+        ->with(['nilai' => function($query) use ($siswa) {
+            $query->where('id_siswa', $siswa->id_siswa);
+        }])
+        ->get();
+
+    // Hitung nilai overall
+    $nilaiOverall = 0;
+    $totalKursus = 0;
+
+    foreach ($kursusNilai as $kursus) {
+        if ($kursus->nilai->isNotEmpty()) {
+            $nilaiOverall += $kursus->nilai->first()->nilai_total;
+            $totalKursus++;
+        }
+    }
+
+    $nilaiOverall = $totalKursus > 0 ? $nilaiOverall / $totalKursus : 0;
+
+    // Tentukan grade overall
+    $gradeOverall = $this->getGradeRaport($nilaiOverall);
+
+    return view('Role.Siswa.Course.nilai', [
+        'kursusNilai' => $kursusNilai,
+        'nilaiOverall' => $nilaiOverall,
+        'gradeOverall' => $gradeOverall,
+        'totalKursus' => $totalKursus,
+    ]);
+}
+
+public function nilaiKursus($id_kursus)
+{
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+
+    $siswa = Siswa::where('id_user', $user->id)->firstOrFail();
+
+    // Validasi siswa terdaftar di kursus
+    $enrolled = $siswa->kursus()->where('kursus.id_kursus', $id_kursus)->exists();
+    if (!$enrolled) {
+        return redirect()->route('Siswa.Grades.index')
+            ->with('error', 'Kamu belum terdaftar di kursus ini.');
+    }
+
+    // Ambil data kursus
+    $kursus = Kursus::with(['mataPelajaran', 'guru', 'ujian'])
+        ->findOrFail($id_kursus);
+
+    // Ambil nilai kursus
+    $nilaiKursus = Nilai::where('id_siswa', $siswa->id_siswa)
+        ->where('id_kursus', $id_kursus)
+        ->first();
+
+    // Ambil nilai setiap ujian di kursus ini
+    $ujianNilai = [];
+    foreach ($kursus->ujian as $ujian) {
+        $tipeNilai = TipeNilai::where('id_siswa', $siswa->id_siswa)
+            ->where('id_ujian', $ujian->id_ujian)
+            ->first();
+
+        if ($tipeNilai) {
+            $ujianNilai[] = [
+                'ujian' => $ujian,
+                'nilai' => $tipeNilai->nilai,
+                'grade' => $this->getGradeRaport($tipeNilai->nilai),
+            ];
+        }
+    }
+
+    $nilaiTotal = $nilaiKursus ? $nilaiKursus->nilai_total : 0;
+    $gradeKursus = $this->getGradeRaport($nilaiTotal);
+
+    return view('Role.Siswa.Course.detail_nilai', [
+        'kursus' => $kursus,
+        'ujianNilai' => $ujianNilai,
+        'nilaiTotal' => $nilaiTotal,
+        'gradeKursus' => $gradeKursus,
+    ]);
+}
+
+private function getGradeRaport($nilai)
+{
+    if ($nilai >= 90) return ['grade' => 'A', 'label' => 'Excellent', 'color' => 'emerald'];
+    if ($nilai >= 80) return ['grade' => 'B', 'label' => 'Very Good', 'color' => 'blue'];
+    if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
+    if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
+    return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
 }
 }
 
