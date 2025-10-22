@@ -81,13 +81,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/nilai-breakdown/{id_kursus}/{id_siswa}', [App\Http\Controllers\NilaiController::class, 'getScoreBreakdown'])->name('Guru.nilai.breakdown');
         Route::resource('/Soal', SoalController::class);
         Route::resource('/Persentase', persentaseController::class);
-        Route::post('/Soal/upload-image', [App\Http\Controllers\SoalController::class, 'uploadImage'])
-    ->name('Soal.uploadImage');
+        Route::post('/Soal/upload-image', [App\Http\Controllers\SoalController::class, 'uploadImage'])->name('Soal.uploadImage');
         Route::get('/Soal/create/{type}', [SoalController::class, 'create'])->name('Guru.Soal.create');
         Route::get('/Soal/preview/{id}', [SoalController::class, 'preview'])->name('Soal.preview');
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/Attempt', AttemptController::class);
-        Route::resource('/Materi', MateriController::class);
+
+        Route::get('/Materi', [MateriController::class, 'index'])->name('Materi.index');
+        Route::get('/Materi/create', [MateriController::class, 'create'])->name('Materi.create');
+        Route::post('/Materi', [MateriController::class, 'store'])->name('Materi.store');
+        Route::get('/Materi/{id_materi}', [MateriController::class, 'show'])->name('Materi.show');
+        Route::get('/Materi/{id_materi}/edit', [MateriController::class, 'edit'])->name('Materi.edit');
+        Route::put('/Materi/{id_materi}', [MateriController::class, 'update'])->name('Materi.update');
+        Route::patch('/Materi/{id_materi}', [MateriController::class, 'update']);
+        Route::delete('/Materi/{id_materi}', [MateriController::class, 'destroy'])->name('Materi.destroy');
+
         Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
         Route::resource('/Nilai', NilaiController::class);
@@ -154,13 +162,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses', [DashboardsiswaController::class, 'dashboard'])->name('Course.index');
         Route::get('/courses/{id_kursus}/ujian', [DashboardsiswaController::class, 'tipeujian'])->name('Course.tipeujian');
         Route::post('/courses/ujian/enter', [DashboardsiswaController::class, 'enterUjian'])->name('Course.ujian.enter');
-        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
+        // routes/web.php atau routes/api.php
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/{id_tipe_ujian}/take', [DashboardsiswaController::class, 'soal'])->name('Course.ujian.take');
         Route::get('/enroll/kurikulum', [EnrollSiswaController::class, 'kurikulum'])->name('enroll.kurikulum');
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran', [EnrollSiswaController::class, 'tahunAjaran'])->name('enroll.tahunajaran');
         Route::get('/enroll/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [EnrollSiswaController::class, 'semester'])
             ->name('enroll.semester');
         Route::get('/siswa/kursus/{kursus}/ujian/{ujian}/gate', [DashboardsiswaController::class, 'gate'])
-        ->name('ujian.gate');
+            ->name('ujian.gate');
+
+        // routes/web.php
+
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/hasil', [DashboardsiswaController::class, 'hasilUjian'])
+            ->name('Ujian.hasil');
+
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
+
 
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])
@@ -185,6 +202,14 @@ Route::middleware('auth')->group(function () {
             ->name('latihan.kelas.topik');
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
         Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
+        
+        // routes/web.php
+
+        Route::get('/grades', [DashboardsiswaController::class, 'nilaiSiswa'])
+            ->name('Grades.index');
+
+        Route::get('/grades/course/{id_kursus}', [DashboardsiswaController::class, 'nilaiKursus'])
+            ->name('Grades.course');
 
         Route::post('/kursus/{id_kursus}/ujian/{id_ujian}/submit', [UjianController::class, 'submitUjian'])
     ->name('submitUjian');
@@ -198,7 +223,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/Profil', ProfilController::class);
-        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/nilai',[NilaiController::class, 'gradeUjianSiswaSelf'])->name('Course.ujian.nilai');
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/nilai', [NilaiController::class, 'gradeUjianSiswaSelf'])->name('Course.ujian.nilai');
     });
 });
 

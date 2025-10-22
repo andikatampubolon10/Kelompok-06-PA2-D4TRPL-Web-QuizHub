@@ -23,111 +23,110 @@
     <!-- Form Container -->
     <div class="form-container mx-auto bg-white p-8 rounded-lg shadow-lg">
 
-        <form action="{{ route('Guru.Ujian.update', $ujian->id_ujian) }}"  method="POST">
-            
+        <form action="{{ route('Guru.Ujian.update', $ujian->id_ujian) }}" method="POST">
+
             @csrf
- <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
+            @method('PUT')
+            <input type="hidden" name="id_kursus" value="{{ $id_kursus }}">
             <!-- Nama Sekolah Field -->
             <div class="mb-6">
-                      <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
-                        <input type="text" name="nama_ujian" value="{{ old('nama_ujian', $ujian->nama_ujian) }}"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
+                <label for="nama_ujian" class="block font-bold mb-2">Judul Ujian</label>
+                <input type="text" name="nama_ujian" value="{{ old('nama_ujian', $ujian->nama_ujian) }}"
+                    class="block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
 
 
             <!-- Email Field -->
+            {{-- @dd($ujian) --}}
             <div class="mb-6">
-                       <label for="tipe_ujian" class="block font-bold mb-2">Tipe Ujian</label>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="1"
-                                    class="form-radio text-green-500" {{ $ujian->id_tipe_ujian == 1 ? 'checked' : '' }}
-                                    required>
-                                <span class="ml-2">Kuis</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="2"
-                                    class="form-radio text-green-500" {{ $ujian->id_tipe_ujian == 2 ? 'checked' : '' }}
-                                    required>
-                                <span class="ml-2">Ujian Tengah Semester</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="id_tipe_ujian" value="2"
-                                    class="form-radio text-green-500" {{ $ujian->id_tipe_ujian == 3 ? 'checked' : '' }}
-                                    required>
-                                <span class="ml-2">Ujian Akhir Semester</span>
-                            </label>
-                        </div>
-                    </div>
+                <label for="tipe_ujian" class="block font-bold mb-2">Tipe Ujian</label>
+                <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="1" class="form-radio text-green-500"
+                            {{ $ujian->id_tipe_ujian == 1 ? 'checked' : '' }} required>
+                        <span class="ml-2">Kuis</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="2" class="form-radio text-green-500"
+                            {{ $ujian->id_tipe_ujian == 2 ? 'checked' : '' }} required>
+                        <span class="ml-2">Ujian Tengah Semester</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="id_tipe_ujian" value="2" class="form-radio text-green-500"
+                            {{ $ujian->id_tipe_ujian == 3 ? 'checked' : '' }} required>
+                        <span class="ml-2">Ujian Akhir Semester</span>
+                    </label>
+                </div>
+            </div>
 
             <!-- Password Field -->
             <div class="mb-6">
-                      <label for="acak" class="block font-bold mb-2">Acak Soal dan Pilihan</label>
-                        <select name="acak" class="block w-full p-2 border border-gray-300 rounded-md" required>
-                            <option value="Aktif" {{ $ujian->acak == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="Tidak Aktif" {{ $ujian->acak == 'Tidak Aktif' ? 'selected' : '' }}>Tidak
-                                Aktif</option>
-                        </select>
-                    </div>
-
-              
-
-                    <div class="mb-6">
-                     <label for="status_jawaban" class="block font-bold mb-2">Status Jawaban</label>
-                        <select name="status_jawaban" class="block w-full p-2 border border-gray-300 rounded-md"
-                            required>
-                            <option value="Aktif" {{ $ujian->status_jawaban == 'Aktif' ? 'selected' : '' }}>Aktif
-                            </option>
-                            <option value="Tidak Aktif"
-                                {{ $ujian->status_jawaban == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-6">
-                       <label for="Waktu_Mulai" class="block font-bold mb-2">Waktu Mulai</label>
-                        <input type="datetime-local" name="Waktu_Mulai"
-                            value="{{ old('Waktu_Mulai', \Carbon\Carbon::parse($ujian->Waktu_Mulai)->format('Y-m-d\TH:i')) }}"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="Waktu_Selesai" class="block font-bold mb-2">Waktu Selesai</label>
-                        <input type="datetime-local" name="Waktu_Selesai"
-                            value="{{ old('Waktu_Selesai', \Carbon\Carbon::parse($ujian->Waktu_Selesai)->format('Y-m-d\TH:i')) }}"
-                            class="block w-full p-2 border border-gray-300 rounded-md" required>
-                    </div>                 
+                <label for="acak" class="block font-bold mb-2">Acak Soal dan Pilihan</label>
+                <select name="acak" class="block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="Aktif" {{ $ujian->acak == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                    <option value="Tidak Aktif" {{ $ujian->acak == 'Tidak Aktif' ? 'selected' : '' }}>Tidak
+                        Aktif</option>
+                </select>
+            </div>
 
 
+
+            <div class="mb-6">
+                <label for="status_jawaban" class="block font-bold mb-2">Status Jawaban</label>
+                <select name="status_jawaban" class="block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="Aktif" {{ $ujian->status_jawaban == 'Aktif' ? 'selected' : '' }}>Aktif
+                    </option>
+                    <option value="Tidak Aktif" {{ $ujian->status_jawaban == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label for="Waktu_Mulai" class="block font-bold mb-2">Waktu Mulai</label>
+                <input type="datetime-local" id="waktu_mulai" name="waktu_mulai"
+    value="{{ old('waktu_mulai', \Carbon\Carbon::parse($ujian->waktu_mulai)->format('Y-m-d\TH:i')) }}"
+    class="block w-full p-2 border border-gray-300 rounded-md" required>
+
+            </div>
+
+            <div class="mb-6">
+                <label for="Waktu_Selesai" class="block font-bold mb-2">Waktu Selesai</label>
+                <input type="datetime-local" id="waktu_selesai" name="waktu_selesai"
+    value="{{ old('waktu_selesai', \Carbon\Carbon::parse($ujian->waktu_selesai)->format('Y-m-d\TH:i')) }}"
+    class="block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
 
 
 
 
-          
-              
-                <!-- Form Actions -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Semua field yang bertanda (*) wajib diisi</span>
-                    </div>
 
-                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
-                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
 
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-save mr-2"></i>
-                            Simpan 
-                        </button>
-                    </div>
+
+
+            <!-- Form Actions -->
+            <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-6 border-t border-gray-100 mt-8">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Semua field yang bertanda (*) wajib diisi</span>
                 </div>
-            </form>
-        </div>
+
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <a href="{{ route('Guru.Ujian.index', ['id_kursus' => $course->id_kursus]) }}"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
     </div>
 
     <!-- Success/Error Messages -->
@@ -160,76 +159,77 @@
     @endif
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const waktuMulaiInput = document.getElementById('waktu_mulai');
+            const waktuSelesaiInput = document.getElementById('waktu_selesai');
 
-         document.addEventListener('DOMContentLoaded', function() {
-        const waktuMulaiInput = document.getElementById('waktu_mulai');
-        const waktuSelesaiInput = document.getElementById('waktu_selesai');
+            // Set waktu minimal untuk waktu mulai
+            const now = new Date();
+            const nowString = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+            waktuMulaiInput.min = nowString;
 
-        // Set waktu minimal untuk waktu mulai
-        const now = new Date();
-        const nowString = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
-        waktuMulaiInput.min = nowString;
+            // Set waktu minimal untuk waktu selesai (harus setelah waktu mulai)
+            waktuMulaiInput.addEventListener('change', function() {
+                waktuSelesaiInput.min = this.value;
+            });
 
-        // Set waktu minimal untuk waktu selesai (harus setelah waktu mulai)
-        waktuMulaiInput.addEventListener('change', function() {
-            waktuSelesaiInput.min = this.value;
+            // Optionally, set waktu selesai minimal saat halaman dimuat
+            waktuSelesaiInput.min = nowString;
         });
-
-        // Optionally, set waktu selesai minimal saat halaman dimuat
-        waktuSelesaiInput.min = nowString;
-    });
         // Dropdown toggle script
         function toggleDropdown() {
             const dropdown = document.getElementById("dropdown-menu");
             dropdown.classList.toggle("show");
         }
         document.addEventListener('DOMContentLoaded', function() {
-                var startDateInput = document.getElementById('start_date');
-                var endDateInput = document.getElementById('end_date');
+            var startDateInput = document.getElementById('start_date');
+            var endDateInput = document.getElementById('end_date');
 
-                var today = new Date();
-                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            var today = new Date();
+            var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
 
-                // Set tanggal mulai tidak bisa lebih awal dari hari ini
-                if (startDateInput) {
-                    startDateInput.min = todayString;
-                }
-
-                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                if (startDateInput && endDateInput) {
-                    startDateInput.addEventListener('change', function() {
-                        var startDate = startDateInput.value;
-                        endDateInput.min =
-                        startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                    });
-                }
-            });
-              function toggleDropdown() {
-                const dropdown = document.getElementById("dropdown-menu");
-                dropdown.classList.toggle("show");
+            // Set tanggal mulai tidak bisa lebih awal dari hari ini
+            if (startDateInput) {
+                startDateInput.min = todayString;
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                var startDateInput = document.getElementById('start_date');
-                var endDateInput = document.getElementById('end_date');
+            // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', function() {
+                    var startDate = startDateInput.value;
+                    endDateInput.min =
+                        startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                });
+            }
+        });
 
-                var today = new Date();
-                var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+        function toggleDropdown() {
+            const dropdown = document.getElementById("dropdown-menu");
+            dropdown.classList.toggle("show");
+        }
 
-                // Set tanggal mulai tidak bisa lebih awal dari hari ini
-                if (startDateInput) {
-                    startDateInput.min = todayString;
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            var startDateInput = document.getElementById('start_date');
+            var endDateInput = document.getElementById('end_date');
 
-                // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                if (startDateInput && endDateInput) {
-                    startDateInput.addEventListener('change', function() {
-                        var startDate = startDateInput.value;
-                        endDateInput.min =
-                            startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
-                    });
-                }
-            });
+            var today = new Date();
+            var todayString = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+            // Set tanggal mulai tidak bisa lebih awal dari hari ini
+            if (startDateInput) {
+                startDateInput.min = todayString;
+            }
+
+            // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', function() {
+                    var startDate = startDateInput.value;
+                    endDateInput.min =
+                        startDate; // Set tanggal selesai tidak bisa lebih awal dari tanggal mulai
+                });
+            }
+        });
+
         function closeAlert(alertId) {
             document.getElementById(alertId).style.display = 'none';
         }
@@ -245,7 +245,8 @@
         // Form validation enhancement
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
-            const nameInput = document.getElementById('nama_kurikulum');
+            const nameInput = document.querySelector('[name="nama_ujian"]');
+
 
             nameInput.addEventListener('input', function() {
                 if (this.value.length > 0) {

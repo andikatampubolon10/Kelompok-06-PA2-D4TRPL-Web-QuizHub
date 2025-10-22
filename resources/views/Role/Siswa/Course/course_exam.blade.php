@@ -90,10 +90,11 @@
             <div>
               <p class="text-sm font-medium">{{ $u->nama_ujian }}</p>
               <p class="text-xs text-muted-foreground">
-                Mulai: {{ $u->waktu_mulai ? \Carbon\Carbon::parse($u->waktu_mulai)->format('d M Y H:i') : '—' }}
-                • Durasi: {{ $u->durasi ?? '—' }} menit
-                • Status: {{ $u->status ?? '—' }}
+                  Mulai: {{ $u->waktu_mulai ? \Carbon\Carbon::parse($u->waktu_mulai)->format('d M Y H:i') : '—' }}
+                  • Durasi: {{ $u->durasi ?? '—' }} menit
+                  • Status: {{ $u->status ?? '—' }}
               </p>
+
             </div>
             <i class="fas fa-arrow-right text-muted-foreground"></i>
           </a>
