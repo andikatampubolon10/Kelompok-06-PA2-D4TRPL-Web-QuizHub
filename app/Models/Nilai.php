@@ -19,7 +19,7 @@ class Nilai extends Model
         'id_kursus',
         'id_siswa',
         'id_persentase',
-        // 'id_tipe_nilai',  // Relasi ke tipe_nilai
+        'id_tipe_nilai',  // Relasi ke tipe_nilai
         'nilai_total',
     ];
 
@@ -35,7 +35,7 @@ class Nilai extends Model
 
     public function tipeNilai()
     {
-        return $this->belongsTo(TipeNilai::class, 'id_tipe_nilai', 'id_tipe_nilai');
+        return $this->belongsTo(TipeNilai::class, 'id_tipe_nilai', 'id_tipe_nilai','id_tipe_nilai');
     }
     
 
