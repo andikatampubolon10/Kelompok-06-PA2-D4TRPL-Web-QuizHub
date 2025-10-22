@@ -171,6 +171,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/siswa/kursus/{kursus}/ujian/{ujian}/gate', [DashboardsiswaController::class, 'gate'])
             ->name('ujian.gate');
 
+        // routes/web.php
+
+        Route::get('/courses/{id_kursus}/ujian/{id_ujian}/hasil', [DashboardsiswaController::class, 'hasilUjian'])
+            ->name('Ujian.hasil');
+
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
+
         Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
 
         Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
@@ -198,6 +205,14 @@ Route::middleware('auth')->group(function () {
             ->name('latihan.kelas.topik');
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}', [PracticeQuestionController::class, 'viewLatihan'])->name('latihan.kelas.topik.detail');
         Route::post('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/submit', [PracticeQuestionController::class, 'submitLatihan'])->name('latihan.submit');
+        
+        // routes/web.php
+
+        Route::get('/grades', [DashboardsiswaController::class, 'nilaiSiswa'])
+            ->name('Grades.index');
+
+        Route::get('/grades/course/{id_kursus}', [DashboardsiswaController::class, 'nilaiKursus'])
+            ->name('Grades.course');
 
         Route::post('/kursus/{id_kursus}/ujian/{id_ujian}/submit', [UjianController::class, 'submitUjian'])
     ->name('submitUjian');

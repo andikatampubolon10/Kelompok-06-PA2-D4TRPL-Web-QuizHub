@@ -10,6 +10,16 @@
   <li class="text-foreground">Take Exam</li>
 @endsection
 
+@push('styles')
+  <style>
+  /* Pastikan konten dari editor tampil bagus */
+  #qTitle img, #choices img { max-width: 100%; height: auto; }
+  #qTitle figure { margin: 0 0 1rem; }
+  #choices .choice-html { display: block; }
+  </style>
+@endpush
+
+
 @section('content')
   <div class="mb-6 flex items-center justify-between">
     <div>
@@ -39,7 +49,7 @@
         <div class="flex items-start justify-between mb-4">
           <div>
             <p class="text-sm text-muted-foreground">Question <span id="qIndex">1</span> / {{ $total }}</p>
-            <h2 id="qTitle" class="text-lg font-semibold"></h2>
+            <div id="qTitle" class="prose prose-invert max-w-none"></div>
           </div>
         </div>
 
@@ -307,11 +317,34 @@ function updateSubmitAvailability() {
   const anyAnswered = window.EXAM.answers.some(v => v !== null && String(v).trim() !== '');
   submitBtn.disabled = !anyAnswered;
 }
+
+function safeHTML(html) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(String(html ?? ''), 'text/html');
+
+    // hapus tag berbahaya
+    doc.querySelectorAll('script, iframe, object, embed, link, meta, style').forEach(n => n.remove());
+    // buang event handler dan javascript: URL
+    doc.querySelectorAll('*').forEach(el => {
+      [...el.attributes].forEach(attr => {
+        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
+        if (attr.name === 'href' || attr.name === 'src') {
+          const v = (attr.value || '').trim();
+          if (/^javascript:/i.test(v)) el.removeAttribute(attr.name);
+        }
+      });
+    });
+
+    return doc.body.innerHTML;
+  } catch { return ''; }
+}
+
 function renderQuestion(idx) {
   const q = QUESTIONS[idx];
   const t = getQType(q);
   qIndexEl.textContent = idx + 1;
-  qTitleEl.textContent = q.text;
+  qTitleEl.innerHTML = safeHTML(q.text);
   choicesEl.innerHTML = '';
 
   if (t === 'pg') {
@@ -330,8 +363,9 @@ function renderQuestion(idx) {
       badge.className = 'inline-flex items-center justify-center w-8 h-8 rounded-md border border-border text-sm font-semibold';
       badge.textContent = optKey;
       const text = document.createElement('span');
-      text.textContent = choiceText;
-      wrap.append(input,badge,text);
+      text.className = 'choice-html';
+      text.innerHTML = safeHTML(choiceText);
+      wrap.append(input, badge, text);
       choicesEl.appendChild(wrap);
     });
   } else if (t === 'tf') {
@@ -351,6 +385,8 @@ function renderQuestion(idx) {
       badge.className = 'inline-flex items-center justify-center w-10 h-8 rounded-md border border-border text-sm font-semibold';
       badge.textContent = key;
       const text = document.createElement('span');
+      text.className = 'choice-html';
+      text.innerHTML = safeHTML(txt); // gunakan txt dari DB
       text.textContent = (key==='T'?'True':'False');
       wrap.append(input,badge,text);
       choicesEl.appendChild(wrap);
@@ -878,5 +914,9 @@ nextBtn.addEventListener('click', ()=>{
 });
 
 startTimer();
+
+
 </script>
 @endpush
+
+
