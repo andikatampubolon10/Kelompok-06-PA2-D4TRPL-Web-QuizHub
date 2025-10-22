@@ -54,41 +54,48 @@ class CourseController extends Controller
         return view('Role.Guru.index', compact('courses', 'user', 'guru', 'mataPelajaranOptions', 'selectedMataPelajaran'));
     }
 
-    public function beranda(Request $request)
-    {
-        $user = auth()->user();
+public function beranda(Request $request)
+{
+    $user = auth()->user();
 
-        Log::info('User Role: ' . implode(', ', $user->getRoleNames()->toArray()));
+    Log::info('User Role: ' . implode(', ', $user->getRoleNames()->toArray()));
 
-        if (!$user->hasRole('Operator')) {
-            abort(403, 'Unauthorized');
-        }
-
-        $operator = Operator::where('id_user', $user->id)->firstOrFail();
-
-        // Ambil parameter id_mata_pelajaran dari query string
-        $id_mata_pelajaran = $request->query('id_mata_pelajaran');
-
-        $mata_pelajaran = mata_pelajaran::where('id_operator', $operator->id_operator)
-            ->distinct('id_mata_pelajaran')
-            ->get();
-
-        // Pastikan mata pelajaran tidak kosong
-        if ($mata_pelajaran->isEmpty()) {
-            return redirect()->route('Operator.Course.index')->with('error', 'Tidak ada mata pelajaran yang ditemukan.');
-        }
-
-        // Mendapatkan data kursus yang terkait dengan operator
-        $courses = Kursus::with(['guru', 'mataPelajaran', 'kelas'])
-            ->whereHas('guru', function ($q) use ($operator) {
-                $q->where('id_operator', $operator->id_operator);
-            })
-            ->get();
-            // dd($courses);
-
-        // Kirimkan data ke view, termasuk id_mata_pelajaran
-        return view('Role.Operator.Course.index', compact('courses', 'user', 'mata_pelajaran', 'id_mata_pelajaran'));
+    if (!$user->hasRole('Operator')) {
+        abort(403, 'Unauthorized');
     }
+
+    $operator = Operator::where('id_user', $user->id)->firstOrFail();
+
+    // Ambil parameter id_mata_pelajaran dari query string
+    $id_mata_pelajaran = $request->query('id_mata_pelajaran');
+
+    // Ambil mata pelajaran terkait dengan operator
+    $mata_pelajaran = mata_pelajaran::where('id_operator', $operator->id_operator)
+        ->distinct('id_mata_pelajaran')
+        ->get();
+
+    // Pastikan mata pelajaran tidak kosong
+    if ($mata_pelajaran->isEmpty()) {
+        return redirect()->route('Operator.Course.index')->with('error', 'Tidak ada mata pelajaran yang ditemukan.');
+    }
+
+    // Query untuk mendapatkan kursus yang terkait dengan operator
+    $query = Kursus::with(['guru', 'mataPelajaran', 'kelas'])
+        ->whereHas('guru', function ($q) use ($operator) {
+            $q->where('id_operator', $operator->id_operator);
+        });
+
+    // Filter berdasarkan id_mata_pelajaran jika ada
+    if ($id_mata_pelajaran) {
+        $query->where('id_mata_pelajaran', $id_mata_pelajaran);
+    }
+
+    // Eksekusi query untuk mengambil kursus yang sesuai
+    $courses = $query->get();
+
+    // Kirimkan data ke view, termasuk mata pelajaran dan id_mata_pelajaran yang dipilih
+    return view('Role.Operator.Course.index', compact('courses', 'user', 'mata_pelajaran', 'id_mata_pelajaran'));
+}
 
     public function create(Request $request)
     {

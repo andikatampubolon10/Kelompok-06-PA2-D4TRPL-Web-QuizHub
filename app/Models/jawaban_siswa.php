@@ -17,6 +17,20 @@ class jawaban_siswa extends Model
         'id_soal',
         'id_siswa',
         'id_jawaban_soal',
+        'nilai_essay_raw',
+        'nilai_essay_final',
+    ];
+
+    protected $casts = [
+        'id_jawaban_siswa' => 'integer',
+        'jawaban_siswa' => 'string',
+        'nilai_essay_raw' => 'float',
+        'nilai_essay_final' => 'float',
+        'id_soal' => 'integer',
+        'id_siswa' => 'integer',
+        'id_jawaban_soal' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function soal()

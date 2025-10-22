@@ -342,54 +342,84 @@ class UjianController extends Controller
             ])
             ->get();
 
-    return view('Role.Guru.Course.selesai', compact('ujian', 'siswaSelesai'));
-}
-public function detailJawabanSiswa($id_ujian, $id_siswa)
-{
-    $ujian = ujian::findOrFail($id_ujian);
-    $siswa = siswa::findOrFail($id_siswa);
+        return view('Role.Guru.Course.selesai', compact('ujian', 'siswaSelesai'));
+    }
+    public function detailJawabanSiswa($id_ujian, $id_siswa)
+    {
+        $ujian = ujian::findOrFail($id_ujian);
+        $siswa = siswa::findOrFail($id_siswa);
 
-    // Ambil semua SOAL milik ujian ini yang dijawab oleh siswa tsb
-    $soals = Soal::with([
+        // Ambil semua SOAL milik ujian ini yang dijawab oleh siswa tsb
+        $soals = Soal::with([
             'tipe_soal:id_tipe_soal,nama_tipe_soal',
             'jawaban_soal' // semua opsi jawaban (PG/TF) untuk ditampilkan di modal
         ])
-        ->where('id_ujian', $id_ujian)
-        ->whereHas('jawaban_siswa', fn($q) => $q->where('id_siswa', $id_siswa))
-        ->get();
+            ->where('id_ujian', $id_ujian)
+            ->whereHas('jawaban_siswa', fn($q) => $q->where('id_siswa', $id_siswa))
+            ->get();
 
-    // Ambil jawaban siswa, keyBy id_soal supaya mudah diakses di Blade
-    $jawabanBySoal = jawaban_siswa::with('jawaban_soal')
-        ->where('id_siswa', $id_siswa)
-        ->whereIn('id_soal', $soals->pluck('id_soal'))
-        ->get()
-        ->keyBy('id_soal');
+        // Ambil jawaban siswa, keyBy id_soal supaya mudah diakses di Blade
+        $jawabanBySoal = jawaban_siswa::with('jawaban_soal')
+            ->where('id_siswa', $id_siswa)
+            ->whereIn('id_soal', $soals->pluck('id_soal'))
+            ->get()
+            ->keyBy('id_soal');
 
-    // Angka-angka untuk header statistik & ringkasan bobot
-    $countPilgan     = $soals->where('id_tipe_soal', 1)->count();
-    $countTrueFalse  = $soals->where('id_tipe_soal', 2)->count();
-    $countEssay      = $soals->where('id_tipe_soal', 3)->count();
-    $countTotal      = $soals->count();
+        // Angka-angka untuk header statistik & ringkasan bobot
+        $countPilgan = $soals->where('id_tipe_soal', 1)->count();
+        $countTrueFalse = $soals->where('id_tipe_soal', 2)->count();
+        $countEssay = $soals->where('id_tipe_soal', 3)->count();
+        $countTotal = $soals->count();
 
-    $sumPilgan       = (float) $soals->where('id_tipe_soal', 1)->sum('bobot');
-    $sumTrueFalse    = (float) $soals->where('id_tipe_soal', 2)->sum('bobot');
-    $sumEssay        = (float) $soals->where('id_tipe_soal', 3)->sum('bobot');
+        $sumPilgan = (float) $soals->where('id_tipe_soal', 1)->sum('bobot');
+        $sumTrueFalse = (float) $soals->where('id_tipe_soal', 2)->sum('bobot');
+        $sumEssay = (float) $soals->where('id_tipe_soal', 3)->sum('bobot');
 
-    return view('Role.Guru.Course.detail-jawaban-siswa', [
-        'ujian'          => $ujian,
-        'siswa'          => $siswa,
-        'soals'          => $soals,
-        'jawabanBySoal'  => $jawabanBySoal,
-        'countPilgan'    => $countPilgan,
-        'countTrueFalse' => $countTrueFalse,
-        'countEssay'     => $countEssay,
-        'countTotal'     => $countTotal,
-        'sumPilgan'      => $sumPilgan,
-        'sumTrueFalse'   => $sumTrueFalse,
-        'sumEssay'       => $sumEssay,
-        'idUjian'        => $ujian->id_ujian,
-    ]);
-}
+        return view('Role.Guru.Course.detail-jawaban-siswa', [
+            'ujian' => $ujian,
+            'siswa' => $siswa,
+            'soals' => $soals,
+            'jawabanBySoal' => $jawabanBySoal,
+            'countPilgan' => $countPilgan,
+            'countTrueFalse' => $countTrueFalse,
+            'countEssay' => $countEssay,
+            'countTotal' => $countTotal,
+            'sumPilgan' => $sumPilgan,
+            'sumTrueFalse' => $sumTrueFalse,
+            'sumEssay' => $sumEssay,
+            'idUjian' => $ujian->id_ujian,
+        ]);
+    }
+    public function nilaiEssay(Request $request, $id_ujian, $id_siswa)
+    {
+        $data = $request->validate([
+            'id_soal' => 'required|exists:soal,id_soal',
+            'nilai' => 'required|numeric|min:0',
+        ]);
+
+        $soal = \App\Models\Soal::findOrFail($data['id_soal']);
+
+        // ambil bobot untuk tipe soal Essay (id_tipe_soal = 3)
+        $bobot = \App\Models\BobotTipeSoal::where('id_ujian', $id_ujian)
+            ->where('id_tipe_soal', 3)
+            ->value('bobot') ?? 0;
+
+        // perhitungan nilai
+        $raw = (float) $data['nilai'];
+        $final = round($raw * ($bobot / 100), 2);
+
+        $jawaban = \App\Models\JawabanSiswa::where('id_siswa', $id_siswa)
+            ->where('id_soal', $soal->id_soal)
+            ->firstOrFail();
+
+        $jawaban->update([
+            'nilai_essay_raw' => $raw,
+            'nilai_essay_final' => $final,
+        ]);
+
+        return back()->with('success', "Nilai essay disimpan (raw {$raw}, dibobot {$final} × {$bobot}%).");
+    }
+
 
 
 }

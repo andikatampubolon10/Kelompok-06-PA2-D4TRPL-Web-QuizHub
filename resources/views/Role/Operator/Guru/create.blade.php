@@ -38,15 +38,25 @@
                     enctype="multipart/form-data">
                     @csrf
                     <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx,.xls" />
-                    <button type="button" id="importButton"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
-                        <i class="fas fa-upload mr-2"></i>
-                        Pilih File Excel
-                    </button>
+                    <div class="flex space-x-4">
+                        <!-- Tombol Pilih File Excel -->
+                        <button type="button" id="importButton"
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
+                            <i class="fas fa-upload mr-2"></i>
+                            Pilih File Excel
+                        </button>
+                        <!-- Tombol Download Template Excel -->
+                        <a href="{{ route('Operator.guru.exportTemplate') }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-download mr-2" aria-hidden="true"></i>
+                            Download Template Excel
+                        </a>
+                    </div>
                 </form>
             </div>
 
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+            <!-- Info Box -->
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
                         <i class="fas fa-info-circle text-blue-400"></i>
@@ -83,7 +93,7 @@
                             <h3 class="text-sm font-medium text-yellow-800">Tips Pengisian Form</h3>
                             <div class="mt-2 text-sm text-yellow-700">
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>NIP harus terdiri dari 18 digit angka</li>
+                                    <li>NIP harus terdiri dari 16 digit angka</li>
                                     <li>Email harus unik dan belum terdaftar di sistem</li>
                                     <li>Pilih minimal satu mata pelajaran yang akan diampu</li>
                                     <li>Kata sandi minimal 8 karakter</li>
@@ -317,38 +327,38 @@
     </script>
 
     {{-- CDN SweetAlert2 (taruh di bawah, sebelum @endsection / penutup body) --}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    // Notifikasi BERHASIL
-    @if (session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: @json(session('success')),
-            confirmButtonText: 'OK'
-        });
-    @endif
+    <script>
+        // Notifikasi BERHASIL
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: @json(session('success')),
+                confirmButtonText: 'OK'
+            });
+        @endif
 
-    // Notifikasi GAGAL umum (mis. from ->with('error', '...'))
-    @if (session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: @json(session('error')),
-            confirmButtonText: 'Tutup'
-        });
-    @endif
+        // Notifikasi GAGAL umum (mis. from ->with('error', '...'))
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: @json(session('error')),
+                confirmButtonText: 'Tutup'
+            });
+        @endif
 
-    // Notifikasi VALIDASI (error bag)
-    @if ($errors->any())
-        Swal.fire({
-            icon: 'error',
-            title: 'Validasi Gagal',
-            html: `{!! implode('<br>', $errors->all()) !!}`,
-            confirmButtonText: 'Perbaiki'
-        });
-    @endif
-</script>
+        // Notifikasi VALIDASI (error bag)
+        @if ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                html: `{!! implode('<br>', $errors->all()) !!}`,
+                confirmButtonText: 'Perbaiki'
+            });
+        @endif
+    </script>
 
 @endsection

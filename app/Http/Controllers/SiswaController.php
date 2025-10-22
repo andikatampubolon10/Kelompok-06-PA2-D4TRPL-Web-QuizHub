@@ -6,6 +6,7 @@ use App\Models\siswa;
 use App\Models\User;
 use App\Models\Operator;
 use App\Models\kelas;
+use App\Exports\SiswaExport;
 use App\Imports\SiswaImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -250,4 +251,21 @@ class SiswaController extends Controller
         $siswa->delete();
         return redirect()->route('Operator.Siswa.index')->with('success', 'Siswa berhasil dihapus.');
     }
+
+public function exportTemplate()
+{
+    // Nama file yang akan diunduh
+    $fileName = 'template_data_siswa.xlsx';
+
+    // Mendapatkan file Excel menggunakan Laravel Excel (menghasilkan file Excel secara mentah)
+    $file = Excel::raw(new SiswaExport, \Maatwebsite\Excel\Excel::XLSX);  
+
+    // Membuat response untuk mendownload file dengan header tambahan
+    return response($file)
+        ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+        ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', 'Sat, 01 Jan 1990 00:00:00 GMT');
+}
 }

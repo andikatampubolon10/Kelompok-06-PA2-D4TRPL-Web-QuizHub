@@ -316,21 +316,25 @@
     @php $j = $jawabanBySoal[$soal->id_soal] ?? null; @endphp
 
     {{-- Kartu ringkas --}}
-    <div class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-      <div class="mb-4 md:mb-0 md:flex-1">
-        <h3 class="text-lg font-semibold mb-2 soal-snippet">{!! $soal->soal !!}</h3>
+    <div class="bg-gray-100 p-4 rounded-lg shadow-sm mb-4">
+      <div class="flex flex-col md:flex-row justify-between md:items-start">
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold mb-2 soal-snippet">{!! $soal->soal !!}</h3>
+          <p class="text-sm text-gray-700 mt-1">
+            <span class="font-semibold">Jawaban siswa:</span>
+            <span class="ml-1 break-words">
+              {{ $j && $j->jawaban_siswa ? Str::limit($j->jawaban_siswa, 100, '...') : '—' }}
+            </span>
+          </p>
+        </div>
 
-        <div class="flex space-x-5 justify-end">
+        <div class="mt-3 md:mt-0 md:ml-4">
           <button type="button"
-                  class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded"
+                  class="text-yellow-500 flex items-center hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded px-3 py-1"
                   data-bs-toggle="modal" data-bs-target="#modal-soal-essay-{{ $soal->id_soal }}">
             <i class="fas fa-eye mr-1"></i> Lihat
           </button>
         </div>
-
-        <p class="text-sm text-gray-700 mt-2">
-          Jawaban siswa: <span class="font-semibold">{{ $j->jawaban_siswa ?? '—' }}</span>
-        </p>
       </div>
     </div>
 
@@ -342,29 +346,38 @@
             <h5 class="modal-title">Detail Soal & Jawaban Siswa</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
           </div>
+
           <div class="modal-body">
             <div class="mb-3 text-sm text-gray-600">
               Tipe: <span class="font-semibold">{{ optional($soal->tipe_soal)->nama_tipe_soal ?? '—' }}</span> •
-              Bobot: <span class="font-semibold">{{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float)$soal->bobot, 2, '.', ''), '0'), '.') }}</span>
+              Bobot: <span class="font-semibold">
+                {{ is_null($soal->bobot) ? '—' : rtrim(rtrim(number_format((float)$soal->bobot, 2, '.', ''), '0'), '.') }}
+              </span>
             </div>
 
             <div class="prose max-w-none mb-4">{!! $soal->soal !!}</div>
 
             <h6 class="font-semibold mb-2">Jawaban Siswa</h6>
-            <div class="p-3 rounded border border-gray-200 bg-white whitespace-pre-line">
+            <div class="p-3 rounded border border-gray-200 bg-white overflow-auto"
+                 style="max-height: 300px; white-space: pre-wrap; word-break: break-word;">
               {{ $j->jawaban_siswa ?? '—' }}
             </div>
           </div>
+
           <div class="modal-footer">
-            <button type="button" class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800" data-bs-dismiss="modal">Tutup</button>
+            <button type="button"
+                    class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
+                    data-bs-dismiss="modal">Tutup</button>
           </div>
         </div>
       </div>
     </div>
+
   @empty
     <div class="text-center py-6 text-gray-500">Tidak ada jawaban Essay/Isian.</div>
   @endforelse
 </div>
+
 
 
 <div class="mt-4">

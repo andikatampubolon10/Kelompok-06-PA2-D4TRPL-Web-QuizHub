@@ -117,12 +117,12 @@
                         </button>
                     </div>
 
-                        <a href="{{ route('Operator.Course.create', ['id_mata_pelajaran' => $id_mata_pelajaran]) }}"
-                            aria-label="Tambah kursus pertama"
-                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                            <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                            Tambah Kursus
-                        </a>
+                    <a href="{{ route('Operator.Course.create', ['id_mata_pelajaran' => $id_mata_pelajaran]) }}"
+                        aria-label="Tambah kursus pertama"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                        Tambah Kursus
+                    </a>
                 </div>
             </div>
         </div>
@@ -143,14 +143,12 @@
                 </div>
             </div>
 
-            {{-- Content --}}
             <div class="p-6">
                 @if (count($courses ?? []) > 0)
                     <div id="course-list" class="space-y-4">
                         @foreach ($courses as $course)
                             <div class="course-item bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 hover:from-green-50 hover:to-emerald-50 hover:border-green-200"
-                                data-guru="{{ $course->id_guru ?? '' }}" data-kelas="{{ $course->id_kelas ?? '' }}"
-                                role="article" tabindex="0">
+                                data-kelas="{{ $course->id_kelas ?? '' }}" role="article" tabindex="0">
                                 <div
                                     class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                                     <div class="flex-1">
@@ -171,25 +169,9 @@
                                                 </h4>
                                                 <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                                                     <span class="flex items-center">
-                                                        <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"
-                                                            aria-hidden="true"></i>
-                                                        Guru: {{ $course->guru->nama_guru ?? 'Tidak ditentukan' }}
-                                                    </span>
-                                                    <span class="flex items-center">
-                                                        <i class="fas fa-users mr-2 text-purple-600"
-                                                            aria-hidden="true"></i>
-                                                        Kelas: {{ $course->kelas->nama_kelas ?? 'Tidak ditentukan' }}
-                                                    </span>
-                                                    <span class="flex items-center">
                                                         <i class="fas fa-book mr-2 text-green-600" aria-hidden="true"></i>
                                                         Mata Pelajaran:
                                                         {{ $course->mataPelajaran->nama_mata_pelajaran ?? 'Tidak ada' }}
-                                                    </span>
-                                                    <span class="flex items-center">
-                                                        <i class="fas fa-calendar-alt mr-2 text-orange-600"
-                                                            aria-hidden="true"></i>
-                                                        Dibuat:
-                                                        {{ $course->created_at ? $course->created_at->format('d M Y') : 'N/A' }}
                                                     </span>
                                                 </div>
                                                 <div class="mt-2">
@@ -204,14 +186,13 @@
                                     </div>
                                     <div class="flex items-center space-x-3">
                                         <a href="{{ route('Operator.Course.edit', $course->id_kursus) }}"
-                                            aria-label="Edit kursus {{ $course->nama_kursus }}"
                                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors group">
                                             <i class="fas fa-edit mr-2 group-hover:scale-110 transition-transform"
                                                 aria-hidden="true"></i>
                                             Edit
                                         </a>
                                         <button type="button"
-                                            onclick="showDetailModal('{{ addslashes($course->nama_kursus) }}', '{{ addslashes($course->guru->nama_guru ?? 'Tidak ditentukan') }}', '{{ addslashes($course->kelas->nama_kelas ?? 'Tidak ditentukan') }}', '{{ addslashes($course->mataPelajaran->nama_mata_pelajaran ?? 'Tidak ada') }}', '{{ $course->created_at ? $course->created_at->format('d M Y, H:i') : 'N/A' }}')"
+                                            onclick="showDetailModal('{{ addslashes($course->nama_kursus) }}', '{{ addslashes($course->mataPelajaran->nama_mata_pelajaran ?? 'Tidak ada') }}')"
                                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
                                             aria-label="Lihat detail kursus {{ $course->nama_kursus }}">
                                             <i class="fas fa-eye mr-2" aria-hidden="true"></i>
@@ -233,31 +214,15 @@
                             </div>
                         @endforeach
                     </div>
-
-                    {{-- No Results Message (Hidden by default) --}}
-                    <div id="no-results" class="text-center py-12 hidden">
-                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-search text-gray-400 text-3xl" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada kursus ditemukan</h3>
-                        <p class="text-gray-600 mb-6" id="no-results-text">Coba ubah filter guru atau tambah kursus baru.
-                        </p>
-                    </div>
                 @else
                     <div class="text-center py-12">
-                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-book-open text-gray-400 text-3xl" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada kursus</h3>
-                        <p class="text-gray-600 mb-6">Mulai dengan menambahkan kursus pertama Anda.</p>
-                        @if ($courses->isEmpty())
-                            <a href="{{ route('Operator.Course.create', ['id_mata_pelajaran' => $id_mata_pelajaran]) }}"
-                                aria-label="Tambah kursus pertama"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                                <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                                Tambah Kursus
-                            </a>
-                        @endif
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada kursus ditemukan untuk mata pelajaran
+                            ini.</h3>
+                        <a href="{{ route('Operator.Course.create', ['id_mata_pelajaran' => $id_mata_pelajaran]) }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                            Tambah Kursus
+                        </a>
                     </div>
                 @endif
             </div>

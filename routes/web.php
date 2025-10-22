@@ -106,7 +106,6 @@ Route::middleware('auth')->group(function () {
         Route::get('bobot-tipe-soal/{id_bobot_tipe_soal}/edit', [BobotTipeSoalController::class, 'edit'])->name('BobotTipeSoal.edit');
         Route::put('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'update'])->name('BobotTipeSoal.update');
         Route::delete('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'destroy'])->name('BobotTipeSoal.destroy');
-        
     });
 
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
@@ -155,6 +154,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/Kurikulum', KurikulumController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
+        Route::get('export-template', [GuruController::class, 'exportTemplate'])->name('guru.exportTemplate'); 
+        Route::get('siswa/export-template', [SiswaController::class, 'exportTemplate'])->name('Siswa.exportTemplate');
+
     });
 
     // Route untuk Siswa
