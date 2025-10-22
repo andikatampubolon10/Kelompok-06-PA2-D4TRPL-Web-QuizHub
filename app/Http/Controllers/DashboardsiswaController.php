@@ -8,10 +8,15 @@ use App\Models\siswa;
 use App\Models\Materi;
 use App\Models\soal;
 use App\Models\ujian;
+
 use App\Models\NilaiKursus;
 use App\Models\TipeNilai;
+
+use Illuminate\Support\Facades\DB;
+
+
 use App\Models\jawaban_siswa;
-use App\Models\jawaban_soal;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\BobotTipeSoal;
@@ -273,6 +278,7 @@ public function soal($id_kursus, $id_ujian)
     ]);
 }
 
+
 public function submitUjian(Request $request, $id_kursus, $id_ujian) {
     $ujian = Ujian::findOrFail($id_ujian);
     $now = now();
@@ -400,6 +406,7 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
 }
 
+
     public function materi(Request $request)
     {
         $user = auth()->user();
@@ -514,4 +521,37 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
 
         return redirect()->route('kuis.terimakasih')->with('success', 'Jawaban berhasil disubmit.');
     }
+
+
+public function exitExam($kursus_id, $ujian_id, Request $request)
+{
+    // Ambil data ujian berdasarkan ID
+    $ujian = Ujian::findOrFail($ujian_id);
+
+    // Validasi password keluar
+    $request->validate([
+        'password_keluar' => 'required|string',
+    ]);
+
+    // <CHANGE> Debug: Log the stored hash and its length
+    \Log::info('Stored hash length: ' . strlen($ujian->password_keluar));
+    \Log::info('Stored hash: ' . $ujian->password_keluar);
+    \Log::info('Input password: ' . $request->password_keluar);
+
+    // Cek apakah password yang dimasukkan cocok dengan hash di database
+    if (!Hash::check($request->password_keluar, $ujian->password_keluar)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Password salah. Coba lagi.'
+        ], 400);
+    }
+
+    // Jika password benar, proses keluar ujian
+    return response()->json([
+        'status' => 'success',
+        'redirect' => route('Siswa.Course.index')
+    ]);
 }
+}
+
+
