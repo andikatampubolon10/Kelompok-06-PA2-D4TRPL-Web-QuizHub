@@ -36,19 +36,31 @@
                     <p class="text-sm text-gray-600">Unggah file Excel untuk menambahkan multiple siswa sekaligus</p>
                 </div>
 
+                <!-- Form Import Data Siswa -->
                 <form id="importForm" action="{{ route('Operator.Siswa.import') }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
                     <input type="file" id="fileInput" name="file" class="hidden" accept=".xlsx,.xls" />
-                    <button type="button" id="importButton"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
-                        <i class="fas fa-upload mr-2"></i>
-                        Pilih File Excel
-                    </button>
+                    <div class="flex space-x-4"> <!-- Flexbox untuk membuat tombol berdampingan -->
+                        <!-- Tombol Pilih File Excel -->
+                        <button type="button" id="importButton"
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-200">
+                            <i class="fas fa-upload mr-2"></i>
+                            Pilih File Excel
+                        </button>
+
+                        <!-- Tombol Download Template Excel -->
+                        <a href="{{ route('Operator.Siswa.exportTemplate') }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-download mr-2" aria-hidden="true"></i>
+                            Download Template Excel
+                        </a>
+                    </div>
                 </form>
             </div>
 
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+            <!-- Info Box -->
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
                         <i class="fas fa-info-circle text-blue-400"></i>
@@ -61,7 +73,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Form Section -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="mb-6">
