@@ -131,11 +131,13 @@ public function viewLatihan($id_kurikulum, $id_tahun_ajaran, $id_semester, $id_m
 public function submitLatihan(Request $request, $id_kurikulum, $id_tahun_ajaran, $id_semester, $id_mata_pelajaran, $id_kelas, $id_latihan)
 {
     $latihan = Latihan::findOrFail($id_latihan);
+    $kelas = Kelas::findOrFail($id_kelas);  // Ambil kelas berdasarkan ID
+
     $soals = Soal::where('id_latihan', $latihan->id_latihan)->get();
-    $kelas = Kelas::findOrFail($id_kelas);
 
     $correctAnswers = 0;
     $totalWeight = 0;
+    $questionDetails = [];
 
     foreach ($soals as $soal) {
         // Dapatkan jawaban yang benar
@@ -143,23 +145,36 @@ public function submitLatihan(Request $request, $id_kurikulum, $id_tahun_ajaran,
         $userAnswer = $request->input('soal_' . $soal->id_soal);
 
         // Periksa jawaban benar
+        $isCorrect = false;
         if ($correctAnswer && $correctAnswer->id_jawaban_soal == $userAnswer) {
+            $isCorrect = true;
             $correctAnswers++;
             $totalWeight += $soal->bobot;
         }
+
+        // Simpan detail jawaban soal untuk ditampilkan
+        $questionDetails[] = [
+            'soal' => $soal->soal,
+            'jawaban_siswa' => $userAnswer,
+            'jawaban_benar' => $correctAnswer->jawaban ?? 'Tidak ada jawaban',
+            'is_correct' => $isCorrect,
+            'bobot' => $soal->bobot,
+        ];
     }
 
     // Hitung nilai
     $totalQuestions = count($soals);
     $score = ($correctAnswers / $totalQuestions) * 100;
 
+    // Kirimkan data ke view hasil latihan
     return view('Role.Siswa.Latihan.hasil_latihan', [
-        'latihan' => $latihan,
-        'kelas' => $kelas,
+        'latihan' => $latihan,  // Menambahkan latihan ke data yang dikirimkan ke view
+        'kelas' => $kelas,      // Menambahkan kelas ke data yang dikirimkan ke view
         'score' => $score,
         'correctAnswers' => $correctAnswers,
         'totalQuestions' => $totalQuestions,
         'totalWeight' => $totalWeight,
+        'questionDetails' => $questionDetails,  // Menambahkan detail jawaban ke view
     ]);
 }
 
@@ -199,6 +214,44 @@ private function getGrade($nilai)
     if ($nilai >= 70) return ['grade' => 'C', 'label' => 'Good', 'color' => 'amber'];
     if ($nilai >= 60) return ['grade' => 'D', 'label' => 'Fair', 'color' => 'orange'];
     return ['grade' => 'F', 'label' => 'Needs Improvement', 'color' => 'red'];
+}
+
+public function showDetailJawaban(Request $request, $id_latihan)
+{
+    // Ambil data latihan berdasarkan ID
+    $latihan = Latihan::findOrFail($id_latihan);
+    
+    // Ambil soal-soal yang terkait dengan latihan
+    $soals = Soal::where('id_latihan', $latihan->id_latihan)->get();
+
+    $questionDetails = [];
+
+    // Iterasi setiap soal untuk mendapatkan detailnya
+    foreach ($soals as $soal) {
+        // Ambil jawaban yang benar untuk soal ini
+        $correctAnswer = jawaban_soal::where('id_soal', $soal->id_soal)->where('benar', 1)->first();
+        
+        // Ambil jawaban siswa dari request (dari form)
+        $userAnswer = $request->input('soal_' . $soal->id_soal); // Jawaban siswa dari form
+
+        // Bandingkan jawaban siswa dengan jawaban yang benar
+        $isCorrect = $correctAnswer && $correctAnswer->id_jawaban_soal == $userAnswer;
+
+        // Simpan detail soal, jawaban siswa, jawaban benar, dan status kebenaran untuk ditampilkan
+        $questionDetails[] = [
+            'soal' => $soal->soal,
+            'choices' => $soal->jawaban_soal,  // Pilihan jawaban
+            'jawaban_benar' => $correctAnswer->jawaban ?? 'Tidak ada jawaban', // Jawaban benar
+            'jawaban_siswa' => $userAnswer,   // Jawaban siswa
+            'is_correct' => $isCorrect        // Status apakah jawaban siswa benar
+        ];
+    }
+
+    // Kembalikan ke view dan kirimkan detail soal beserta jawaban siswa
+    return view('Role.Siswa.Latihan.detail_jawaban', [
+        'latihan' => $latihan,
+        'questionDetails' => $questionDetails
+    ]);
 }
 
 

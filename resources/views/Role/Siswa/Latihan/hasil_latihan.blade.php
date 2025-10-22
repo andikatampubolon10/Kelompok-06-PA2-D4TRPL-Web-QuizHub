@@ -20,6 +20,13 @@
         <p class="mt-2">Bobot Soal Benar: {{ $totalWeight }}</p>
       </div>
 
+      <!-- Detail Jawaban Button -->
+      <div class="mt-8">
+        <a href="{{ route('Siswa.latihan.detailJawaban', $latihan->id_latihan) }}" class="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">
+          Lihat Detail Jawaban
+        </a>
+      </div>
+
       <div class="mt-8">
         <a href="{{ route('Siswa.latihan.kurikulum') }}" class="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Kembali ke Latihan</a>
       </div>

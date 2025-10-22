@@ -919,4 +919,13 @@ startTimer();
 </script>
 @endpush
 
+@push('styles')
+  <style>
+  /* Pastikan konten dari editor tampil bagus */
+  #qTitle img, #choices img { max-width: 100%; height: auto; }
+  #qTitle figure { margin: 0 0 1rem; }
+  #choices .choice-html { display: block; }
+  </style>
+@endpush
+
 

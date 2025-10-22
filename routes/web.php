@@ -192,6 +192,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran', [PracticeQuestionController::class, 'tahunAjaran'])->name('latihan.tahunajaran');
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester', [PracticeQuestionController::class, 'semester'])
             ->name('latihan.semester');
+
+        // routes/web.php
+
+        Route::get('/grades', [DashboardsiswaController::class, 'nilaiSiswa'])
+            ->name('Grades.index');
+
+        Route::get('/grades/course/{id_kursus}', [DashboardsiswaController::class, 'nilaiKursus'])
+            ->name('Grades.course');
+
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
 
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [PracticeQuestionController::class, 'mataPelajaran'])
@@ -205,6 +215,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/latihan/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel/{id_mata_pelajaran}/kelas/{id_kelas}/topik/{id_latihan}/hasil', 
     [PracticeQuestionController::class, 'hasilLatihan'])
     ->name('latihan.hasil');
+    Route::get('/latihan/{id_latihan}/detail-jawaban', [PracticeQuestionController::class, 'showDetailJawaban'])->name('latihan.detailJawaban');
+
         // routes/web.php
 
 // routes/web.php
