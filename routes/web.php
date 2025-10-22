@@ -69,18 +69,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('/LatihanSoalSoal', LatihanSoalSoalController::class);
         Route::resource('/Kelas', KelasController::class);
         Route::resource('/MataPelajaran', MataPelajaranController::class);
-        Route::prefix('/Ujian')->name('Ujian.')->group(function () {
-            Route::get('/', [UjianController::class, 'index'])->name('index');
-            Route::get('/create', [UjianController::class, 'create'])->name('create');
-            Route::post('/', [UjianController::class, 'store'])->name('store');
-            Route::get('/{ujian}', [UjianController::class, 'show'])->name('show');
-            Route::get('/{id_ujian}/edit', [UjianController::class, 'edit'])->name('edit');
-            Route::put('/{id_ujian}', [UjianController::class, 'update'])->name('update');
-            Route::delete('/{id_ujian}', [UjianController::class, 'destroy'])->name('destroy');
-            Route::get('/{id_ujian}/selesai', [UjianController::class, 'selesai'])->name('selesai');
-            Route::get('/{id_ujian}/siswa/{id_siswa}', [UjianController::class, 'detailJawabanSiswa'])->name('jawabanSiswa');
-            Route::get('/{id_ujian}/proses-nilai', [UjianController::class, 'prosesNilai'])->name('prosesNilai');
-        });
+        Route::get('/Ujian/{id_ujian}/selesai', [UjianController::class, 'selesai'])
+        ->name('Ujian.selesai');
+        Route::get('/Ujian/{id_ujian}/siswa/{id_siswa}', [UjianController::class, 'detailJawabanSiswa'])
+        ->name('Ujian.jawabanSiswa');
+        Route::resource('/Ujian', UjianController::class);
         Route::get('/ListSiswa/{id_kursus}', [ListSiswaController::class, 'index'])->name('ListSiswa');
         Route::get('/nilai/export/{id_kursus}', [ListSiswaController::class, 'exportNilai'])->name('nilai.export');
         Route::get('/nilai/{id_kursus}', [App\Http\Controllers\NilaiController::class, 'index'])->name('Guru.nilai.index');
@@ -113,7 +106,7 @@ Route::middleware('auth')->group(function () {
         Route::get('bobot-tipe-soal/{id_bobot_tipe_soal}/edit', [BobotTipeSoalController::class, 'edit'])->name('BobotTipeSoal.edit');
         Route::put('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'update'])->name('BobotTipeSoal.update');
         Route::delete('bobot-tipe-soal/{id_bobot_tipe_soal}', [BobotTipeSoalController::class, 'destroy'])->name('BobotTipeSoal.destroy');
-
+        
     });
 
     Route::prefix('Operator')->name('Operator.')->middleware('role:Operator')->group(function () {
@@ -183,7 +176,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses/{id_kursus}/ujian/{id_ujian}/hasil', [DashboardsiswaController::class, 'hasilUjian'])
             ->name('Ujian.hasil');
 
-        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');   
+        Route::post('/ujian/{kursus_id}/{ujian_id}/exit', [DashboardsiswaController::class, 'exitExam'])->name('Ujian.exit');
+
 
         // 4) Mata Pelajaran (butuh id_kurikulum, id_tahun_ajaran, id_semester)
         Route::get('/kurikulum/{id_kurikulum}/tahun-ajaran/{id_tahun_ajaran}/semester/{id_semester}/mapel', [EnrollSiswaController::class, 'mataPelajaran'])
@@ -218,7 +212,7 @@ Route::middleware('auth')->group(function () {
             ->name('Grades.course');
 
         Route::post('/kursus/{id_kursus}/ujian/{id_ujian}/submit', [UjianController::class, 'submitUjian'])
-            ->name('submitUjian');
+    ->name('submitUjian');
 
         Route::resource('/JawabanSiswaQuiz', JawabanSiswaQuizController::class);
         Route::resource('/Ujian', UjianController::class);
