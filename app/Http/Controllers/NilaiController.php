@@ -195,123 +195,104 @@ class NilaiController extends Controller
      * @return int Nilai akhir dibulatkan (0..100)
      */
     private function recalcTipeNilaiFromAnswers(int $id_ujian, int $id_siswa): int
-    {
-        // Pastikan bobot tipe = 100
-        $sum = (int) BobotTipeSoal::where('id_ujian', $id_ujian)->sum('bobot');
-        if ($sum !== 100) {
-            Log::warning('Bobot tipe soal tidak 100; skip hitung.', ['id_ujian' => $id_ujian, 'total_bobot' => $sum]);
-            return 0;
-        }
-
-        // Ambil semua soal PG & BS untuk ujian ini
-        $soalList = Soal::where('id_ujian', $id_ujian)
-            ->whereHas('tipe_soal', function ($q) {
-                $q->whereIn(DB::raw('LOWER(nama_tipe_soal)'), ['pilihan berganda', 'benar salah']);
-            })
-            ->get(['id_soal', 'id_tipe_soal', 'bobot']);
-
-        if ($soalList->isEmpty()) {
-            // Tidak ada PG/BS → nilai 0
-            return 0;
-        }
-
-        // Kumpulkan id_soal, dan jawaban siswa untuk soal-soal itu
-        $idsSoal   = $soalList->pluck('id_soal')->all();
-        $jawabMap  = jawaban_siswa::whereIn('id_soal', $idsSoal)
-            ->where('id_siswa', $id_siswa)
-            ->get(['id_soal', 'id_jawaban_soal', 'jawaban_siswa'])
-            ->keyBy('id_soal');
-
-        // Ambil bobot per tipe soal (%)
-        $bobotTipe = BobotTipeSoal::where('id_ujian', $id_ujian)
-            ->pluck('bobot', 'id_tipe_soal'); // [id_tipe_soal => bobot%]
-
-        // Ambil jawaban benar per soal (map: id_soal => set opsi benar)
-        $kunciPerSoal = jawaban_soal::whereIn('id_soal', $idsSoal)
-            ->where(function ($q) {
-                $q->where('benar', 1)->orWhere('is_benar', 1);
-            })
-            ->get(['id_soal', 'id_jawaban_soal', 'jawaban'])
-            ->groupBy('id_soal');
-
-        // Akumulasi per tipe soal
-        $agg = []; // id_tipe_soal => ['total' => xx, 'benar' => yy]
-        foreach ($soalList as $soal) {
-            $idSoal  = (int) $soal->id_soal;
-            $idTipe  = (int) $soal->id_tipe_soal;
-            $bobot   = (float) ($soal->bobot ?? 0);
-
-            if (!isset($agg[$idTipe])) {
-                $agg[$idTipe] = ['total' => 0.0, 'benar' => 0.0];
-            }
-            $agg[$idTipe]['total'] += $bobot;
-
-            $jawab = $jawabMap->get($idSoal);
-            if (!$jawab) {
-                continue; // belum menjawab → tidak menambah benar
-            }
-
-            $isCorrect = false;
-
-            // 1) Jika id_jawaban_soal terisi, cek flag benar pada opsi tsb
-            if (!empty($jawab->id_jawaban_soal)) {
-                $opt = jawaban_soal::find($jawab->id_jawaban_soal);
-                if ($opt) {
-                    $flag = $opt->benar ?? $opt->is_benar ?? 0;
-                    $isCorrect = ($flag == 1 || $flag === true || $flag === '1');
-                }
-            }
-
-            // 2) Jika belum terkonfirmasi benar & ada jawaban teks, cocokkan teks dengan jawaban opsi yang benar
-            if (!$isCorrect && !empty($jawab->jawaban_siswa)) {
-                $jawabNorm = $this->norm($jawab->jawaban_siswa);
-                $kunciSet  = $kunciPerSoal->get($idSoal) ?? collect();
-
-                foreach ($kunciSet as $kunci) {
-                    if ($this->norm($kunci->jawaban) === $jawabNorm) {
-                        $isCorrect = true;
-                        break;
-                    }
-                }
-            }
-
-            if ($isCorrect) {
-                $agg[$idTipe]['benar'] += $bobot;
-            }
-        }
-
-        // Hitung skor akhir tertimbang
-        $totalWeighted = 0.0;
-        foreach ($agg as $idTipe => $row) {
-            $totalBobotTipeSoal = (float) $row['total']; // total bobot soal di tipe ini
-            $benarBobot         = (float) $row['benar']; // total bobot soal yang benar di tipe ini
-            $score0_100         = $totalBobotTipeSoal > 0 ? ($benarBobot / $totalBobotTipeSoal) * 100.0 : 0.0;
-
-            $bobotPersenTipe    = (float) ($bobotTipe[$idTipe] ?? 0);
-            $weighted           = $score0_100 * $bobotPersenTipe / 100.0;
-
-            $totalWeighted     += $weighted;
-        }
-
-        // Simpan ke tipe_nilai (upsert)
-        $ujian = Ujian::find($id_ujian);
-        $id_tipe_ujian = $ujian?->id_tipe_ujian;
-
-        if ($id_tipe_ujian) {
-            TipeNilai::updateOrCreate(
-                [
-                    'id_siswa'      => $id_siswa,
-                    'id_ujian'      => $id_ujian,
-                    'id_tipe_ujian' => $id_tipe_ujian,
-                ],
-                [
-                    'nilai' => (int) round($totalWeighted),
-                ]
-            );
-        }
-
-        return (int) round($totalWeighted);
+{
+    // pastikan total BobotTipeSoal = 100
+    $sum = (int) \App\Models\BobotTipeSoal::where('id_ujian', $id_ujian)->sum('bobot');
+    if ($sum !== 100) {
+        \Log::warning('Bobot tipe soal tidak 100', ['id_ujian'=>$id_ujian,'total_bobot'=>$sum]);
+        return 0;
     }
+
+    // 1) Ambil semua soal untuk ujian ini
+    $soalList = \App\Models\Soal::where('id_ujian', $id_ujian)
+        ->whereIn('id_tipe_soal', [1,2,3]) // 1=PG, 2=TF, 3=Essay
+        ->get(['id_soal','id_tipe_soal','bobot']);
+
+    if ($soalList->isEmpty()) return 0;
+
+    $idsSoal = $soalList->pluck('id_soal')->all();
+
+    // 2) Jawaban siswa (termasuk nilai essay raw/final)
+    $jawabMap = \App\Models\jawaban_siswa::whereIn('id_soal', $idsSoal)
+        ->where('id_siswa', $id_siswa)
+        ->get(['id_soal','id_jawaban_soal','jawaban_siswa','nilai_essay_raw','nilai_essay_final'])
+        ->keyBy('id_soal');
+
+    // 3) Bobot tipe di level UJIAN
+    $bobotTipe = \App\Models\BobotTipeSoal::where('id_ujian', $id_ujian)
+        ->pluck('bobot','id_tipe_soal'); // [1=>%, 2=>%, 3=>%]
+
+    // 4) Kunci untuk PG/TF (hapus 'is_benar' jika gak ada di DB)
+    $kunciPerSoal = \App\Models\jawaban_soal::whereIn('id_soal', $idsSoal)
+        ->where('benar', 1)
+        ->get(['id_soal','id_jawaban_soal','jawaban'])
+        ->groupBy('id_soal');
+
+    // 5) Akumulasi PG/TF dan kumpulkan contribution essay_final
+    $agg = []; // id_tipe_soal => ['total'=>..., 'benar'=>...]
+    $essayWeighted = 0.0; // langsung dari nilai_essay_final (SUDAH dibobot tipe, jadi jangan dibobot lagi)
+
+    foreach ($soalList as $soal) {
+        $idSoal = (int) $soal->id_soal;
+        $idTipe = (int) $soal->id_tipe_soal;
+        $bobot  = (float) ($soal->bobot ?? 0);
+
+        if ($idTipe === 3) {
+            // === ESSAY: pakai nilai_essay_final langsung jika ada ===
+            $j = $jawabMap->get($idSoal);
+            if ($j && is_numeric($j->nilai_essay_final)) {
+                // contohmu: nilai_essay_final = 40 → langsung tambahkan (jangan dikali bobot tipe lagi)
+                $essayWeighted += (float) $j->nilai_essay_final;
+            }
+            continue; // essay tidak ikut ke perhitungan agg (agar tidak double count)
+        }
+
+        // === PG & TF ===
+        $agg[$idTipe] ??= ['total'=>0.0,'benar'=>0.0];
+        $agg[$idTipe]['total'] += $bobot;
+
+        $j = $jawabMap->get($idSoal);
+        if (!$j) continue;
+
+        $isCorrect = false;
+        if (!empty($j->id_jawaban_soal)) {
+            $opt  = \App\Models\jawaban_soal::find($j->id_jawaban_soal);
+            $flag = $opt?->benar ?? 0;
+            $isCorrect = ($flag == 1 || $flag === true || $flag === '1');
+        }
+        if (!$isCorrect && !empty($j->jawaban_siswa)) {
+            $norm = $this->norm($j->jawaban_siswa);
+            foreach ($kunciPerSoal->get($idSoal) ?? [] as $k) {
+                if ($this->norm($k->jawaban) === $norm) { $isCorrect = true; break; }
+            }
+        }
+        if ($isCorrect) {
+            $agg[$idTipe]['benar'] += $bobot;
+        }
+    }
+
+    // 6) Hitung kontribusi PG/TF dengan BobotTipeSoal
+    $totalWeighted = 0.0;
+    foreach ($agg as $idTipe => $row) {
+        $score0_100 = $row['total'] > 0 ? ($row['benar'] / $row['total']) * 100.0 : 0.0;
+        $totalWeighted += $score0_100 * ((float) ($bobotTipe[$idTipe] ?? 0)) / 100.0;
+    }
+
+    // 7) Tambahkan Essay (sudah dibobot sebelumnya saat disimpan → nilai_essay_final)
+    $totalWeighted += $essayWeighted;
+
+    // 8) Simpan ke tipe_nilai
+    $ujian = \App\Models\Ujian::find($id_ujian);
+    $id_tipe_ujian = $ujian?->id_tipe_ujian;
+    if ($id_tipe_ujian) {
+        \App\Models\TipeNilai::updateOrCreate(
+            ['id_siswa'=>$id_siswa,'id_ujian'=>$id_ujian,'id_tipe_ujian'=>$id_tipe_ujian],
+            ['nilai' => (int) round($totalWeighted)]
+        );
+    }
+
+    return (int) round($totalWeighted);
+}
 
     /**
      * ENDPOINT untuk route:

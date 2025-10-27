@@ -437,6 +437,9 @@ class UjianController extends Controller
     $jawaban->nilai_essay_final = round(($data['nilai_essay_raw'] * $bobotEssay) / 100, 2);
     $jawaban->save();
 
+    app(\App\Http\Controllers\NilaiController::class)
+    ->recalcNow((int)$id_ujian, (int)$id_siswa);
+
     return back()->with('success', 'Nilai essay berhasil disimpan.');
 }
 
