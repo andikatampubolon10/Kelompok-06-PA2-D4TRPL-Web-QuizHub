@@ -239,6 +239,10 @@ Route::middleware('auth')->group(function () {
             [PracticeQuestionController::class, 'hasilLatihan']
         )
             ->name('latihan.hasil');
+
+        Route::post('Siswa/courses/{id_kursus}/ujian/{id_ujian}/exit',[DashboardsiswaController::class, 'exitExam']
+)->name('Course.exit');
+
         // routes/web.php
 
         Route::get('/grades', [DashboardsiswaController::class, 'nilaiSiswa'])
