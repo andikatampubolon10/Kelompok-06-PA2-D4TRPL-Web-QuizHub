@@ -399,7 +399,10 @@ public function submitUjian(Request $request, $id_kursus, $id_ujian) {
 
     // Redirect ke halaman ujian dengan pesan sukses
     return redirect()
-        ->route('Siswa.Course.tipeujian', ['id_kursus' => $id_kursus])
+        ->route('Siswa.Ujian.hasil', [
+        'id_kursus' => $id_kursus,
+        'id_ujian'  => $id_ujian, // <- WAJIB ditambahkan
+    ])
         ->with('success', 'Jawaban berhasil dikumpulkan dan nilai berhasil dihitung.');
 }
 
