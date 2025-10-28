@@ -9,7 +9,7 @@
             <h2 class="text-xl font-bold mb-4 text-blue-600">Informasi Nilai</h2>
             <div class="space-y-4">
                 <div class="mb-4">
-                @foreach ($courses as $course)
+                @forelse(($courses ?? collect()) as $course)
                     <div class="p-5 border border-gray-200 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between hover:shadow-lg transition-shadow duration-300 bg-white">
                         <div class="flex items-center mb-4 sm:mb-0">
                             <img alt="Thumbnail image of the {{ $course->nama_kursus }} course" class="w-24 h-24 rounded-lg mr-4 object-cover" height="100" src="{{ $course->image_url }}" width="100" />

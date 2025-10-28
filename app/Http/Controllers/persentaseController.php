@@ -14,25 +14,28 @@ use Illuminate\Support\Facades\DB;
 class PersentaseController extends Controller
 {
     // Index: daftar persentase per kursus guru
-    public function index()
-    {
-        $user = Auth::user();
-        $guru = $user->guru ?? null;
+public function index()
+{
+    $user = Auth::user();
+    $guru = $user->guru ?? null;
 
-        if (!$guru) {
-            return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
-        }
-
-        // Dapatkan kursus milik guru
-        $courses = Kursus::where('id_guru', $guru->id_guru)->get();
-
-        // Dapatkan persentase dengan eager load
-        $persentases = Persentase::with(['kursus', 'tipeUjian', 'tipePersentase'])
-            ->whereIn('id_kursus', $courses->pluck('id_kursus'))
-            ->get();
-
-        return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user', 'guru'));
+    if (!$guru) {
+        return redirect()->back()->withErrors(['error' => 'Guru tidak ditemukan.']);
     }
+
+    // Ambil kursus milik guru + eager load relasi yang dipakai di view
+    $courses = Kursus::with('kelas')
+        ->where('id_guru', $guru->id_guru)
+        ->get();
+
+    // Ambil persentase terkait kursus-kursus di atas (eager load relasi)
+    $persentases = Persentase::with(['kursus', 'tipeUjian', 'tipePersentase'])
+        ->whereIn('id_kursus', $courses->pluck('id_kursus'))
+        ->get();
+
+    // Pastikan variabel 'courses' dikirim ke view
+    return view('Role.Guru.Nilai.index', compact('persentases', 'courses', 'user', 'guru'));
+}
 
     // Create: tampilkan form create persentase untuk kursus
     public function create(Request $request)

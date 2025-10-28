@@ -19,7 +19,6 @@ class Nilai extends Model
         'id_kursus',
         'id_siswa',
         'id_persentase',
-        // 'id_tipe_nilai',  // Relasi ke tipe_nilai
         'nilai_total',
     ];
 
