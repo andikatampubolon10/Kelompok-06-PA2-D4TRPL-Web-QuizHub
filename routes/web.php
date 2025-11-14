@@ -108,7 +108,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('/JawabanSiswaLatihanSoal', JawabanSiswaLatihanSoalController::class);
         Route::resource('/JawabanSiswaUjian', JawabanSiswaUjianController::class);
         Route::resource('/Nilai', NilaiController::class);
-        Route::post('/reset-recalculate-nilai/{id_kursus}', [ListSiswaController::class, 'resetAndRecalculateNilai']);
+        Route::post('/reset-recalculate-nilai/{id_kursus}', [ListSiswaController::class, 'resetAndRecalculateNilai'])
+        ->name('reset-recalculate-nilai');
+   
         Route::get('bobot-tipe-soal', [BobotTipeSoalController::class, 'index'])->name('BobotTipeSoal.index');
         Route::get('bobot-tipe-soal/create', [BobotTipeSoalController::class, 'create'])->name('BobotTipeSoal.create');
         Route::post('bobot-tipe-soal', [BobotTipeSoalController::class, 'store'])->name('BobotTipeSoal.store');

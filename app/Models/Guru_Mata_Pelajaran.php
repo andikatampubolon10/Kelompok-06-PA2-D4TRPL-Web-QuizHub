@@ -18,11 +18,11 @@ class Guru_Mata_Pelajaran extends Model
 
     public function mataPelajaran()
     {
-        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran', 'id_mata_pelajaran');
+        return $this->belongsTo(mata_pelajaran::class, 'id_mata_pelajaran', 'id_mata_pelajaran','id_mata_pelajaran');
     }
 
     public function guru()
     {
-        return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');
+        return $this->belongsTo(Guru::class, 'id_guru', 'id_guru','id_mata_pelajaran');
     }
 }
