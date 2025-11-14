@@ -1,45 +1,85 @@
 @extends('layouts.guru-layout')
 
 @section('content')
-    <div class="flex flex-col md:flex-row">
 
-        <!-- Main Content -->
-        <div class="main-content w-full  p-4 md:p-6">
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold mb-4 text-blue-600">Informasi Kursus</h2>
-                <div class="space-y-4">
-                    <div class="mb-4">
-                        @forelse($courses as $course)
-                            <div
-                                class="bg-gray-100 p-4 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                                <div class="flex items-center mb-4 sm:mb-0">
-                                    <img alt="Thumbnail image of the {{ $course->nama_kursus }} course"
-                                        class="w-24 h-24 rounded-lg mr-4 object-cover" src="{{ $course->image_url }}" />
-                                    <div>
-                                        <h4 class="text-2xl font-bold text-teal-700">
-                                            <a href="{{ route('Guru.Materi.index', ['id_kursus' => $course->id_kursus]) }}"
-                                                class="no-underline hover:underline">
-                                                {{ $course->nama_kursus }}
-                                            </a>
-                                        </h4>
-                                        <p class="text-gray-600">{{ $course->kelas->nama_kelas }}</p>
-                                        {{-- Tambahkan baris ini untuk menampilkan mata pelajaran --}}
-                                        <p class="text-sm text-gray-800 italic">
-                                            <strong>Mata Pelajaran:</strong>
-                                            {{ $course->mataPelajaran ? $course->mataPelajaran->nama_mata_pelajaran : 'Belum Ditentukan' }}
-                                        </p>
-                                        {{-- Akhir tambahan --}}
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="col-12">
-                                <p>Tidak ada kursus yang ditemukan.</p>
-                            </div>
-                        @endforelse
+<div class="flex min-h-screen bg-white">  <!-- FULL HEIGHT + WHITE BG -->
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-1/4 p-4 border-r border-gray-300 bg-white flex-shrink-0">
+        <h3 class="text-lg font-bold text-gray-600 mb-3">Daftar Mata Pelajaran</h3>
+
+        <ul class="space-y-2">
+
+            <!-- Semua Mapel -->
+            <li>
+                <a href="{{ route('Guru.Course.index') }}"
+                    class="block px-2 py-1 rounded-md 
+                        {{ $selectedMataPelajaran ? 'text-gray-700 hover:text-blue-600' : 'text-blue-600 font-semibold' }}">
+                    Semua Mata Pelajaran
+                </a>
+            </li>
+
+            <!-- List Mapel -->
+            @foreach($mataPelajaranOptions as $mapel)
+                <li>
+                    <a href="{{ route('Guru.Course.index', ['id_mata_pelajaran' => $mapel->id_mata_pelajaran]) }}"
+                        class="block px-2 py-1 rounded-md
+                            {{ $selectedMataPelajaran == $mapel->id_mata_pelajaran 
+                                ? 'text-blue-600 font-semibold' 
+                                : 'text-gray-700 hover:text-blue-600' }}">
+                        {{ $mapel->nama_mata_pelajaran }}
+                    </a>
+                </li>
+            @endforeach
+
+        </ul>
+    </aside>
+
+    <!-- Content -->
+    <div class="w-full md:w-3/4 p-4 md:p-6 bg-white">
+        <h2 class="text-xl font-bold text-blue-600 mb-4">
+            Informasi Kursus
+            @if($selectedMataPelajaran)
+                <span class="text-sm text-gray-500">
+                    (Filter: {{ $mataPelajaranOptions->find($selectedMataPelajaran)->nama_mata_pelajaran }})
+                </span>
+            @endif
+        </h2>
+
+        <div class="space-y-6">
+
+            @forelse($courses as $course)
+                <div class="pb-4 border-b border-gray-300 flex items-start space-x-4">
+
+                    <img alt="{{ $course->nama_kursus }}"
+                        src="{{ $course->image_url }}"
+                        class="w-20 h-20 rounded-md object-cover">
+
+                    <div>
+                        <h4 class="text-2xl font-bold text-teal-700">
+                            <a href="{{ route('Guru.Materi.index', ['id_kursus' => $course->id_kursus]) }}"
+                               class="hover:underline">
+                                {{ $course->nama_kursus }}
+                            </a>
+                        </h4>
+
+                        <p class="text-gray-600">{{ $course->kelas->nama_kelas }}</p>
+
+                        <p class="text-sm text-gray-800 italic">
+                            <strong>Mata Pelajaran:</strong>
+                            {{ $course->mataPelajaran ? $course->mataPelajaran->nama_mata_pelajaran : 'Belum Ditentukan' }}
+                        </p>
                     </div>
+
                 </div>
-            </div>
+
+            @empty
+                <p class="text-gray-600">Tidak ada kursus untuk mata pelajaran ini.</p>
+            @endforelse
+
         </div>
     </div>
+
+</div>
+
 @endsection

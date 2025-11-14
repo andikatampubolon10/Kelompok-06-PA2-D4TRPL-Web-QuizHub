@@ -42,7 +42,6 @@
             </a>
         </div>
         {{-- @dd($materi) --}}
-
         @foreach ($materi->sortByDesc('tanggal_materi') as $exam)
             <div class="mb-4 pb-3 border-b border-gray-200">
                 <div class="flex justify-between items-start">
@@ -61,6 +60,7 @@
                         <p class="text-sm text-gray-600">{{ $exam->deskripsi }}</p>
 
                         <!-- Link File -->
+                        
                         <a href="{{ $exam->file_url }}" target="_blank"
                             class="inline-flex items-center mt-1 text-blue-600 hover:text-blue-800 text-sm">
                             <i class="fas fa-file-download mr-1"></i>Lihat / Unduh File

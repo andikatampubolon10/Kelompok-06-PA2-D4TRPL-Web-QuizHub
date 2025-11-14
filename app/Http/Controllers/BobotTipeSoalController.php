@@ -5,32 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\BobotTipeSoal;
 use App\Models\tipe_soal;
 use App\Models\Ujian;
-use App\Models\TipeSoal;
 use Illuminate\Http\Request;
 
 class BobotTipeSoalController extends Controller
 {
     // Tampilkan daftar bobot per tipe soal untuk sebuah ujian (id_ujian di URL)
     public function index(Request $request)
-    {
-        $idUjian = $request->query('id_ujian');
+{
+    $idUjian = $request->query('id_ujian');
 
-        $bobotTipeSoals = [];
-        $ujian = null;
+    $ujian = Ujian::find($idUjian);
 
-        if ($idUjian) {
-            $ujian = Ujian::find($idUjian);
-            $bobotTipeSoals = BobotTipeSoal::with(['tipe_soal', 'ujian'])
-                ->where('id_ujian', $idUjian)
-                ->get();
-        }
+    // Load 3 tipe soal (Fixed)
+    $tipes = tipe_soal::all(); // Pilihan Berganda, Benar Salah, Isian
 
-        return view('Role.Guru.Course.Soal.bobot_tipe_soal_index', [
-            'bobotTipeSoals' => $bobotTipeSoals,
-            'ujian' => $ujian,
-            'id_ujian' => $idUjian,
-        ]);
-    }
+    // Load bobot milik ujian
+    $bobotTipeSoals = BobotTipeSoal::where('id_ujian', $idUjian)->get();
+
+    return view('Role.Guru.Course.Soal.bobot_tipe_soal_index', [
+        'ujian' => $ujian,
+        'tipes' => $tipes,
+        'bobotTipeSoals' => $bobotTipeSoals,
+    ]);
+}
 
     // Tampilkan form create
     public function create(Request $request)

@@ -51,7 +51,13 @@ class CourseController extends Controller
 
         Log::info('Mata Pelajaran Options Count: ' . $mataPelajaranOptions->count()); // Logging Jumlah Opsi Mapel
 
-        return view('Role.Guru.index', compact('courses', 'user', 'guru', 'mataPelajaranOptions', 'selectedMataPelajaran'));
+       return view('Role.Guru.index', [
+    'courses' => $courses,
+    'user' => $user,
+    'guru' => $guru,
+    'mataPelajaranOptions' => $mataPelajaranOptions,
+    'selectedMataPelajaran' => $selectedMataPelajaran
+]);
     }
 
 public function beranda(Request $request)

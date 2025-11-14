@@ -54,9 +54,9 @@
                                 {{ \Carbon\Carbon::parse($exam->tanggal_materi)->format('d M Y') }}
                             </p>
                             <p class="text-sm text-gray-600">{{ $exam->deskripsi }}</p>
-                            <a href="{{ $exam->file_url }}" target="_blank"
+                            <a href="{{ $exam->file }}" target="_blank"
                                 class="inline-flex items-center mt-1 text-blue-600 hover:text-blue-800 text-sm">
-                                <i class="fas fa-file-download mr-1"></i> Lihat / Unduh File
+                                <i class="fas fa-file-download mr-1"></i> {{ $exam->file }}
                             </a>
                         </div>
 
